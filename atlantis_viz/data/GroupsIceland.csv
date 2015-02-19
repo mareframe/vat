@@ -1,0 +1,64 @@
+Code,Index,IsTurnedOn,Name,Long.Name,NumCohorts,VerticallyMigrates,HorizontallyMigrates,isFished,IsImpacted,isTAC,InvertType,isPredator,IsCover,isSiliconDep,isAssessed,IsCatchGrazer,isOverWinter
+FCD,0,1,Cod,Gadus morhua,10,1,1,1,1,1,FISH,1,0,0,1,0,0
+FHA,1,1,Haddock,Melanogrammus aeglefinus,10,1,1,1,1,1,FISH,1,0,0,1,0,0
+FSA,2,1,Saithe,Pollachius virens,10,1,1,1,1,1,FISH,1,0,0,1,0,0
+FGR,3,1,Golden_Redfish,Sebastes norvegicus,10,1,1,1,1,1,FISH,1,0,0,1,0,0
+FDR,4,1,Deep_Sea_Redfish,Sebastes mentalla,10,1,1,1,1,1,FISH,1,0,0,1,0,0
+FGH,5,1,Greenland_Halibut,Reinhardtius hippoglossoides,10,1,1,1,1,1,FISH,1,0,0,1,0,0
+FPL,6,1,Plaice,Pleuronectes platessa,10,1,1,1,1,1,FISH,1,0,0,1,0,0
+FDA,7,1,Dab,Limanda limanda,10,1,1,1,1,1,FISH,1,0,0,1,0,0
+FLR,8,1,Long_Rough_Dab,Hippoglossus platessoides,10,1,1,1,1,1,FISH,1,0,0,1,0,0
+FLS,9,1,Lemon_Sole,Microstomus kitt,10,1,1,1,1,1,FISH,1,0,0,1,0,0
+FAW,10,1,Atlantic_Wolffish,Anarchichas lupus,10,1,1,1,1,1,FISH,1,0,0,1,0,0
+FHE,11,1,Herring,Clupea harengus,10,1,1,1,1,1,FISH,1,0,0,1,0,0
+FCA,12,1,Capelin,Mallotus villosus,6,1,1,1,1,1,FISH,1,0,0,1,0,0
+FBW,13,1,Blue_Whiting,Micromesistius poutassou,10,1,1,1,1,1,FISH,1,0,0,1,0,0
+FMA,14,1,Mackerel,Scomber scombrus,10,1,1,1,1,1,FISH,1,0,0,1,0,0
+FBL,15,1,Blue_Ling,Molva dypterygia,10,1,1,1,1,1,FISH,1,0,0,1,0,0
+FLI,16,1,Ling,Molva molva,10,1,1,1,1,1,FISH,1,0,0,1,0,0
+FTI,17,1,Tusk,Brosme brosme,10,1,1,1,1,1,FISH,1,0,0,1,0,0
+FAN,18,1,Anglerfish,Lophius piscatorius,10,1,1,1,1,1,FISH,1,0,0,1,0,0
+FGA,19,1,Greater_Argentine,Argentina silus,10,1,1,1,1,1,FISH,1,0,0,1,0,0
+FFO,20,1,Flatfish_O,Other flatfish,10,1,1,1,1,1,FISH,1,0,0,1,0,0
+PID,21,1,Pisc_D_Fish,Piscivorous demersal fish,10,1,1,1,1,1,FISH,1,0,0,1,0,0
+FDF,22,1,Demersal_O_Fish,Other demersal fish,10,1,1,1,1,1,FISH,1,0,0,1,0,0
+FSD,23,1,Sandeel_Fish,Sandeel fish,10,1,1,1,1,1,FISH,1,0,0,1,0,0
+FDL,24,1,Long_Lived_Demersal,Long-lived demersal fish,10,1,1,1,1,1,FISH,1,0,0,1,0,0
+FMP,25,1,Mesopelagic_Fish,Other mesopelagics,10,1,1,1,1,1,FISH,1,0,0,1,0,0
+FBP,26,1,Bathypelagic_Fish,Bathypelagic fish,10,1,1,1,1,1,FISH,1,0,0,1,0,0
+SSD,27,0,Spiny_Dogshark,Spiny Dogshark,10,1,1,1,1,1,SHARK,1,0,0,1,0,0
+SSR,28,0,Skates_Rays,Skates and Rays,10,1,1,1,1,1,SHARK,1,0,0,1,0,0
+SSH,29,0,Shark,Sharks,10,1,1,1,1,1,SHARK,1,0,0,1,0,0
+SB,30,1,Seabird,Seabirds,10,1,1,1,1,1,BIRD,1,0,0,1,0,0
+PIN,31,1,Pinniped,Pinnipeds,10,1,1,1,1,1,MAMMAL,1,0,0,1,1,0
+WMW,32,1,Minke_Whale,Balaenoptera acutorostrata,10,1,1,1,1,1,MAMMAL,1,0,0,1,0,0
+WHB,33,1,Whale_Baleen,Baleen whales,10,1,1,1,1,1,MAMMAL,1,0,0,1,0,0
+WHT,34,1,Whale_Tooth,Toothed whales ,10,1,1,1,1,1,MAMMAL,1,0,0,1,1,0
+WTO,35,1,Whale_Tooth_Other,Other toothed whales,10,1,1,1,1,1,MAMMAL,1,0,0,1,1,0
+CEP,36,1,Cephalopod,Cephalopod,2,1,1,1,1,1,CEP,1,0,0,1,0,0
+PWN,37,1,Shrimp,Northern Shrimp,2,1,1,1,1,1,PWN,1,0,0,1,0,0
+ZM,38,1,Zoo,Mesozooplankton,1,1,0,0,0,0,MED_ZOO,1,0,0,1,0,0
+ZS,39,1,MicroZoo,Microzooplankton,1,1,0,0,0,0,SM_ZOO,1,0,0,1,0,0
+ZL,40,1,MacroZoo,Macrozooplankton,1,1,0,0,0,0,LG_ZOO,1,0,0,1,0,0
+ZG,41,1,Gelat_Zoo,Gelatinous zooplankton,1,1,0,0,1,1,LG_ZOO,1,0,0,1,0,0
+BML,42,1,Megazoobenthos,Other Megazoobenthos,1,0,0,1,1,1,MOB_EP_OTHER,1,0,0,1,0,0
+LOB,43,1,Lobster,Lobsters,1,0,0,1,1,1,MOB_EP_OTHER,1,0,0,1,0,0
+SCA,44,1,Scallop,Iceland_Scallop,1,0,0,1,1,1,SED_EP_FF,1,1,0,1,0,0
+QUA,45,1,Quahog,Ocean_Quahog,1,0,0,1,1,1,SED_EP_FF,1,1,0,1,0,0
+CUC,46,1,Cucumbers,Cucumaria_Frondosa,1,0,0,1,1,1,LG_INF,1,0,0,1,0,0
+BD,47,1,Deposit_Feeder,Deposit Feeder,1,0,0,1,1,1,LG_INF,1,0,0,1,0,0
+BFF,48,1,Filter_Other,Other benthic filter feeder,1,0,0,1,1,1,SED_EP_FF,1,1,0,1,0,0
+BG,49,1,Benthic_grazer,Benthic grazer,1,0,0,1,1,1,SED_EP_OTHER,1,0,0,1,0,0
+BC,50,1,Benthic_Carniv,Benthic Carnivore,1,0,0,0,1,1,LG_INF,1,0,0,1,0,0
+BO,51,1,Meiobenth,Meiobenthos,1,0,0,0,0,0,SM_INF,1,0,0,0,0,0
+PL,52,1,Diatom,Diatom,1,0,0,0,0,0,LG_PHY,0,0,1,1,0,0
+PS,53,1,PicoPhytopl,Pico-phytoplankton,1,0,0,0,0,0,SM_PHY,0,0,0,1,0,0
+MA,54,1,Macroalgae,Macroalgae,1,0,0,1,1,1,PHYTOBEN,0,1,0,1,0,0
+MB,55,1,MicroPB,Microphtybenthos,1,0,0,0,1,1,MICROPHTYBENTHOS,0,1,1,1,0,0
+SG,56,1,Seagrass,Seagrass,1,0,0,0,1,1,SEAGRASS,0,1,0,1,0,0
+DF,57,1,DinoFlag,Dinoflagellates,1,0,0,0,0,0,DINOFLAG,1,0,0,1,0,0
+PB,58,1,Pelag_Bact,Pelagic Bacteria,1,0,0,0,0,0,PL_BACT,0,0,0,0,0,0
+BB,59,1,Sed_Bact,Sediment Bacteria,1,0,0,0,0,0,SED_BACT,0,0,0,0,0,0
+DL,60,1,Lab_Det,Labile detritus,1,0,0,0,0,0,LAB_DET,0,0,0,1,0,0
+DR,61,1,Ref_Det,Refractory detritus,1,0,0,0,0,0,REF_DET,0,0,0,1,0,0
+DC,62,1,Carrion,Carrion,1,0,0,0,0,0,CARRION,0,0,0,1,0,0
