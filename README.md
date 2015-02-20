@@ -18,7 +18,7 @@ To run the interactive [Shiny](http://shiny.rstudio.com/) application for `vat`,
 
 3. `vat()`. This is the function that launches the actual shiny application.
 
-Please see each files respective manpage for details on it's usage. 
+Please see each functions respective manpage for details on its usage. 
 
 At present `vat` is a moving target. I welcome all feedback on it's UI as well as any additional features, you would like to see added. Please report issues and feature requests. Once I am happy with `vat`'s UI, I will freeze this branch and take all new development to a different branch. 
 
