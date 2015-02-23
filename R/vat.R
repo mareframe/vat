@@ -7,7 +7,6 @@
 #'@param anim Directory to stored animated pltos created by atanim_plot function
 #'@export
 #'@seealso \code{\link{create_vat}}, \code{\link{vat_animate}}
-#'@examples
 #'\dontrun{
 #' anim <- "/path/to/animinated/gifs"
 #' obj <- create_vat(outdir = "/atlantis/output_dir", fgfile = "/atlantis/functionalgroup.csv", ncout = "output_atlantis")
@@ -20,38 +19,49 @@ vat <- function(obj, anim){
   require("markdown")
   require("scales")
   shinyApp(
-    ui = navbarPage("vat",
+    ui = navbarPage("vat",theme = "http://cddesja.github.com/vat/theme/spacelab2.min.css",
                     # Starting "Welcome" Tab"
                     tabPanel("Welcome",
                              fluidRow(column(12,
                                              h1("Visualizing Atlantis Toolbox", align = "center"))),
-                             includeMarkdown("http://cddesja.github.com/vat/markdown/iceatlantis.md"),
-                    
-                    fluidRow(column(1,
-                                    img(src = "http://cddesja.github.com/vat/images/mareframe_logo.png", height = 90, width = 90)),
-                             column(10),
+                             p(),
+                             p(),
+                             p(),
+                             fluidRow(column(2),
+                                      column(8,
+                             includeMarkdown("http://cddesja.github.com/vat/markdown/iceatlantis.md")),
+                             column(2)),
+                    fluidRow(column(2),
                              column(1,
-                                    img(src = "http://cddesja.github.com/vat/images/hi.gif", height = 90, width = 90)))),
+                                    img(src = "http://cddesja.github.com/vat/images/MareFrame-Logo.jpg")),
+                             column(6),
+                             column(1,
+                                    img(src = "http://cddesja.github.com/vat/images/hi.gif", height = 45, width = 45)),
+                             column(2))),
                     tabPanel("Plots to Display",
-                             fluidRow(column(12,
-                                             h2("Which plots should vat display?", align = "center"))),
-                             fluidRow(column(12,
-                                             h4("Disaggregated Spatial Plots", align = "center"))),
+                             fluidRow(column(3),
+                                      column(6,
+                                             h3("Which plots should be displayed?", align = "center")),
+                                      column(3)),
                              fluidRow(
+                               column(3),
                                column(3, wellPanel(checkboxInput(
-                                 "disagg", label = "Interactive spatial plots"))),
+                                 "disagg", label = "Interactive spatial"))),
                                column(3, wellPanel(checkboxInput(
                                                "anim", 
-                                               label = "Animated spatial plots?")))),
-                             fluidRow(column(12,
-                                             h4("Diagnostic Plots", align = "center"))),
-                             fluidRow(column(3, wellPanel(checkboxInput(
-                               "nitrogen", label = "Nitrogen, numbers, and biomass at age plots?"))),
+                                               label = "Animated spatial"))),
+                               column(3)),
+                             fluidRow(
+                               column(3),
+                               column(3, wellPanel(checkboxInput(
+                               "nitrogen", label = "Age specific"))),
+                               column(3, wellPanel(checkboxInput(
+                                 "diet", 
+                                 label = "Diet availability"))),
+                               column(3)),
+                             fluidRow(column(3),
                              column(3, wellPanel(checkboxInput(
-                               "diet", 
-                               label = "Diet plots?"))),
-                             column(3, wellPanel(checkboxInput(
-                               "agg", label = "Aggregated plots?"))))),                  
+                               "agg", label = "Aggregated/summary"))))),                  
                     # Disaggregated Spatial Maps
                     navbarMenu("Diaggregated Spatial Plots",
                                tabPanel("Interactive Spatial Plots",
