@@ -22,6 +22,6 @@ vat(obj, anim)
 }
 }
 \seealso{
-\code{\link{create_vat}}, \code{\link{vat_animate}}
+\code{\link{create_vat}}, \code{\link{animate_vat}}
 }
 

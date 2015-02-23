@@ -18,10 +18,10 @@ This function creates a visualising Atlantis toolbox object which should be fed 
 }
 \examples{
 \dontrun{
-obj <- create_vat(outdir = "/atlantis/output_dir", fgfile = "/atlantis/functionalgroup.csv", ncout = "output_atlantis")
+obj <- create_vat(outdir = "/atlantis/output_dir/", fgfile = "/atlantis/functionalgroup.csv", ncout = "output_atlantis")
  }
 }
 \seealso{
-\code{\link{vat}}, \code{\link{vat_animate}}
+\code{\link{vat}}, \code{\link{animate_vat}}
 }
 

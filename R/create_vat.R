@@ -6,14 +6,15 @@
 #'  @param fgfile Functional group 
 #'  @param ncout Name of output ncdf4 file excluding nc suffix (i.e. name given after -o flag)
 #'  @export
-#'  @seealso \code{\link{vat}}, \code{\link{vat_animate}}
+#'  @seealso \code{\link{vat}}, \code{\link{animate_vat}}
 #'  @examples
 #'  \dontrun{
-#' obj <- create_vat(outdir = "/atlantis/output_dir", fgfile = "/atlantis/functionalgroup.csv", ncout = "output_atlantis")
+#' obj <- create_vat(outdir = "/atlantis/output_dir/", fgfile = "/atlantis/functionalgroup.csv", ncout = "output_atlantis")
 #'  }
 create_vat <- function(outdir, fgfile, ncout){
   cat("### ------------ Reading in data                                         ------------ ###\n")
   nc_out <- ncdf4::nc_open(paste(outdir, ncout, ".nc", sep = ""))
+  bio_agg <- read.table(paste(outdir, ncout, "BoxBiomass.txt", sep = ""), header = T)
   ssb <- read.table(paste(outdir, ncout, "SSB.txt", sep = ""), header = TRUE)
   yoy <- read.table(paste(outdir, ncout, "YOY.txt", sep = ""), header = TRUE)
   bgm <- readLines(paste(outdir, grep(".bgm",dir(outdir), value = T), sep = ""))
@@ -22,15 +23,15 @@ create_vat <- function(outdir, fgfile, ncout){
   diet <- read.table(paste(outdir, ncout, "DietCheck.txt", sep = ""), header = TRUE, stringsAsFactors = TRUE)
   fun_group <- read.csv(fgfile, header = T, stringsAsFactors = FALSE)[,c(1,4,12)]
   
-  cat("### ------------ Creating dynamic labels for vat                        ------------ ###\n")
+  cat("### ------------ Creating dynamic labels for vat                         ------------ ###\n")
   bioagg_names <- colnames(bio_agg)[c(-1,-2)]
   ssb_names <- colnames(ssb)[-1]
   yoy_names <- colnames(yoy)[-1]
   rel_names <- colnames(rel_bio)[-1]
-  max_tracer <- output$nvars
-  max_layers <- length(output$dim$z$vals)
-  max_time <- length(output$dim$t$vals)
-  var_names <- names(output$var)
+  max_tracer <- nc_out$nvars
+  max_layers <- length(nc_out$dim$z$vals)
+  max_time <- length(nc_out$dim$t$vals)
+  var_names <- names(nc_out$var)
   
   cat("### ------------ Creating map from BGM file                              ------------ ###\n")
  
@@ -79,7 +80,7 @@ create_vat <- function(outdir, fgfile, ncout){
   # extract tracers for the ncd4 object
   vars <- list()
   for (i in 1:length(tot_num)){
-    vars[[i]] <- ncdf4::ncvar_get(nc = output, varid = tot_num[i])
+    vars[[i]] <- ncdf4::ncvar_get(nc = nc_out, varid = tot_num[i])
   }
   names(vars) <- tot_num
   
@@ -91,14 +92,14 @@ create_vat <- function(outdir, fgfile, ncout){
   # ------------------------------------ #
   str_N <- grep("StructN", var_names, value = TRUE)
   res_N <- grep("ResN", var_names, value = TRUE)
-  rs_names <- fg[fg$InvertType %in% c("FISH", "MAMMAL", "SHARK", "BIRD"), "Name"]
+  rs_names <- fun_group[fun_group$InvertType %in% c("FISH", "MAMMAL", "SHARK", "BIRD"), "Name"]
   
   
   sn_list <- list()
   rn_list <- list()
   for (i in 1:length(str_N)){
-    sn_list[[i]] <- ncvar_get(nc = output, varid = str_N[i])
-    rn_list[[i]] <- ncvar_get(nc = output, varid = res_N[i])  
+    sn_list[[i]] <- ncvar_get(nc = nc_out, varid = str_N[i])
+    rn_list[[i]] <- ncvar_get(nc = nc_out, varid = res_N[i])  
   }
   names(sn_list) <- str_N
   names(rn_list) <- res_N

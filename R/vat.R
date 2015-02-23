@@ -6,7 +6,7 @@
 #'@param obj Object of class vat returned by create_vat
 #'@param anim Directory to stored animated pltos created by atanim_plot function
 #'@export
-#'@seealso \code{\link{create_vat}}, \code{\link{vat_animate}}
+#'@seealso \code{\link{create_vat}}, \code{\link{animate_vat}}
 #'@examples
 #'\dontrun{
 #' anim <- "/path/to/animinated/gifs"
