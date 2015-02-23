@@ -23,7 +23,7 @@ vat <- function(obj, anim){
                     # Starting "Welcome" Tab"
                     tabPanel("Welcome",
                              fluidRow(column(12,
-                                             h1("Visualizing Atlantis Toolbox", align = "center"))),
+                                             h1("Visualising Atlantis Toolbox", align = "center"))),
                              p(),
                              p(),
                              p(),
