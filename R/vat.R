@@ -20,7 +20,7 @@ vat <- function(obj, anim){
   require("markdown")
   require("scales")
   shinyApp(
-    ui = navbarPage("VAT",
+    ui = navbarPage("vat",
                     # Starting "Welcome" Tab"
                     tabPanel("Welcome",
                              fluidRow(column(12,
