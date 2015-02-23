@@ -6,7 +6,7 @@
 #'@param obj Object of class vat returned by create_vat
 #'@param anim Directory to stored animated pltos created by atanim_plot function
 #'@export
-#'@seealso \code{\link{create_vat}}, \code{\link{animate_vat}}
+#'@seealso \code{\link{create_vat}}, \code{\link{vat_animate}}
 #'@examples
 #'\dontrun{
 #' anim <- "/path/to/animinated/gifs"
@@ -24,17 +24,39 @@ vat <- function(obj, anim){
                     # Starting "Welcome" Tab"
                     tabPanel("Welcome",
                              fluidRow(column(12,
-                                             h2("Visualizing Atlantis Toolbox", align = "center"))),
+                                             h1("Visualizing Atlantis Toolbox", align = "center"))),
                              includeMarkdown("http://cddesja.github.com/vat/markdown/iceatlantis.md"),
+                    
                     fluidRow(column(1,
                                     img(src = "http://cddesja.github.com/vat/images/mareframe_logo.png", height = 90, width = 90)),
                              column(10),
                              column(1,
                                     img(src = "http://cddesja.github.com/vat/images/hi.gif", height = 90, width = 90)))),
-                    
+                    tabPanel("Plots to Display",
+                             fluidRow(column(12,
+                                             h2("Which plots should vat display?", align = "center"))),
+                             fluidRow(column(12,
+                                             h4("Disaggregated Spatial Plots", align = "center"))),
+                             fluidRow(
+                               column(3, wellPanel(checkboxInput(
+                                 "disagg", label = "Interactive spatial plots"))),
+                               column(3, wellPanel(checkboxInput(
+                                               "anim", 
+                                               label = "Animated spatial plots?")))),
+                             fluidRow(column(12,
+                                             h4("Diagnostic Plots", align = "center"))),
+                             fluidRow(column(3, wellPanel(checkboxInput(
+                               "nitrogen", label = "Nitrogen, numbers, and biomass at age plots?"))),
+                             column(3, wellPanel(checkboxInput(
+                               "diet", 
+                               label = "Diet plots?"))),
+                             column(3, wellPanel(checkboxInput(
+                               "agg", label = "Aggregated plots?"))))),                  
                     # Disaggregated Spatial Maps
-                    navbarMenu("Diaggregated Spatial Maps",
+                    navbarMenu("Diaggregated Spatial Plots",
                                tabPanel("Interactive Spatial Plots",
+                                        conditionalPanel(
+                                          condition = "input.disagg == true",
                                         sidebarLayout(
                                           sidebarPanel(selectInput("disagg_var",
                                                                    label = "Choose an unaggregrated functional group to display",
@@ -55,20 +77,23 @@ vat <- function(obj, anim){
                                                                    value = 1,
                                                                    round = TRUE)),
                                           mainPanel(
-                                            plotOutput("map")))),
-                               
+                                            plotOutput("map"))))),
                                tabPanel("Animated Spatial Plots",
-                                        sidebarLayout(
-                                          sidebarPanel(selectInput("aggbio",
+                                        conditionalPanel(
+                                          condition = "input.anim == true",
+                                          column(5,
+                                                          wellPanel(selectInput("aggbio",
                                                                    label = "Choose a functional group to display",
                                                                    selected = obj$bioagg_names[1],
-                                                                   choices = obj$bioagg_names)),
-                                                       mainPanel(
-                                                         imageOutput("agg_image", inline = TRUE, "100%", "550px"))))),
+                                                                   choices = obj$bioagg_names))),
+                                                   column(7,
+                                                          plotOutput("agg_image", inline = TRUE, "100%", "550px"))))),
                     
                     # The diagnostic plots UI
                     navbarMenu("Diagnostic Plots",
                                tabPanel("Nitrogen, Numbers, and Biomass At Age",
+                                        conditionalPanel(
+                                          condition = "input.nitrogen == true",
                                         fluidRow(column(2, 
                                                         wellPanel(selectInput("sn",
                                                                               label = "Select Functional Group",
@@ -81,9 +106,11 @@ vat <- function(obj, anim){
                                                  column(5,
                                                         plotOutput("totalnum", height = "300px")),
                                                  column(5,
-                                                        plotOutput("totalbio", height = "300px")))),
+                                                        plotOutput("totalbio", height = "300px"))))),
                                
                                tabPanel("Diet Plots",
+                                        conditionalPanel(
+                                          condition = "input.diet == true",
                                         fluidRow(column(3),
                                                  column(6,
                                                         wellPanel(selectInput("diet_var",
@@ -92,9 +119,11 @@ vat <- function(obj, anim){
                                                           choices = unique(obj$diet_m$Habitat)))),
                                                  column(3)),
                                         fluidRow(column(12,
-                                                        plotOutput("diet_matrix", height = "500px")))),
+                                                        plotOutput("diet_matrix", height = "500px"))))),
                                
                                tabPanel("Aggregated Plots",
+                                        conditionalPanel(
+                                          condition = "input.agg == true",
                                          fluidRow(column(4,
                                                          wellPanel(
                                                            selectInput("rel_var",
@@ -115,7 +144,7 @@ vat <- function(obj, anim){
                                                            column(4,
                                                                   plotOutput("ssb_map", height = "300px")),
                                                            column(4,
-                                                                  plotOutput("yoy_map", height = "300px"))))))),
+                                                                  plotOutput("yoy_map", height = "300px")))))))),
     server = function(input, output) {
       
       # Disaggregated spatial plot
