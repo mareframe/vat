@@ -4,12 +4,12 @@
 #' 
 #' 
 #'@param obj Object of class vat returned by create_vat
-#'@param anim Directory to stored animated pltos created by atanim_plot function
+#'@param anim Directory to stored animated plot created by vat_animate function
 #'@export
 #'@seealso \code{\link{create_vat}}, \code{\link{vat_animate}}
 #'\dontrun{
 #' anim <- "/path/to/animinated/gifs"
-#' obj <- create_vat(outdir = "/atlantis/output_dir", fgfile = "/atlantis/functionalgroup.csv", ncout = "output_atlantis")
+#' obj <- create_vat(outdir = "/atlantis/output_dir/", fgfile = "/atlantis/functionalgroup.csv", ncout = "output_atlantis")
 #' vat(obj, anim)
 #'}
 
@@ -54,7 +54,7 @@ vat <- function(obj, anim){
                              fluidRow(
                                column(3),
                                column(3, wellPanel(checkboxInput(
-                               "nitrogen", label = "Age specific"))),
+                               "nitrogen", label = "Age disaggregated"))),
                                column(3, wellPanel(checkboxInput(
                                  "diet", 
                                  label = "Diet availability"))),
@@ -101,12 +101,12 @@ vat <- function(obj, anim){
                     
                     # The diagnostic plots UI
                     navbarMenu("Diagnostic Plots",
-                               tabPanel("Nitrogen, Numbers, and Biomass At Age",
+                               tabPanel("Age disaggregated plots",
                                         conditionalPanel(
                                           condition = "input.nitrogen == true",
                                         fluidRow(column(2, 
                                                         wellPanel(selectInput("sn",
-                                                                              label = "Select Functional Group",
+                                                                              label = "Functional Group",
                                                                               choices = obj$rs_names))),
                                                  column(5,
                                                         plotOutput("structn", height = "300px")),
