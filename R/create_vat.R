@@ -1,4 +1,4 @@
-#' Create an visualising Atlantis toolbox object
+#' Create a visualising Atlantis toolbox object
 #' 
 #' This function creates a visualising Atlantis toolbox object which should be fed to the \code{vat} function. This object can be quite and this function may take a little while depending on how long you have run Atlantis for and how big your model is.
 #' 
@@ -61,7 +61,7 @@ create_vat <- function(outdir, fgfile, ncout){
   # Check for islands
   
   islands <- grep("botz\t0", bgm, value = T)
-  if(is.character(islands)){
+  if(length(islands > 0)){
     islands <- strsplit(islands, "[.]")
     islands <- sapply(islands,`[`, 1)
     islands <- strsplit(islands, "box")
@@ -95,7 +95,12 @@ create_vat <- function(outdir, fgfile, ncout){
   # ------------------------------------ #
   str_N <- grep("StructN", var_names, value = TRUE)
   res_N <- grep("ResN", var_names, value = TRUE)
+  
+  # Subset vertebrates
   rs_names <- fun_group[fun_group$InvertType %in% c("FISH", "MAMMAL", "SHARK", "BIRD"), "Name"]
+  
+  # Subset invertebrates
+  invert_names <-fun_group[!(fun_group$InvertType %in% c("FISH", "MAMMAL", "SHARK", "BIRD")),]
   
   colnames(fun_group) <- c("Code", "Name", "Long Name", "Number of Age Groups", "Is it Fished?", "Is it Assessed?", "Type of Group")
   
@@ -127,7 +132,7 @@ create_vat <- function(outdir, fgfile, ncout){
   totalnums$.id <- factor(totalnums$.id, levels = unique(totalnums$.id))
   totalnums$Time <- as.numeric(as.character(totalnums$X1))/12 + 1948
   
-  output <- list(disagg = vars,var_names = tot_num, max_layers = max_layers, max_time = max_time, bioagg_names = bioagg_names, rs_names = rs_names, diet_m = diet_m, rel_names = rel_names, ssb_names = ssb_names, yoy_names = yoy_names, islands = islands, rel_bio = rel_bio, ssb = ssb, yoy = yoy, structN = structN, reserveN = reserveN, totalnums = totalnums, map_base = map_base, numboxes = numboxes, fun_group = fun_group)
+  output <- list(disagg = vars,var_names = tot_num, max_layers = max_layers, max_time = max_time, bioagg_names = bioagg_names, rs_names = rs_names, diet_m = diet_m, rel_names = rel_names, ssb_names = ssb_names, yoy_names = yoy_names, islands = islands, rel_bio = rel_bio, ssb = ssb, yoy = yoy, structN = structN, reserveN = reserveN, totalnums = totalnums, map_base = map_base, numboxes = numboxes, fun_group = fun_group, invert_names = invert_names)
   cat("### ------------ vat object created, you can now run the vat application ------------ ###\n") 
   return(output)
   class(output) <- "vat"

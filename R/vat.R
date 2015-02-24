@@ -63,7 +63,9 @@ vat <- function(obj, anim){
                                column(2)),
                              fluidRow(column(2),
                              column(4, wellPanel(checkboxInput(
-                               "agg", label = "Aggregated summaries"))))),                  
+                               "agg", label = "Vertebrate summaries"))),
+                             column(4, wellPanel(checkboxInput(
+                               "invert", label = "Invertebrate summaries"))))),                  
                     # Disaggregated Spatial Maps
                     navbarMenu("Disaggregated Spatial Plots",
                                tabPanel("Interactive Spatial Biomass",
@@ -133,7 +135,7 @@ vat <- function(obj, anim){
                                         fluidRow(column(12,
                                                         plotOutput("diet_matrix", height = "500px"))))),
                                
-                               tabPanel("Aggregated Summaries",
+                               tabPanel("Vertebrate Summaries",
                                         conditionalPanel(
                                           condition = "input.agg == true",
                                          fluidRow(column(4),
@@ -148,7 +150,16 @@ vat <- function(obj, anim){
                                                            column(4,
                                                                   plotOutput("ssb_map", height = "300px")),
                                                            column(4,
-                                                                  plotOutput("yoy_map", height = "300px"))))))),
+                                                                  plotOutput("yoy_map", height = "300px"))))),
+                               tabPanel("Invertbrate Summaries",
+                                        conditionalPanel(
+                                          condition = "input.invert == true",
+                                          fluidRow(column(2, 
+                                                          wellPanel(selectInput("invert_var",
+                                                                                label = "Functional Group",
+                                                                                choices = obj$invert_names$Code))),
+                                                   column(5,
+                                                          plotOutput("invertbio", height = "300px"))))))),
     server = function(input, output) {
       
       # Disaggregated spatial plot
@@ -229,7 +240,12 @@ vat <- function(obj, anim){
         dat_tn <- obj$totalnums[grep(input$sn, obj$totalnums$.id),]
         dat_tn$V1 <- (sn$V1*5.7*20/1000000000000) * dat_tn$V1
         qplot(y = V1, x = Time, group = .id, color = .id, data = dat_tn, geom = "line") +  
-          scale_x_continuous(breaks=seq(round(min(dat_tn$Time)), round(max(dat_tn$Time)), 5)) + ylab("Total Biomass (Thousand Tons)") +  theme(legend.position="none") + ggtitle("Total Biomass")}) 
+          scale_x_continuous(breaks=seq(round(min(dat_tn$Time)), round(max(dat_tn$Time)), 5)) + ylab("Total Biomass (Thousand Tons)") +  theme(legend.position="none")}) 
+      
+      # Invertebrate plots
+      output$invertbio <- renderPlot({
+        qplot(y = obj$rel_bio[[grep(input$invert_var, names(obj$rel_bio))]], x = Time, data = obj$rel_bio, geom = "line") +
+          ylab("") +  theme_bw() + ggtitle("Relative Biomass")}) 
     }
   )
 }

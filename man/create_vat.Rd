@@ -2,7 +2,7 @@
 % Please edit documentation in R/create_vat.R
 \name{create_vat}
 \alias{create_vat}
-\title{Create an visualising Atlantis toolbox object}
+\title{Create a visualising Atlantis toolbox object}
 \usage{
 create_vat(outdir, fgfile, ncout)
 }

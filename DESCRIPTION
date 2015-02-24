@@ -16,4 +16,5 @@ Depends:
 	reshape,
   animation,
   gridExtra,
+  markdown,
   	R (>= 3.0.0)

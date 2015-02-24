@@ -9,7 +9,7 @@ vat(obj, anim)
 \arguments{
 \item{obj}{Object of class vat returned by create_vat}
 
-\item{anim}{Directory to stored animated pltos created by atanim_plot function}
+\item{anim}{Directory to stored animated plot created by vat_animate function}
 }
 \description{
 The visualizing Atlantis toolbox is an interactive Shiny-based toolbox. It includes various plots, both aggregrated and unaggregated, that are useful for diagnostic, tuning, and visualizing output. To use \code{vat}, the user must first run the \code{create_vat} function which will create an object of class \code{vat} which can be fed to the \code{vat} function. The user must also run the \code{vat_animate} to create the animated GIFs required my the function. If you don't want to use the animated plots, you can just make the \code{anim} option and the warning message.
@@ -18,7 +18,7 @@ The visualizing Atlantis toolbox is an interactive Shiny-based toolbox. It inclu
 \code{\link{create_vat}}, \code{\link{vat_animate}}
 \dontrun{
 anim <- "/path/to/animinated/gifs"
-obj <- create_vat(outdir = "/atlantis/output_dir", fgfile = "/atlantis/functionalgroup.csv", ncout = "output_atlantis")
+obj <- create_vat(outdir = "/atlantis/output_dir/", fgfile = "/atlantis/functionalgroup.csv", ncout = "output_atlantis")
 vat(obj, anim)
 }
 }
