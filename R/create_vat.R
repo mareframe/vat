@@ -21,7 +21,10 @@ create_vat <- function(outdir, fgfile, ncout){
   biomass <- read.table(paste(outdir, ncout, "BiomIndx.txt", sep = ""), header = T)
   rel_bio <- biomass[,c(1, grep("Rel",colnames(biomass)))]
   diet <- read.table(paste(outdir, ncout, "DietCheck.txt", sep = ""), header = TRUE, stringsAsFactors = TRUE)
-  fun_group <- read.csv(fgfile, header = T, stringsAsFactors = FALSE)[,c(1,4,12)]
+  fun_group <- read.csv(fgfile, header = T, stringsAsFactors = FALSE)[, c(1,4,5,6, 9,16, 12)]
+  fun_group$isFished <- ifelse(fun_group$isFished == 1, "Yes", "No")
+  fun_group$isAssessed <- ifelse(fun_group$isAssessed == 1, "Yes", "No")
+  
   
   cat("### ------------ Creating dynamic labels for vat                         ------------ ###\n")
   bioagg_names <- colnames(bio_agg)[c(-1,-2)]
@@ -94,6 +97,8 @@ create_vat <- function(outdir, fgfile, ncout){
   res_N <- grep("ResN", var_names, value = TRUE)
   rs_names <- fun_group[fun_group$InvertType %in% c("FISH", "MAMMAL", "SHARK", "BIRD"), "Name"]
   
+  colnames(fun_group) <- c("Code", "Name", "Long Name", "Number of Age Groups", "Is it Fished?", "Is it Assessed?", "Type of Group")
+  
   
   sn_list <- list()
   rn_list <- list()
@@ -122,7 +127,7 @@ create_vat <- function(outdir, fgfile, ncout){
   totalnums$.id <- factor(totalnums$.id, levels = unique(totalnums$.id))
   totalnums$Time <- as.numeric(as.character(totalnums$X1))/12 + 1948
   
-  output <- list(disagg = vars,var_names = tot_num, max_layers = max_layers, max_time = max_time, bioagg_names = bioagg_names, rs_names = rs_names, diet_m = diet_m, rel_names = rel_names, ssb_names = ssb_names, yoy_names = yoy_names, islands = islands, rel_bio = rel_bio, ssb = ssb, yoy = yoy, structN = structN, reserveN = reserveN, totalnums = totalnums, map_base = map_base, numboxes = numboxes)
+  output <- list(disagg = vars,var_names = tot_num, max_layers = max_layers, max_time = max_time, bioagg_names = bioagg_names, rs_names = rs_names, diet_m = diet_m, rel_names = rel_names, ssb_names = ssb_names, yoy_names = yoy_names, islands = islands, rel_bio = rel_bio, ssb = ssb, yoy = yoy, structN = structN, reserveN = reserveN, totalnums = totalnums, map_base = map_base, numboxes = numboxes, fun_group = fun_group)
   cat("### ------------ vat object created, you can now run the vat application ------------ ###\n") 
   return(output)
   class(output) <- "vat"

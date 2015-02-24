@@ -19,7 +19,7 @@ vat <- function(obj, anim){
   require("markdown")
   require("scales")
   shinyApp(
-    ui = navbarPage("vat",theme = "http://cddesja.github.com/vat/theme/spacelab2.min.css",
+    ui = navbarPage("vat",
                     # Starting "Welcome" Tab"
                     tabPanel("Welcome",
                              fluidRow(column(12,
@@ -38,38 +38,40 @@ vat <- function(obj, anim){
                              column(1,
                                     img(src = "http://cddesja.github.com/vat/images/hi.gif", height = 45, width = 45)),
                              column(2))),
+                    tabPanel("Atlantis Glossary",
+                             dataTableOutput('fun_group_atl')),
                     tabPanel("Plots to Display",
                              fluidRow(column(3),
                                       column(6,
                                              h3("Which plots should be displayed?", align = "center")),
                                       column(3)),
                              fluidRow(
-                               column(3),
-                               column(3, wellPanel(checkboxInput(
-                                 "disagg", label = "Interactive spatial"))),
-                               column(3, wellPanel(checkboxInput(
+                               column(2),
+                               column(4, wellPanel(checkboxInput(
+                                 "disagg", label = "Interactive spatial biomass"))),
+                               column(4, wellPanel(checkboxInput(
                                                "anim", 
-                                               label = "Animated spatial"))),
-                               column(3)),
+                                               label = "Animated spatial biomass"))),
+                               column(2)),
                              fluidRow(
-                               column(3),
-                               column(3, wellPanel(checkboxInput(
+                               column(2),
+                               column(4, wellPanel(checkboxInput(
                                "nitrogen", label = "Age disaggregated"))),
-                               column(3, wellPanel(checkboxInput(
+                               column(4, wellPanel(checkboxInput(
                                  "diet", 
                                  label = "Diet availability"))),
-                               column(3)),
-                             fluidRow(column(3),
-                             column(3, wellPanel(checkboxInput(
-                               "agg", label = "Aggregated/summary"))))),                  
+                               column(2)),
+                             fluidRow(column(2),
+                             column(4, wellPanel(checkboxInput(
+                               "agg", label = "Aggregated summaries"))))),                  
                     # Disaggregated Spatial Maps
-                    navbarMenu("Diaggregated Spatial Plots",
-                               tabPanel("Interactive Spatial Plots",
+                    navbarMenu("Disaggregated Spatial Plots",
+                               tabPanel("Interactive Spatial Biomass",
                                         conditionalPanel(
                                           condition = "input.disagg == true",
                                         sidebarLayout(
                                           sidebarPanel(selectInput("disagg_var",
-                                                                   label = "Choose an unaggregrated functional group to display",
+                                                                   label = "Functional Group",
                                                                    selected = obj$var_names[1],
                                                                    choices = obj$var_names),
                                                        sliderInput("layer", 
@@ -88,12 +90,12 @@ vat <- function(obj, anim){
                                                                    round = TRUE)),
                                           mainPanel(
                                             plotOutput("map"))))),
-                               tabPanel("Animated Spatial Plots",
+                               tabPanel("Animated Spatial Biomass",
                                         conditionalPanel(
                                           condition = "input.anim == true",
                                           column(5,
                                                           wellPanel(selectInput("aggbio",
-                                                                   label = "Choose a functional group to display",
+                                                                   label = "Functional Group",
                                                                    selected = obj$bioagg_names[1],
                                                                    choices = obj$bioagg_names))),
                                                    column(7,
@@ -101,7 +103,7 @@ vat <- function(obj, anim){
                     
                     # The diagnostic plots UI
                     navbarMenu("Diagnostic Plots",
-                               tabPanel("Age disaggregated plots",
+                               tabPanel("Age Disaggregated",
                                         conditionalPanel(
                                           condition = "input.nitrogen == true",
                                         fluidRow(column(2, 
@@ -118,46 +120,43 @@ vat <- function(obj, anim){
                                                  column(5,
                                                         plotOutput("totalbio", height = "300px"))))),
                                
-                               tabPanel("Diet Plots",
+                               tabPanel("Diet Availability",
                                         conditionalPanel(
                                           condition = "input.diet == true",
                                         fluidRow(column(3),
                                                  column(6,
                                                         wellPanel(selectInput("diet_var",
-                                                          label = "Choose an unaggregrated functional group to display",
+                                                          label = "Choose a habitat type to display",
                                                           selected = NULL,
                                                           choices = unique(obj$diet_m$Habitat)))),
                                                  column(3)),
                                         fluidRow(column(12,
                                                         plotOutput("diet_matrix", height = "500px"))))),
                                
-                               tabPanel("Aggregated Plots",
+                               tabPanel("Aggregated Summaries",
                                         conditionalPanel(
                                           condition = "input.agg == true",
-                                         fluidRow(column(4,
-                                                         wellPanel(
-                                                           selectInput("rel_var",
-                                                                       label = "Choose a relative biomass to display",
-                                                                       choices = obj$rel_names))),
+                                         fluidRow(column(4),
                                                   column(4,
                                                          wellPanel(
                                                            selectInput("ssb_var",
-                                                                       label = "Choose a SSB biomass to display",
+                                                                       label = "Functional Group",
                                                                        choices = obj$ssb_names))),
-                                                  column(4,
-                                                         wellPanel(
-                                                           selectInput("yoy_var",
-                                                                       label = "Chose a YOY biomass to display",
-                                                                       choices = obj$yoy_names))),
+                                                  column(4)),
                                                   fluidRow(column(4,
                                                                   plotOutput("rel_map", height = "300px")),
                                                            column(4,
                                                                   plotOutput("ssb_map", height = "300px")),
                                                            column(4,
-                                                                  plotOutput("yoy_map", height = "300px")))))))),
+                                                                  plotOutput("yoy_map", height = "300px"))))))),
     server = function(input, output) {
       
       # Disaggregated spatial plot
+      
+      output$fun_group_atl = renderDataTable({
+        obj$fun_group
+      })
+      
       output$map <- renderPlot({
         tmp <- obj$disagg[[input$disagg_var]]
         if(length(dim(tmp)) == 3){
@@ -187,18 +186,18 @@ vat <- function(obj, anim){
       
       # Relative biomass map
       output$rel_map <- renderPlot({
-        qplot(y = obj$rel_bio[[input$rel_var]], x = Time, data = obj$rel_bio, geom = "line") +
-          ylab("") +  theme_bw()})
+        qplot(y = obj$rel_bio[[grep(input$ssb_var, names(obj$rel_bio))]], x = Time, data = obj$rel_bio, geom = "line") +
+          ylab("") +  theme_bw() + ggtitle("Relative Biomass")}) 
       
       # SSB map
       output$ssb_map <- renderPlot({
-        qplot(y = obj$ssb[[input$ssb_var]], x = Time, data = obj$ssb, geom = "line") +
-          ylab("") +  theme_bw()}) 
+        qplot(y = obj$ssb[[grep(input$ssb_var, names(obj$ssb))]], x = Time, data = obj$ssb, geom = "line") +
+          ylab("") +  theme_bw() + ggtitle("Spawning Stock Biomass")}) 
       
       # YOY map
       output$yoy_map <- renderPlot({
-        qplot(y = obj$yoy[[input$yoy_var]], x = Time, data = obj$yoy, geom = "line") +
-          ylab("") +  theme_bw()})
+        qplot(y = obj$yoy[[grep(input$ssb_var, names(obj$yoy))]], x = Time, data = obj$yoy, geom = "line") +
+          ylab("") +  theme_bw() + ggtitle("YOY Biomass")})
       
       # Diet matrix plot
       output$diet_matrix <- renderPlot({
@@ -230,7 +229,7 @@ vat <- function(obj, anim){
         dat_tn <- obj$totalnums[grep(input$sn, obj$totalnums$.id),]
         dat_tn$V1 <- (sn$V1*5.7*20/1000000000000) * dat_tn$V1
         qplot(y = V1, x = Time, group = .id, color = .id, data = dat_tn, geom = "line") +  
-          scale_x_continuous(breaks=seq(round(min(dat_tn$Time)), round(max(dat_tn$Time)), 5)) + ylab("Total Biomass (Thousand Tons)") +  theme(legend.position="none")})
+          scale_x_continuous(breaks=seq(round(min(dat_tn$Time)), round(max(dat_tn$Time)), 5)) + ylab("Total Biomass (Thousand Tons)") +  theme(legend.position="none") + ggtitle("Total Biomass")}) 
     }
   )
 }
