@@ -49,7 +49,7 @@ animate_vat <- function(bgm, bmass, interval = .3, codes){
   map_base$x <- as.double(as.character(map_base$x))
   map_base$y <- as.double(as.character(map_base$y))
   islands <- grep("botz\t0", bgm, value = T)
-  if(is.character(islands)){
+  if(length(islands)>0){
     islands <- strsplit(islands, "[.]")
     islands <- sapply(islands,`[`, 1)
     islands <- strsplit(islands, "box")
