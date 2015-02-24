@@ -4,7 +4,7 @@
 \alias{animate_vat}
 \title{Animated Atlantis plots for vat}
 \usage{
-animate_vat(bgm, bmass, interval = 0.3, codes)
+animate_vat(bgm, bmass, interval = 0.3, codes, savedir)
 }
 \arguments{
 \item{bgm}{An Atlantis bgm file}
@@ -14,6 +14,8 @@ animate_vat(bgm, bmass, interval = 0.3, codes)
 \item{interval}{Speed of animination (unit in seconds)}
 
 \item{codes}{Vector of containing all the Atlantis functional group codes needed to create GIFs}
+
+\item{savedir}{Where should the gifs be saved?}
 }
 \description{
 Create animated Atlantis plots of all the tracers
@@ -26,6 +28,7 @@ This function will create GIFs of all Atlantis tracers by default. WARNING: This
 bgm <- "/path/to/atlantis.bgm"
 bmass <- "/path/to/outputBoxBiomass.txt"
 codes <- read.csv("functionalGroup.csv", header = T, stringsAsFactors = FALSE)
+savedir <- "/home/chris/"
 vat_animate(bgm = bgm, bmass = bmass, codes = codes$Code)
 }
 }

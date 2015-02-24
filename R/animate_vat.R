@@ -8,6 +8,7 @@
 #' @param bmass BoxBiomass.txt file from Atlantis out 
 #' @param interval Speed of animination (unit in seconds)
 #' @param codes Vector of containing all the Atlantis functional group codes needed to create GIFs
+#' @param savedir Where should the gifs be saved?
 #' @export
 #' @seealso \code{\link{create_vat}}, \code{\link{vat}}
 #' @examples
@@ -15,10 +16,14 @@
 #' bgm <- "/path/to/atlantis.bgm"
 #' bmass <- "/path/to/outputBoxBiomass.txt"
 #' codes <- read.csv("functionalGroup.csv", header = T, stringsAsFactors = FALSE)
+#' savedir <- "/home/chris/"
 #' vat_animate(bgm = bgm, bmass = bmass, codes = codes$Code)
 #' }
 #' 
-animate_vat <- function(bgm, bmass, interval = .3, codes){
+animate_vat <- function(bgm, bmass, interval = .3, codes, savedir){
+  if(exists("savedir")  == FALSE)
+    savedir <- getwd()
+  
   require("animation")
   require("gridExtra")
   require("ggplot2")
@@ -91,7 +96,7 @@ animate_vat <- function(bgm, bmass, interval = .3, codes){
           theme_bw() + xlab("Longitude") + ylab("Latitude") +
           scale_fill_gradient2(high = "cornflowerblue", low = "white")  + guides(fill = guide_legend(keywidth = 2, keyheight = 1, override.aes = list(colour = NULL))) + theme(legend.title=element_blank(), legend.position = "bottom") 
         grid.arrange(plot2, plot1, nrow=2, ncol=1, heights = c(5.5, .5))
-   }}, movie.name = paste(j,"-aggbio.gif", sep = ""))
+   }}, movie.name = paste(savedir,j,"-aggbio.gif", sep = ""))
   }
 }
 
