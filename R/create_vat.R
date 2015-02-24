@@ -5,16 +5,17 @@
 #'  @param outdir Path to Atlantis output directory
 #'  @param fgfile Functional group 
 #'  @param ncout Name of output ncdf4 file excluding nc suffix (i.e. name given after -o flag)
-#'  @param starttime Year that the model starts
+#'  @param startyear Year that the model starts
 #'  @export
 #'  @seealso \code{\link{vat}}, \code{\link{animate_vat}}
 #'  @examples
 #'  \dontrun{
-#' obj <- create_vat(outdir = "/atlantis/output_dir/", fgfile = "/atlantis/functionalgroup.csv", ncout = "output_atlantis", starttime = 1948)
+#' obj <- create_vat(outdir = "/atlantis/output_dir/", fgfile = "/atlantis/functionalgroup.csv", ncout = "output_atlantis", startyear = 1948)
 #'  }
-create_vat <- function(outdir, fgfile, ncout){
+create_vat <- function(outdir, fgfile, ncout, startyear){
   cat("### ------------ Reading in data                                         ------------ ###\n")
   nc_out <- ncdf4::nc_open(paste(outdir, ncout, ".nc", sep = ""))
+  prod_out <- ncdf4::nc_open(paste(outdir, ncout, "PROD.nc", sep = ""))
   bio_agg <- read.table(paste(outdir, ncout, "BoxBiomass.txt", sep = ""), header = T)
   ssb <- read.table(paste(outdir, ncout, "SSB.txt", sep = ""), header = TRUE)
   yoy <- read.table(paste(outdir, ncout, "YOY.txt", sep = ""), header = TRUE)
@@ -26,12 +27,24 @@ create_vat <- function(outdir, fgfile, ncout){
   fun_group$isFished <- ifelse(fun_group$isFished == 1, "Yes", "No")
   fun_group$isAssessed <- ifelse(fun_group$isAssessed == 1, "Yes", "No")
   
+  # Subset vertebrates
+  rs_names <- fun_group[fun_group$InvertType %in% c("FISH", "MAMMAL", "SHARK", "BIRD"), "Name"]
+  
+  # Subset invertebrates
+  invert_names <-fun_group[!(fun_group$InvertType %in% c("FISH", "MAMMAL", "SHARK", "BIRD")),]
+  
+  colnames(ssb) <- c("Time", rs_names)
+  colnames(yoy) <- c("Time", rs_names)
+  
+  colnames(rel_bio) <- c("Time", fun_group$Name, "DIN")
+  rel_bio$Time <- startyear + rel_bio$Time/365
+  ssb$Time <- startyear + ssb$Time/365
+  yoy$Time <- startyear + yoy$Time/365
   
   cat("### ------------ Creating dynamic labels for vat                         ------------ ###\n")
   bioagg_names <- colnames(bio_agg)[c(-1,-2)]
   ssb_names <- colnames(ssb)[-1]
   yoy_names <- colnames(yoy)[-1]
-  rel_names <- colnames(rel_bio)[-1]
   max_tracer <- nc_out$nvars
   max_layers <- length(nc_out$dim$z$vals)
   max_time <- length(nc_out$dim$t$vals)
@@ -88,6 +101,35 @@ create_vat <- function(outdir, fgfile, ncout){
   }
   names(vars) <- tot_num
   
+  cat("### ------------ Setting up data for production output                   ------------ ###\n")
+  # Create the production output
+  prod_names <- names(prod_out$var)
+  t <- prod_out$dim$t$vals
+  time <- t/60/60/24/365
+  time <- startyear + time
+  b <- prod_out$dim$b$vals
+  z <- prod_out$dim$z$vals
+  
+  # Seperate the vertebrate and invertebrate groups
+  vert_group <- unique(grep(paste(rs_names, collapse ="|"), prod_names, value = TRUE))
+  invert_group <- unique(grep(paste(invert_names$Name, collapse ="|"), prod_names, value = TRUE))
+  
+  # Read in the data and put it into long format
+  invert_all <- list()
+  for(i in invert_group){
+    invert_all[[i]] <- ncvar_get(prod_out, i)
+  }
+  invert_all <- ldply(invert_all, colSums)
+  colnames(invert_all) <- c("id", time)
+  invert_l <- melt(invert_all, id.vars = "id")  
+  
+  vert_all <- list()
+  for(i in vert_group){
+    vert_all[[i]] <- ncvar_get(prod_out, i)
+  }
+  vert_all <- ldply(vert_all, colSums)
+  colnames(vert_all) <- c("id", time)
+  vert_l <- melt(vert_all, id.vars = "id")
   
   cat("### ------------ Setting up aggregated diagnostic plots                  ------------ ###\n")
   cat("### ------------ This part takes a while. Better grab a Snickers.        ------------ ###\n")
@@ -125,15 +167,15 @@ create_vat <- function(outdir, fgfile, ncout){
   totalnums <- plyr::ldply(vars, agg)
   
   structN$.id <- factor(structN$.id, levels = unique(structN$.id))
-  structN$Time <- as.numeric(as.character(structN$X1))/12 + starttime
+  structN$Time <- as.numeric(as.character(structN$X1))/12 + startyear
   
   reserveN$.id <- factor(reserveN$.id, levels = unique(reserveN$.id))
-  reserveN$Time <- as.numeric(as.character(reserveN$X1))/12 + starttime
+  reserveN$Time <- as.numeric(as.character(reserveN$X1))/12 + startyear
   
   totalnums$.id <- factor(totalnums$.id, levels = unique(totalnums$.id))
-  totalnums$Time <- as.numeric(as.character(totalnums$X1))/12 + starttime
+  totalnums$Time <- as.numeric(as.character(totalnums$X1))/12 + startyear
   
-  output <- list(disagg = vars,var_names = tot_num, max_layers = max_layers, max_time = max_time, bioagg_names = bioagg_names, rs_names = rs_names, diet_m = diet_m, rel_names = rel_names, ssb_names = ssb_names, yoy_names = yoy_names, islands = islands, rel_bio = rel_bio, ssb = ssb, yoy = yoy, structN = structN, reserveN = reserveN, totalnums = totalnums, map_base = map_base, numboxes = numboxes, fun_group = fun_group, invert_names = invert_names)
+  output <- list(disagg = vars,var_names = tot_num, max_layers = max_layers, max_time = max_time, bioagg_names = bioagg_names, rs_names = rs_names, diet_m = diet_m, ssb_names = ssb_names, yoy_names = yoy_names, islands = islands, rel_bio = rel_bio, ssb = ssb, yoy = yoy, structN = structN, reserveN = reserveN, totalnums = totalnums, map_base = map_base, numboxes = numboxes, fun_group = fun_group, invert_names = invert_names, invert_l = invert_l, vert_l = vert_l)
   cat("### ------------ vat object created, you can now run the vat application ------------ ###\n") 
   return(output)
   class(output) <- "vat"
