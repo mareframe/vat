@@ -5,11 +5,12 @@
 #'  @param outdir Path to Atlantis output directory
 #'  @param fgfile Functional group 
 #'  @param ncout Name of output ncdf4 file excluding nc suffix (i.e. name given after -o flag)
+#'  @param starttime Year that the model starts
 #'  @export
 #'  @seealso \code{\link{vat}}, \code{\link{animate_vat}}
 #'  @examples
 #'  \dontrun{
-#' obj <- create_vat(outdir = "/atlantis/output_dir/", fgfile = "/atlantis/functionalgroup.csv", ncout = "output_atlantis")
+#' obj <- create_vat(outdir = "/atlantis/output_dir/", fgfile = "/atlantis/functionalgroup.csv", ncout = "output_atlantis", starttime = 1948)
 #'  }
 create_vat <- function(outdir, fgfile, ncout){
   cat("### ------------ Reading in data                                         ------------ ###\n")
@@ -124,13 +125,13 @@ create_vat <- function(outdir, fgfile, ncout){
   totalnums <- plyr::ldply(vars, agg)
   
   structN$.id <- factor(structN$.id, levels = unique(structN$.id))
-  structN$Time <- as.numeric(as.character(structN$X1))/12 + 1948
+  structN$Time <- as.numeric(as.character(structN$X1))/12 + starttime
   
   reserveN$.id <- factor(reserveN$.id, levels = unique(reserveN$.id))
-  reserveN$Time <- as.numeric(as.character(reserveN$X1))/12 + 1948
+  reserveN$Time <- as.numeric(as.character(reserveN$X1))/12 + starttime
   
   totalnums$.id <- factor(totalnums$.id, levels = unique(totalnums$.id))
-  totalnums$Time <- as.numeric(as.character(totalnums$X1))/12 + 1948
+  totalnums$Time <- as.numeric(as.character(totalnums$X1))/12 + starttime
   
   output <- list(disagg = vars,var_names = tot_num, max_layers = max_layers, max_time = max_time, bioagg_names = bioagg_names, rs_names = rs_names, diet_m = diet_m, rel_names = rel_names, ssb_names = ssb_names, yoy_names = yoy_names, islands = islands, rel_bio = rel_bio, ssb = ssb, yoy = yoy, structN = structN, reserveN = reserveN, totalnums = totalnums, map_base = map_base, numboxes = numboxes, fun_group = fun_group, invert_names = invert_names)
   cat("### ------------ vat object created, you can now run the vat application ------------ ###\n") 
