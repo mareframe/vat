@@ -23,7 +23,12 @@ create_vat <- function(outdir, fgfile, ncout, startyear){
   biomass <- read.table(paste(outdir, ncout, "BiomIndx.txt", sep = ""), header = T)
   rel_bio <- biomass[,c(1, grep("Rel",colnames(biomass)))]
   diet <- read.table(paste(outdir, ncout, "DietCheck.txt", sep = ""), header = TRUE, stringsAsFactors = TRUE)
-  fun_group <- read.csv(fgfile, header = T, stringsAsFactors = FALSE)[, c(1,4,5,6, 9,16, 12)]
+  
+  fun_group <- read.csv(fgfile, header = T, stringsAsFactors = FALSE)[, c(1,3, 4,5,6, 9,16, 12)]
+  
+  ## Drop those functional groups that are not turned on
+  fun_group <- fun_group[fun_group$IsTurnedOn == 1, c(1,3:8)]
+  
   fun_group$isFished <- ifelse(fun_group$isFished == 1, "Yes", "No")
   fun_group$isAssessed <- ifelse(fun_group$isAssessed == 1, "Yes", "No")
   
