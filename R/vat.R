@@ -218,6 +218,11 @@ vat <- function(obj, anim){
         qplot(y = obj$rel_bio[[match(input$ssb_var, names(obj$rel_bio))]], x = Time, data = obj$rel_bio, geom = "line") +
           ylab("") +  theme_bw() + ggtitle("Relative Biomass")}) 
       
+      # Total biomass map
+      output$tot_map <- renderPlot({
+        qplot(y = obj$tot_bio[[match(input$ssb_var, names(obj$tot_bio))]], x = Time, data = tot$rel_bio, geom = "line") +
+          ylab("") +  theme_bw() + ggtitle("Total Biomass")}) 
+      
       # SSB map
       output$ssb_map <- renderPlot({
         qplot(y = obj$ssb[[match(input$ssb_var, names(obj$ssb))]], x = Time, data = obj$ssb, geom = "line") +
