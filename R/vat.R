@@ -116,13 +116,15 @@ vat <- function(obj, anim){
                                                    column(4,wellPanel(selectInput("sn",
                                                                               label = "Functional Group",
                                                                               choices = obj$rs_names))),
-                                          fluidRow(column(6,
+                                          fluidRow(column(1),
+                                                   column(5,
                                                         plotOutput("structn", height = "300px")),
-                                                 column(6,
+                                                 column(5,
                                                         plotOutput("reserven", height = "300px"))),
-                                        fluidRow(column(6,
+                                        fluidRow(column(1),
+                                                 column(5,
                                                         plotOutput("totalnum", height = "300px")),
-                                                 column(6,
+                                                 column(5,
                                                         plotOutput("totalbio", height = "300px")))))),
                                
                                tabPanel("Diet Availability",
@@ -148,13 +150,15 @@ vat <- function(obj, anim){
                                                                        label = "Functional Group",
                                                                        choices = obj$rs_names))),
                                                   column(4)),
-                                                  fluidRow(column(6,
+                                                  fluidRow(column(1),
+                                                           column(5,
                                                                   plotOutput("rel_map", height = "300px")),
-                                                           column(6,
+                                                           column(5,
                                                                   plotOutput("tot_map", height = "300px"))),
-                                                  fluidRow(column(6,
+                                                  fluidRow(column(1),
+                                                           column(5,
                                                                   plotOutput("ssb_map", height = "300px")),
-                                                           column(6,
+                                                           column(5,
                                                                   plotOutput("yoy_map", height = "300px"))))),
                                
                                tabPanel("Non-vertbrate Summaries",
@@ -215,7 +219,7 @@ vat <- function(obj, anim){
       
       # Total biomass map
       output$tot_map <- renderPlot({
-        qplot(y = obj$tot_bio[[match(input$ssb_var, names(obj$tot_bio))]], x = Time, data = tot$rel_bio, geom = "line") +
+        qplot(y = obj$tot_bio[[match(input$ssb_var, names(obj$tot_bio))]], x = Time, data = obj$tot_bio, geom = "line") +
           ylab("") +  theme_bw() + ggtitle("Total Biomass")}) 
       
       # SSB map
