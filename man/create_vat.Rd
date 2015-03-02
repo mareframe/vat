@@ -4,7 +4,7 @@
 \alias{create_vat}
 \title{Create a visualising Atlantis toolbox object}
 \usage{
-create_vat(outdir, fgfile, ncout)
+create_vat(outdir, fgfile, ncout, startyear, toutinc)
 }
 \arguments{
 \item{outdir}{Path to Atlantis output directory}
@@ -13,14 +13,16 @@ create_vat(outdir, fgfile, ncout)
 
 \item{ncout}{Name of output ncdf4 file excluding nc suffix (i.e. name given after -o flag)}
 
-\item{starttime}{Year that the model starts}
+\item{startyear}{Year that the model starts}
+
+\item{toutinc}{Periodicity of writing output (in days)}
 }
 \description{
 This function creates a visualising Atlantis toolbox object which should be fed to the \code{vat} function. This object can be quite and this function may take a little while depending on how long you have run Atlantis for and how big your model is.
 }
 \examples{
 \dontrun{
-obj <- create_vat(outdir = "/atlantis/output_dir/", fgfile = "/atlantis/functionalgroup.csv", ncout = "output_atlantis", starttime = 1948)
+obj <- create_vat(outdir = "/atlantis/output_dir/", fgfile = "/atlantis/functionalgroup.csv", ncout = "output_atlantis", startyear = 1948, toutinc = 30)
  }
 }
 \seealso{

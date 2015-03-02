@@ -149,12 +149,18 @@ vat <- function(obj, anim){
                                                                        label = "Functional Group",
                                                                        choices = obj$rs_names))),
                                                   column(4)),
-                                                  fluidRow(column(4,
+                                                  fluidRow(column(1),
+                                                           column(5,
                                                                   plotOutput("rel_map", height = "300px")),
-                                                           column(4,
+                                                           column(5,
+                                                                  plotOutput("tot_map", height = "300px")),
+                                                           column(1)),
+                                                  fluidRow(column(1),
+                                                           column(5,
                                                                   plotOutput("ssb_map", height = "300px")),
-                                                           column(4,
-                                                                  plotOutput("yoy_map", height = "300px"))))),
+                                                           column(5,
+                                                                  plotOutput("yoy_map", height = "300px")),
+                                                           column(1)))),
                                
                                tabPanel("Non-vertbrate Summaries",
                                         conditionalPanel(
@@ -209,17 +215,17 @@ vat <- function(obj, anim){
       
       # Relative biomass map
       output$rel_map <- renderPlot({
-        qplot(y = obj$rel_bio[[grep(input$ssb_var, names(obj$rel_bio))]], x = Time, data = obj$rel_bio, geom = "line") +
+        qplot(y = obj$rel_bio[[match(input$ssb_var, names(obj$rel_bio))]], x = Time, data = obj$rel_bio, geom = "line") +
           ylab("") +  theme_bw() + ggtitle("Relative Biomass")}) 
       
       # SSB map
       output$ssb_map <- renderPlot({
-        qplot(y = obj$ssb[[grep(input$ssb_var, names(obj$ssb))]], x = Time, data = obj$ssb, geom = "line") +
+        qplot(y = obj$ssb[[match(input$ssb_var, names(obj$ssb))]], x = Time, data = obj$ssb, geom = "line") +
           ylab("") +  theme_bw() + ggtitle("Spawning Stock Biomass")}) 
       
       # YOY map
       output$yoy_map <- renderPlot({
-        qplot(y = obj$yoy[[grep(input$ssb_var, names(obj$yoy))]], x = Time, data = obj$yoy, geom = "line") +
+        qplot(y = obj$yoy[[match(input$ssb_var, names(obj$yoy))]], x = Time, data = obj$yoy, geom = "line") +
           ylab("") +  theme_bw() + ggtitle("YOY Biomass")})
       
       # Diet matrix plot
@@ -244,19 +250,19 @@ vat <- function(obj, anim){
       output$totalnum <- renderPlot({
         dat_totn <- obj$totalnums[grep(input$sn, obj$totalnums$.id),]
         qplot(y = V1, x = Time, group = .id, color = .id, data = dat_totn, geom = "line") +  
-          scale_x_continuous(breaks=seq(round(min(dat_totn$Time)), round(max(dat_totn$Time)), 5)) + ylab("Total Numbers/Nitrogen (mg N)") +  theme(legend.position="none")})
+          scale_x_continuous(breaks=seq(round(min(dat_totn$Time)), round(max(dat_totn$Time)), 5)) + ylab("Total Numbers") +  theme(legend.position="none")})
       
       # Total Biomass
       output$totalbio <- renderPlot({
         sn <- obj$structN[grep(input$sn, obj$structN$.id),]
         dat_tn <- obj$totalnums[grep(input$sn, obj$totalnums$.id),]
-        dat_tn$V1 <- (sn$V1*5.7*20/1000000000000) * dat_tn$V1
+        dat_tn$V1 <- (3.65*sn$V1*5.7*20/1000000000) * dat_tn$V1
         qplot(y = V1, x = Time, group = .id, color = .id, data = dat_tn, geom = "line") +  
-          scale_x_continuous(breaks=seq(round(min(dat_tn$Time)), round(max(dat_tn$Time)), 5)) + ylab("Total Biomass (Thousand Tons)") +  theme(legend.position="none")}) 
+          scale_x_continuous(breaks=seq(round(min(dat_tn$Time)), round(max(dat_tn$Time)), 5)) + ylab("Total Biomass (Tons)") +  theme(legend.position="none")}) 
       
       # Invertebrate plots
       output$invertbio <- renderPlot({
-        invert_bio <- obj$rel_bio[,c(1,grep(input$invert_var, names(obj$rel_bio)))]
+        invert_bio <- obj$rel_bio[,c(1,match(input$invert_var, names(obj$rel_bio)))]
         colnames(invert_bio) <- c("Time", "Biomass")
         qplot(y = Biomass, x = Time, data = invert_bio, geom = "line") +
           ylab("") +  theme_bw() + ggtitle("Relative Biomass")})
