@@ -115,7 +115,7 @@ vat <- function(obj, anim){
                                           fluidRow(column(4),
                                                    column(4,wellPanel(selectInput("sn",
                                                                               label = "Functional Group",
-                                                                              choices = obj$rs_names))),
+                                                                              choices = obj$rs_names)))),
                                           fluidRow(column(1),
                                                    column(5,
                                                         plotOutput("structn", height = "300px")),
