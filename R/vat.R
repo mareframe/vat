@@ -125,7 +125,7 @@ vat <- function(obj, anim){
                                                  column(5,
                                                         plotOutput("totalnum", height = "300px")),
                                                  column(5,
-                                                        plotOutput("totalbio", height = "300px")))))),
+                                                        plotOutput("totalbio", height = "300px"))))),
                                
                                tabPanel("Diet Availability",
                                         conditionalPanel(
