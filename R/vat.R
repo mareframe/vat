@@ -171,11 +171,15 @@ vat <- function(obj, anim){
                                                                         label = "Functional Group",
                                                                         choices = obj$invert_names$Name))),
                                                    column(4)),
-                                          fluidRow(column(4,
-                                                          plotOutput("invertbio", height = "300px")),
-                                                   column(4,
+                                          fluidRow(column(1),
+                                                   column(5,
+                                                          plotOutput("invert_rbio", height = "300px")),
+                                                   column(5,
+                                                          plotOutput("invert_tbio", height = "300px"))),
+                                          fluidRow(column(1),
+                                                   column(5,
                                                           plotOutput("invertgraze", height = "300px")),
-                                                   column(4,
+                                                   column(5,
                                                           plotOutput("invertprod", height = "300px"))))))),
     server = function(input, output) {
       
@@ -264,12 +268,18 @@ vat <- function(obj, anim){
         qplot(y = V1, x = Time, group = .id, color = .id, data = dat_tn, geom = "line") +  
           scale_x_continuous(breaks=seq(round(min(dat_tn$Time)), round(max(dat_tn$Time)), 5)) + ylab("Total Biomass (Tons)") +  theme(legend.position="none")}) 
       
-      # Invertebrate plots
-      output$invertbio <- renderPlot({
-        invert_bio <- obj$rel_bio[,c(1,match(input$invert_var, names(obj$rel_bio)))]
-        colnames(invert_bio) <- c("Time", "Biomass")
-        qplot(y = Biomass, x = Time, data = invert_bio, geom = "line") +
+      # Invertebrate rel plots
+      output$invert_rbio <- renderPlot({
+        invert_rbio <- obj$rel_bio[,c(1,match(input$invert_var, names(obj$rel_bio)))]
+        colnames(invert_rbio) <- c("Time", "Biomass")
+        qplot(y = Biomass, x = Time, data = invert_rbio, geom = "line") +
           ylab("") +  theme_bw() + ggtitle("Relative Biomass")})
+      
+      output$invert_tbio <- renderPlot({
+        invert_tbio <- obj$tot_bio[,c(1,match(input$invert_var, names(obj$rel_bio)))]
+        colnames(invert_tbio) <- c("Time", "Biomass")
+        qplot(y = Biomass, x = Time, data = invert_tbio, geom = "line") +
+          ylab("") +  theme_bw() + ggtitle("Total Biomass")})
       
       output$invertgraze <- renderPlot({
         graze_dat <- obj$invert_l[grep(input$invert_var, obj$invert_l$id),]
