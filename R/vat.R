@@ -18,6 +18,7 @@ vat <- function(obj, anim){
   require("ggplot2")
   require("markdown")
   require("scales")
+  require("grid")
   shinyApp(
     ui = navbarPage("vat",
                     # Starting "Welcome" Tab"
@@ -118,14 +119,17 @@ vat <- function(obj, anim){
                                                                               choices = obj$rs_names)))),
                                           fluidRow(column(1),
                                                    column(5,
-                                                        plotOutput("structn", height = "300px")),
+                                                        plotOutput("structn", height = "450px")),
                                                  column(5,
-                                                        plotOutput("reserven", height = "300px"))),
+                                                        plotOutput("reserven", height = "450px"))),
                                         fluidRow(column(1),
                                                  column(5,
-                                                        plotOutput("totalnum", height = "300px")),
+                                                        plotOutput("totalprop", height = "450px")),
                                                  column(5,
-                                                        plotOutput("totalbio", height = "300px"))))),
+                                                        plotOutput("totalyrnum", height = "450px"))),
+                                        fluidRow(column(1),
+                                                 column(5,
+                                                        plotOutput("totalbio", height = "450px"))))),
                                
                                tabPanel("Diet Availability",
                                         conditionalPanel(
@@ -244,29 +248,40 @@ vat <- function(obj, anim){
       
       # Structural nitrogen
       output$structn <- renderPlot({
-        dat_sn <- obj$structN[grep(input$sn, obj$structN$.id),]
-        qplot(y = V1, x = Time, group = .id, color = .id, data = dat_sn, geom = "line") +  
-          scale_x_continuous(breaks=seq(round(min(dat_sn$Time)), round(max(dat_sn$Time)), 5)) + ylab("Structural Nitrogen (mg N)") +  theme(legend.position="none")})
+        sn_ids <- paste(input$sn, 1:10, "_StructN", sep = "")
+        dat_sn <- subset(obj$structN, .id %in% sn_ids)
+        ggplot(data = dat_sn, aes(y = V1, x = Time)) + geom_line(aes(group = .id, color = .id), size = 1) +  
+          scale_x_continuous(breaks=seq(round(min(dat_sn$Time)), round(max(dat_sn$Time)), 5)) + ylab("Structural Nitrogen (mg N)")  + scale_color_brewer(name = "Ageclass", type = "div",palette = 5, labels = 1:10)  + theme_bw() + guides(fill = guide_legend(override.aes = list(colour = NULL))) + theme(panel.background=element_blank(), legend.key = element_rect(), legend.background = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), panel.background = element_blank(), legend.key = element_rect(colour = NA),axis.line = element_line(size = .2))})
       
       # Reserve nitrogen
       output$reserven <- renderPlot({
-        dat_rn <- obj$reserveN[grep(input$sn, obj$reserveN$.id),]
-        qplot(y = V1, x = Time, group = .id, color = .id, data = dat_rn, geom = "line") +  
-          scale_x_continuous(breaks=seq(round(min(dat_rn$Time)), round(max(dat_rn$Time)), 5)) + ylab("Reserve Nitrogen (mg N)") +  theme(legend.position="none")})
-      
-      # Total Nums
-      output$totalnum <- renderPlot({
-        dat_totn <- obj$totalnums[grep(input$sn, obj$totalnums$.id),]
-        qplot(y = V1, x = Time, group = .id, color = .id, data = dat_totn, geom = "line") +  
-          scale_x_continuous(breaks=seq(round(min(dat_totn$Time)), round(max(dat_totn$Time)), 5)) + ylab("Total Numbers") +  theme(legend.position="none")})
+        rn_ids <- paste(input$sn, 1:10, "_ResN", sep = "")
+        dat_rn <- subset(obj$reserve, .id %in% rn_ids)
+        ggplot(data = dat_rn, aes(y = V1, x = Time)) + geom_line(aes(group = .id, color = .id), size = 1) +  
+          scale_x_continuous(breaks=seq(round(min(dat_rn$Time)), round(max(dat_rn$Time)), 5)) + ylab("Reserve Nitrogen (mg N)")  + scale_color_brewer(name = "Ageclass",type = "div",palette = 5, labels = 1:10) + theme_bw() + guides(fill = guide_legend(override.aes = list(colour = NULL)))+ theme(panel.background=element_blank(), legend.key = element_rect(), legend.background = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), panel.background = element_blank(), legend.key = element_rect(colour = NA),axis.line = element_line(size = .2))})
       
       # Total Biomass
       output$totalbio <- renderPlot({
-        sn <- obj$structN[grep(input$sn, obj$structN$.id),]
-        dat_tn <- obj$totalnums[grep(input$sn, obj$totalnums$.id),]
+        sn_ids <- paste(input$sn, 1:10, "_StructN", sep = "")
+        sn <- subset(obj$structN, .id %in% sn_ids)
+        totn_ids <- paste(input$sn, 1:10, "_Nums", sep = "")
+        dat_tn <- subset(obj$totalnums, .id %in% totn_ids)
         dat_tn$V1 <- (3.65*sn$V1*5.7*20/1000000000) * dat_tn$V1
-        qplot(y = V1, x = Time, group = .id, color = .id, data = dat_tn, geom = "line") +  
-          scale_x_continuous(breaks=seq(round(min(dat_tn$Time)), round(max(dat_tn$Time)), 5)) + ylab("Total Biomass (Tons)") +  theme(legend.position="none")}) 
+        ggplot(data = dat_tn, aes(y = V1, x = Time)) + geom_line(aes(group = .id, color = .id), size = 1) +  
+          scale_x_continuous(breaks=seq(round(min(dat_tn$Time)), round(max(dat_tn$Time)), 5)) + ylab("Total Biomass (Tons)") + scale_color_brewer(name = "Ageclass", type = "div",palette = 5, labels = 1:10) + theme_bw()  + guides(fill = guide_legend(override.aes = list(colour = NULL)))+ theme(panel.background=element_blank(), legend.key = element_rect(), legend.background = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), panel.background = element_blank(), legend.key = element_rect(colour = NA),axis.line = element_line(size = .2, color = "black")) }) 
+      
+      # Total Prop
+    output$totalprop <- renderPlot({
+      totn_ids <- paste(input$sn, 1:10, "_Nums", sep = "")
+      dat_totn <- subset(obj$totalnums, .id %in% totn_ids)
+      ggplot(dat_totn, aes(y = V1, x = Time)) + geom_density(stat = "identity", aes(fill = .id), position = "fill", binwidth = 100, alpha = .75, lwd = .2)  + scale_fill_brewer(name = "Ageclass",type = "div",palette = 5, labels = 1:10 ) + ylab("Total Numbers")  + theme_bw()+  scale_x_continuous(breaks=seq(round(min(dat_totn$Time)), round(max(dat_totn$Time)), 5))  + guides(fill = guide_legend(override.aes = list(colour = NULL))) + theme(panel.background=element_blank(), legend.background = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), panel.background = element_blank(), axis.line = element_line(size = .2))})
+    
+    # Total Number
+    output$totalyrnum <- renderPlot({
+      totn_ids <- paste(input$sn, 1:10, "_Nums", sep = "")
+      dat_totn <- subset(obj$totalnums, .id %in% totn_ids)
+      ggplot(dat_totn, aes(y = V1, x = Time)) + geom_density(stat = "identity", aes(fill = .id), binwidth = 100, alpha = .75, lwd = .2)  + scale_fill_brewer(name = "Ageclass",type = "div",palette = 5, labels = 1:10) + ylab("Proportion of total numbers")  + theme_bw()+  scale_x_continuous(breaks=seq(round(min(dat_totn$Time)), round(max(dat_totn$Time)), 5))  + guides(fill = guide_legend(override.aes = list(colour = NULL))) + theme(panel.background=element_blank(), legend.key = element_rect(), legend.background = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), panel.background = element_blank(), axis.line = element_line(size = .2))})
+    
       
       # Invertebrate rel plots
       output$invert_rbio <- renderPlot({
