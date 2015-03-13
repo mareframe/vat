@@ -3,7 +3,8 @@
 #' This function creates a visualising Atlantis toolbox object which should be fed to the \code{vat} function. This object can be quite and this function may take a little while depending on how long you have run Atlantis for and how big your model is.
 #' 
 #'  @param outdir Path to Atlantis output directory
-#'  @param fgfile Functional group 
+#'  @param fgfile Functional group file
+#'  @param biolprm Biology parameter file 
 #'  @param ncout Name of output ncdf4 file excluding nc suffix (i.e. name given after -o flag)
 #'  @param startyear Year that the model starts
 #'  @param toutinc Periodicity of writing output (in days)
@@ -11,7 +12,7 @@
 #'  @seealso \code{\link{vat}}, \code{\link{animate_vat}}
 #'  @examples
 #'  \dontrun{
-#' obj <- create_vat(outdir = "/atlantis/output_dir/", fgfile = "/atlantis/functionalgroup.csv", ncout = "output_atlantis", startyear = 1948, toutinc = 30)
+#' obj <- create_vat(outdir = "/atlantis/output_dir/", fgfile = "/atlantis/functionalgroup.csv", biolprm = "/atlantis/biol.prm", ncout = "output_atlantis", startyear = 1948, toutinc = 30)
 #'  }
 create_vat <- function(outdir, fgfile, ncout, startyear, toutinc){
   cat("### ------------ Reading in data                                         ------------ ###\n")
@@ -25,6 +26,21 @@ create_vat <- function(outdir, fgfile, ncout, startyear, toutinc){
   rel_bio <- biomass[,c(1, grep("Rel",colnames(biomass)))]
   tot_bio <- biomass[,c(1:(grep("Rel",colnames(biomass))[1]-1))]
   diet <- read.table(paste(outdir, ncout, "DietCheck.txt", sep = ""), header = TRUE, stringsAsFactors = TRUE)
+  biolprm <- readLines(biolprm)
+  
+  # Extract a and b parameters from biology parameter
+  biol_a <- grep("li_a", biolprm, value = TRUE)
+  biol_b <- grep("li_b", biolprm, value = TRUE)
+  a_split <- strsplit(biol_a," ")
+  a_param <- sapply(a_split,`[`,2)
+  a_group <- sapply(a_split,`[`,1)
+  b_split <- strsplit(biol_b," ")
+  b_param <- sapply(b_split,`[`,2)
+  b_group <- sapply(b_split,`[`,1)
+  ab_params <- data.frame(a_name = a_group, a = as.numeric(as.character(a_param)),
+                          b_name = b_group, b = as.numeric(as.character(b_param)))
+  
+  
   
   fun_group <- read.csv(fgfile, header = T, stringsAsFactors = FALSE)[, c(1,3, 4,5,6, 9,16, 12)]
   
@@ -192,7 +208,7 @@ create_vat <- function(outdir, fgfile, ncout, startyear, toutinc){
   totalnums$Time <- as.numeric(as.character(totalnums$X1)) * toutinc / 365 + startyear
   #totalnums$Time <- as.numeric(as.character(totalnums$X1))/12 + startyear
   
-  output <- list(disagg = vars,var_names = tot_num, max_layers = max_layers, max_time = max_time, bioagg_names = bioagg_names, rs_names = rs_names, diet_m = diet_m, ssb_names = ssb_names, yoy_names = yoy_names, islands = islands, rel_bio = rel_bio, tot_bio = tot_bio, ssb = ssb, yoy = yoy, structN = structN, reserveN = reserveN, totalnums = totalnums, map_base = map_base, numboxes = numboxes, fun_group = fun_group, invert_names = invert_names, invert_l = invert_l, vert_l = vert_l)
+  output <- list(disagg = vars,var_names = tot_num, max_layers = max_layers, max_time = max_time, bioagg_names = bioagg_names, rs_names = rs_names, diet_m = diet_m, ssb_names = ssb_names, yoy_names = yoy_names, islands = islands, rel_bio = rel_bio, tot_bio = tot_bio, ssb = ssb, yoy = yoy, structN = structN, reserveN = reserveN, totalnums = totalnums, map_base = map_base, numboxes = numboxes, fun_group = fun_group, invert_names = invert_names, invert_l = invert_l, vert_l = vert_l, ab_params = ab_params)
   cat("### ------------ vat object created, you can now run the vat application ------------ ###\n") 
   return(output)
   class(output) <- "vat"

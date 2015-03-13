@@ -126,7 +126,7 @@ vat <- function(obj, anim){
                                                  column(5,
                                                         plotOutput("totalprop", height = "450px")),
                                                  column(5,
-                                                        plotOutput("totalyrnum", height = "450px"))),
+                                                        plotOutput("lw_plot", height = "450px"))),
                                         fluidRow(column(1),
                                                  column(5,
                                                         plotOutput("totalbio", height = "450px"))))),
@@ -267,8 +267,7 @@ vat <- function(obj, anim){
         totn_ids <- paste(input$sn, 1:10, "_Nums", sep = "")
         dat_tn <- subset(obj$totalnums, .id %in% totn_ids)
         dat_tn$V1 <- (3.65*sn$V1*5.7*20/1000000000) * dat_tn$V1
-        ggplot(data = dat_tn, aes(y = V1, x = Time)) + geom_line(aes(group = .id, color = .id), size = 1) +  
-          scale_x_continuous(breaks=seq(round(min(dat_tn$Time)), round(max(dat_tn$Time)), 5)) + ylab("Total Biomass (Tons)") + scale_color_brewer(name = "Ageclass", type = "div",palette = 5, labels = 1:10) + theme_bw()  + guides(fill = guide_legend(override.aes = list(colour = NULL)))+ theme(panel.background=element_blank(), legend.key = element_rect(), legend.background = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), panel.background = element_blank(), legend.key = element_rect(colour = NA),axis.line = element_line(size = .2, color = "black")) }) 
+        ggplot(data = dat_tn, aes(y = V1, x = Time)) + geom_bar(stat = "identity", aes(fill = .id))  + scale_x_continuous(breaks=seq(round(min(dat_tn$Time)), round(max(dat_tn$Time)), 5)) + ylab("Total Biomass (Tons)") + scale_fill_brewer(name = "Ageclass", type = "div",palette = 5, labels = 1:10) + theme_bw()  + guides(fill = guide_legend(override.aes = list(colour = NULL)))+ theme(panel.background=element_blank(), legend.key = element_rect(), legend.background = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), panel.background = element_blank(), legend.key = element_rect(colour = NA),axis.line = element_line(size = .2, color = "black")) }) 
       
       # Total Prop
     output$totalprop <- renderPlot({
@@ -276,13 +275,25 @@ vat <- function(obj, anim){
       dat_totn <- subset(obj$totalnums, .id %in% totn_ids)
       ggplot(dat_totn, aes(y = V1, x = Time)) + geom_density(stat = "identity", aes(fill = .id), position = "fill", binwidth = 100, alpha = .75, lwd = .2)  + scale_fill_brewer(name = "Ageclass",type = "div",palette = 5, labels = 1:10 ) + ylab("Total Numbers")  + theme_bw()+  scale_x_continuous(breaks=seq(round(min(dat_totn$Time)), round(max(dat_totn$Time)), 5))  + guides(fill = guide_legend(override.aes = list(colour = NULL))) + theme(panel.background=element_blank(), legend.background = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), panel.background = element_blank(), axis.line = element_line(size = .2))})
     
-    # Total Number
-    output$totalyrnum <- renderPlot({
-      totn_ids <- paste(input$sn, 1:10, "_Nums", sep = "")
-      dat_totn <- subset(obj$totalnums, .id %in% totn_ids)
-      ggplot(dat_totn, aes(y = V1, x = Time)) + geom_density(stat = "identity", aes(fill = .id), binwidth = 100, alpha = .75, lwd = .2)  + scale_fill_brewer(name = "Ageclass",type = "div",palette = 5, labels = 1:10) + ylab("Proportion of total numbers")  + theme_bw()+  scale_x_continuous(breaks=seq(round(min(dat_totn$Time)), round(max(dat_totn$Time)), 5))  + guides(fill = guide_legend(override.aes = list(colour = NULL))) + theme(panel.background=element_blank(), legend.key = element_rect(), legend.background = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), panel.background = element_blank(), axis.line = element_line(size = .2))})
-    
-      
+# Total Number
+#    output$totalyrnum <- renderPlot({
+#       totn_ids <- paste(input$sn, 1:10, "_Nums", sep = "")
+#       dat_totn <- subset(obj$totalnums, .id %in% totn_ids)
+#       ggplot(dat_totn, aes(y = V1, x = Time)) + geom_density(stat = "identity", aes(fill = .id), binwidth = 100, alpha = .75, lwd = .2)  + scale_fill_brewer(name = "Ageclass",type = "div",palette = 5, labels = 1:10) + ylab("Proportion of total numbers")  + theme_bw()+  scale_x_continuous(breaks=seq(round(min(dat_totn$Time)), round(max(dat_totn$Time)), 5))  + guides(fill = guide_legend(override.aes = list(colour = NULL))) + theme(panel.background=element_blank(), legend.key = element_rect(), legend.background = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), panel.background = element_blank(), axis.line = element_line(size = .2))})
+
+
+## Length-At-Age plot
+output$lw_plot <- renderPlot({
+  sn_ids <- paste(input$sn, 1:10, "_StructN", sep = "")
+  lw_data <- subset(obj$structN, .id %in% sn_ids)
+  lw_data$wt_grams <- 3.65*sn$V1*5.7*20/1000
+  fg_name <- obj$fun_group[obj$fun_group$Name == input$sn, 1]
+  param_a <- obj$ab_params[grep(fg_name, obj$ab_params$a_name), 2]
+  param_b <- obj$ab_params[grep(fg_name, obj$ab_params$b_name), 4]
+  lw_data$length <- (lw_data$wt_grams/param_a)^(1/param_b)
+  
+  ggplot(data = lw_data, aes(y = length, x = Time)) + geom_line(aes(group = .id, color = .id), size = 1) +  scale_x_continuous(breaks=seq(round(min(lw_data$Time)), round(max(lw_data$Time)), 5)) + ylab("Length-At-Age (cm)") + scale_color_brewer(name = "Ageclass", type = "div",palette = 5, labels = 1:10) + theme_bw()  + guides(fill = guide_legend(override.aes = list(colour = NULL)))+ theme(panel.background=element_blank(), legend.key = element_rect(), legend.background = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), panel.background = element_blank(), legend.key = element_rect(colour = NA),axis.line = element_line(size = .2, color = "black")) })
+
       # Invertebrate rel plots
       output$invert_rbio <- renderPlot({
         invert_rbio <- obj$rel_bio[,c(1,match(input$invert_var, names(obj$rel_bio)))]
