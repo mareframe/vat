@@ -4,20 +4,20 @@
 \alias{create_vat}
 \title{Create a visualising Atlantis toolbox object}
 \usage{
-create_vat(outdir, fgfile, ncout, startyear, toutinc)
+create_vat(outdir, fgfile, biolprm, ncout, startyear, toutinc)
 }
 \arguments{
 \item{outdir}{Path to Atlantis output directory}
 
 \item{fgfile}{Functional group file}
 
+\item{biolprm}{Biology parameter file}
+
 \item{ncout}{Name of output ncdf4 file excluding nc suffix (i.e. name given after -o flag)}
 
 \item{startyear}{Year that the model starts}
 
 \item{toutinc}{Periodicity of writing output (in days)}
-
-\item{biolprm}{Biology parameter file}
 }
 \description{
 This function creates a visualising Atlantis toolbox object which should be fed to the \code{vat} function. This object can be quite and this function may take a little while depending on how long you have run Atlantis for and how big your model is.

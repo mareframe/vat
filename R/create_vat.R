@@ -14,7 +14,7 @@
 #'  \dontrun{
 #' obj <- create_vat(outdir = "/atlantis/output_dir/", fgfile = "/atlantis/functionalgroup.csv", biolprm = "/atlantis/biol.prm", ncout = "output_atlantis", startyear = 1948, toutinc = 30)
 #'  }
-create_vat <- function(outdir, fgfile, ncout, startyear, toutinc){
+create_vat <- function(outdir, fgfile, biolprm, ncout, startyear, toutinc){
   cat("### ------------ Reading in data                                         ------------ ###\n")
   nc_out <- ncdf4::nc_open(paste(outdir, ncout, ".nc", sep = ""))
   prod_out <- ncdf4::nc_open(paste(outdir, ncout, "PROD.nc", sep = ""))
