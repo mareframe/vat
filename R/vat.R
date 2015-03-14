@@ -286,7 +286,7 @@ vat <- function(obj, anim){
 output$lw_plot <- renderPlot({
   sn_ids <- paste(input$sn, 1:10, "_StructN", sep = "")
   lw_data <- subset(obj$structN, .id %in% sn_ids)
-  lw_data$wt_grams <- 3.65*sn$V1*5.7*20/1000
+  lw_data$wt_grams <- 3.65*lw_data$V1*5.7*20/1000
   fg_name <- obj$fun_group[obj$fun_group$Name == input$sn, 1]
   param_a <- obj$ab_params[grep(fg_name, obj$ab_params$a_name), 2]
   param_b <- obj$ab_params[grep(fg_name, obj$ab_params$b_name), 4]
