@@ -15,6 +15,10 @@
 #' obj <- create_vat(outdir = "/atlantis/output_dir/", fgfile = "/atlantis/functionalgroup.csv", biolprm = "/atlantis/biol.prm", ncout = "output_atlantis", startyear = 1948, toutinc = 30)
 #'  }
 create_vat <- function(outdir, fgfile, biolprm, ncout, startyear, toutinc){
+  require("ncdf4")
+  require("plyr")
+  require("dplyr")
+  require("tidyr")
   cat("### ------------ Reading in data                                         ------------ ###\n")
   nc_out <- ncdf4::nc_open(paste(outdir, ncout, ".nc", sep = ""))
   prod_out <- ncdf4::nc_open(paste(outdir, ncout, "PROD.nc", sep = ""))
@@ -107,11 +111,18 @@ create_vat <- function(outdir, fgfile, biolprm, ncout, startyear, toutinc){
     islands <- sapply(islands,`[`, 2)
   }
   cat("### ------------ Setting up diet matrix plot                             ------------ ###\n")
-  diet$Predator <- factor(diet$Predator, levels = unique(diet$Predator))
-  diet <- subset(diet, Time == unique(diet$Time)[2])
-  diet$Habitat <- ifelse(diet$Habitat == "WC", "Water Column", ifelse(diet$Habitat == "SED", "Sediment", "Epibenthic"))
-  diet$Time <- NULL
-  diet_m <- reshape::melt(diet, id.vars = c("Predator", "Habitat"))
+  diet_l <- diet %>%
+    gather("Prey", "eaten", 4:ncol(diet))
+  colnames(diet_l) <- c("Time", "Predator", "Habitat", "Prey", "eaten")
+  tot_pred <- diet_l %>%
+    group_by(Predator,Prey) %>%
+    summarize(Eaten = mean(eaten))
+
+# diet$Predator <- factor(diet$Predator, levels = unique(diet$Predator))
+#  diet <- subset(diet, Time == unique(diet$Time)[2])
+#  diet$Habitat <- ifelse(diet$Habitat == "WC", "Water Column", ifelse(diet$Habitat == "SED", "Sediment", "Epibenthic"))
+#  diet$Time <- NULL
+#  diet_m <- reshape::melt(diet, id.vars = c("Predator", "Habitat"))
   
   cat("### ------------ Setting up disaggregated spatial plots                  ------------ ###\n")
   nums <- grep("Nums", var_names, value = TRUE)
@@ -146,15 +157,17 @@ create_vat <- function(outdir, fgfile, biolprm, ncout, startyear, toutinc){
   }
   invert_all <- ldply(invert_all, colSums)
   colnames(invert_all) <- c("id", time)
-  invert_l <- melt(invert_all, id.vars = "id")  
-  
+  invert_l <- invert_all %>%
+    gather("variable", "value", -id)
+
   vert_all <- list()
   for(i in vert_group){
     vert_all[[i]] <- ncvar_get(prod_out, i)
   }
   vert_all <- ldply(vert_all, colSums)
   colnames(vert_all) <- c("id", time)
-  vert_l <- melt(vert_all, id.vars = "id")
+  vert_l <- vert_all %>%
+    gather("variable", "value", -id)
   
   cat("### ------------ Setting up aggregated diagnostic plots                  ------------ ###\n")
   cat("### ------------ This part takes a while. Better grab a Snickers.        ------------ ###\n")
@@ -208,7 +221,7 @@ create_vat <- function(outdir, fgfile, biolprm, ncout, startyear, toutinc){
   totalnums$Time <- as.numeric(as.character(totalnums$X1)) * toutinc / 365 + startyear
   #totalnums$Time <- as.numeric(as.character(totalnums$X1))/12 + startyear
   
-  output <- list(disagg = vars,var_names = tot_num, max_layers = max_layers, max_time = max_time, bioagg_names = bioagg_names, rs_names = rs_names, diet_m = diet_m, ssb_names = ssb_names, yoy_names = yoy_names, islands = islands, rel_bio = rel_bio, tot_bio = tot_bio, ssb = ssb, yoy = yoy, structN = structN, reserveN = reserveN, totalnums = totalnums, map_base = map_base, numboxes = numboxes, fun_group = fun_group, invert_names = invert_names, invert_l = invert_l, vert_l = vert_l, ab_params = ab_params)
+  output <- list(disagg = vars,var_names = tot_num, max_layers = max_layers, max_time = max_time, bioagg_names = bioagg_names, rs_names = rs_names, tot_pred = tot_pred, ssb_names = ssb_names, yoy_names = yoy_names, islands = islands, rel_bio = rel_bio, tot_bio = tot_bio, ssb = ssb, yoy = yoy, structN = structN, reserveN = reserveN, totalnums = totalnums, map_base = map_base, numboxes = numboxes, fun_group = fun_group, invert_names = invert_names, invert_l = invert_l, vert_l = vert_l, ab_params = ab_params)
   cat("### ------------ vat object created, you can now run the vat application ------------ ###\n") 
   return(output)
   class(output) <- "vat"

@@ -2,7 +2,7 @@ Package: vat
 Type: Package
 Title: Visualizing Atlantis Toolbox
 Version: 0.1
-Date: 2015-02-20
+Date: 2015-03-24
 Author: Christopher David Desjardins <cddesjardins@gmail.com>
 Maintainer: Christopher David Desjardins <cddesjardins@gmail.com>
 Description: This package provides a suite of interactive tools for examining Atlantis, including the namesake of the package, vat, which is a completely diagnostic suite using Shiny.
@@ -13,7 +13,8 @@ Depends:
 	ncdf4,
 	scales,
 	plyr,
-	reshape,
+  tidyr,
+  dplyr,
   animation,
   gridExtra,
   markdown,

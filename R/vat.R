@@ -41,11 +41,11 @@ vat <- function(obj, anim){
                              column(2))),
                     tabPanel("Atlantis Glossary",
                              dataTableOutput('fun_group_atl')),
-                    tabPanel("Plots to Display",
+                    tabPanel("Information to Display",
                              
                              fluidRow(column(3),
                                       column(6,
-                                             h3("Which plots should be displayed?", align = "center")),
+                                             h3("What information should be displayed?", align = "center")),
                                       column(3)),
                              
                              fluidRow(column(2),
@@ -61,7 +61,7 @@ vat <- function(obj, anim){
                                         "nitrogen", label = "Age disaggregated"))),
                                       column(4, wellPanel(checkboxInput(
                                         "diet", 
-                                        label = "Diet availability"))),
+                                        label = "Diet Information "))),
                                       column(2)),
                              
                              fluidRow(column(2),
@@ -109,7 +109,7 @@ vat <- function(obj, anim){
                                                           plotOutput("agg_image", inline = TRUE, "100%", "550px"))))),
                     
                     # The diagnostic plots UI
-                    navbarMenu("Diagnostic Plots",
+                    navbarMenu("Diagnostic Information",
                                tabPanel("Age Disaggregated",
                                         conditionalPanel(
                                           condition = "input.nitrogen == true",
@@ -131,18 +131,24 @@ vat <- function(obj, anim){
                                                  column(5,
                                                         plotOutput("totalbio", height = "450px"))))),
                                
-                               tabPanel("Diet Availability",
+                               tabPanel("Diet Information",
                                         conditionalPanel(
                                           condition = "input.diet == true",
-                                        fluidRow(column(3),
-                                                 column(6,
-                                                        wellPanel(selectInput("diet_var",
-                                                          label = "Choose a habitat type to display",
-                                                          selected = NULL,
-                                                          choices = unique(obj$diet_m$Habitat)))),
-                                                 column(3)),
-                                        fluidRow(column(12,
-                                                        plotOutput("diet_matrix", height = "500px"))))),
+                                          # Create a new Row in the UI for selectInputs
+                                          fluidRow(
+                                            column(2),
+                                            column(4,
+                                                   selectInput("diet_pred", 
+                                                               "Predator:", 
+                                                               c("All", 
+                                                                 unique(as.character(obj$tot_pred$Predator))))
+                                            ),
+                                            column(4, 
+                                                   selectInput("diet_prey", 
+                                                               "Prey:", 
+                                                               c("All", 
+                                                                 unique(as.character(obj$tot_pred$Prey)))))),
+                                          dataTableOutput('diet_table'))),
                                
                                tabPanel("Vertebrate Summaries",
                                         conditionalPanel(
@@ -240,12 +246,19 @@ vat <- function(obj, anim){
         qplot(y = obj$yoy[[match(input$ssb_var, names(obj$yoy))]], x = Time, data = obj$yoy, geom = "line") +
           ylab("") +  theme_bw() + ggtitle("YOY Biomass")})
       
-      # Diet matrix plot
-      output$diet_matrix <- renderPlot({
-        diet_dat <- subset(obj$diet_m, Habitat == input$diet_var)
-        ggplot(diet_dat, aes(variable, Predator, fill = value)) + geom_tile() + 
-          scale_fill_gradient(low = "blue",  high = "yellow") + theme(legend.position="none") + theme(axis.text.x = element_text(angle = 90, hjust = 1)) + xlab("Prey")})
-      
+      # Diet Table 
+        output$diet_table <- renderDataTable({
+          diet_tab <- obj$tot_pred
+          if (input$diet_pred != "All"){
+            diet_tab <- diet_tab[diet_tab$Predator == input$diet_pred,]
+          }
+          if (input$diet_prey != "All"){
+            diet_tab <- diet_tab[diet_tab$Prey == input$diet_prey,]
+          }
+          options(scipen = 999)
+          diet_tab
+        })
+         
       # Structural nitrogen
       output$structn <- renderPlot({
         sn_ids <- paste(input$sn, 1:10, "_StructN", sep = "")
@@ -267,7 +280,7 @@ vat <- function(obj, anim){
         totn_ids <- paste(input$sn, 1:10, "_Nums", sep = "")
         dat_tn <- subset(obj$totalnums, .id %in% totn_ids)
         dat_tn$V1 <- (3.65*sn$V1*5.7*20/1000000000) * dat_tn$V1
-        ggplot(data = dat_tn, aes(y = V1, x = Time)) + geom_bar(stat = "identity", aes(fill = .id))  + scale_x_continuous(breaks=seq(round(min(dat_tn$Time)), round(max(dat_tn$Time)), 5)) + ylab("Total Biomass (Tons)") + scale_fill_brewer(name = "Ageclass", type = "div",palette = 5, labels = 1:10) + theme_bw()  + guides(fill = guide_legend(override.aes = list(colour = NULL)))+ theme(panel.background=element_blank(), legend.key = element_rect(), legend.background = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), panel.background = element_blank(), legend.key = element_rect(colour = NA),axis.line = element_line(size = .2, color = "black")) }) 
+        ggplot(data = dat_tn, aes(y = V1, x = Time)) + geom_bar(stat = "identity", aes(fill = .id), width = 1)  + scale_x_continuous(breaks=seq(round(min(dat_tn$Time)), round(max(dat_tn$Time)), 5)) + ylab("Total Biomass (Tons)") + scale_fill_brewer(name = "Ageclass", type = "div",palette = 5, labels = 1:10) + theme_bw()  + guides(fill = guide_legend(override.aes = list(colour = NULL)))+ theme(panel.background=element_blank(), legend.key = element_rect(), legend.background = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), panel.background = element_blank(), legend.key = element_rect(colour = NA),axis.line = element_line(size = .2, color = "black")) }) 
       
       # Total Prop
     output$totalprop <- renderPlot({
