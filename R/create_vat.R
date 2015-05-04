@@ -36,11 +36,16 @@ create_vat <- function(outdir, fgfile, biolprm, ncout, startyear, toutinc){
   biol_a <- grep("li_a", biolprm, value = TRUE)
   biol_b <- grep("li_b", biolprm, value = TRUE)
   a_split <- strsplit(biol_a," ")
-  a_param <- sapply(a_split,`[`,2)
+  a_param <- unlist(regmatches(biol_a, gregexpr("[[:digit:]].+", biol_a)))
+  
+  # trim trailing white space
+  trim.trailing <- function (x) sub("\\s+$", "", x)  
   a_group <- sapply(a_split,`[`,1)
+  a_group <- trim.trailing(a_group)
   b_split <- strsplit(biol_b," ")
-  b_param <- sapply(b_split,`[`,2)
+  b_param <- unlist(regmatches(biol_b, gregexpr("[[:digit:]].+", biol_b)))
   b_group <- sapply(b_split,`[`,1)
+  b_group <- trim.trailing(b_group)
   ab_params <- data.frame(a_name = a_group, a = as.numeric(as.character(a_param)),
                           b_name = b_group, b = as.numeric(as.character(b_param)))
   
