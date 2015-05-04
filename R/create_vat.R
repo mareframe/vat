@@ -19,9 +19,11 @@ create_vat <- function(outdir, fgfile, biolprm, ncout, startyear, toutinc){
   require("plyr")
   require("dplyr")
   require("tidyr")
+  require("stringr")
   cat("### ------------ Reading in data                                         ------------ ###\n")
   nc_out <- ncdf4::nc_open(paste(outdir, ncout, ".nc", sep = ""))
   prod_out <- ncdf4::nc_open(paste(outdir, ncout, "PROD.nc", sep = ""))
+  tot_out <- ncdf4::nc_open(paste(outdir, ncout, "TOT.nc", sep = ""))
   bio_agg <- read.table(paste(outdir, ncout, "BoxBiomass.txt", sep = ""), header = T)
   ssb <- read.table(paste(outdir, ncout, "SSB.txt", sep = ""), header = TRUE)
   yoy <- read.table(paste(outdir, ncout, "YOY.txt", sep = ""), header = TRUE)
@@ -30,22 +32,22 @@ create_vat <- function(outdir, fgfile, biolprm, ncout, startyear, toutinc){
   rel_bio <- biomass[,c(1, grep("Rel",colnames(biomass)))]
   tot_bio <- biomass[,c(1:(grep("Rel",colnames(biomass))[1]-1))]
   diet <- read.table(paste(outdir, ncout, "DietCheck.txt", sep = ""), header = TRUE, stringsAsFactors = TRUE)
-  biolprm <- readLines(biolprm)
   
   # Extract a and b parameters from biology parameter
+  biolprm <- readLines(biolprm)
   biol_a <- grep("li_a", biolprm, value = TRUE)
   biol_b <- grep("li_b", biolprm, value = TRUE)
-  a_split <- strsplit(biol_a," ")
-  a_param <- unlist(regmatches(biol_a, gregexpr("[[:digit:]].+", biol_a)))
+  a_split <- unlist(str_split_fixed(biol_a, pattern = ' ', n = 2))
+  a_split <- apply(a_split,2, str_trim, side = "both")
+  a_group <- a_split[,1]
+  a_param <- str_split_fixed(a_split[,2], pattern = ' ', n = 2)[,1]
   
   # trim trailing white space
-  trim.trailing <- function (x) sub("\\s+$", "", x)  
-  a_group <- sapply(a_split,`[`,1)
-  a_group <- trim.trailing(a_group)
-  b_split <- strsplit(biol_b," ")
-  b_param <- unlist(regmatches(biol_b, gregexpr("[[:digit:]].+", biol_b)))
-  b_group <- sapply(b_split,`[`,1)
-  b_group <- trim.trailing(b_group)
+  b_split <- unlist(str_split_fixed(biol_b, pattern = ' ', n = 2))
+  b_split <- apply(b_split,2, str_trim, side = "both")
+  b_group <- b_split[,1]
+  b_param <- str_split_fixed(b_split[,2], pattern = ' ', n = 2)[,1]
+  
   ab_params <- data.frame(a_name = a_group, a = as.numeric(as.character(a_param)),
                           b_name = b_group, b = as.numeric(as.character(b_param)))
   
@@ -135,12 +137,18 @@ create_vat <- function(outdir, fgfile, biolprm, ncout, startyear, toutinc){
   N <- N[-grep("_Nums", N, value = FALSE)]
   tot_num <- c(nums)
   
-  # extract tracers for the ncd4 object
+  # extract tracers from the ncdf4 object
   vars <- list()
   for (i in 1:length(tot_num)){
     vars[[i]] <- ncdf4::ncvar_get(nc = nc_out, varid = tot_num[i])
   }
   names(vars) <- tot_num
+  
+  # extract tracers from the ncdf4 object
+  #var_trac_agg <- list()
+  #for (i in 1:length(tot_out)){
+  #  var_trac_agg[[i]] <- ncdf4::ncvar_get(nc = tot_out, varid = names(tot_out$vars)i)
+  #}
   
   cat("### ------------ Setting up data for production output                   ------------ ###\n")
   # Create the production output

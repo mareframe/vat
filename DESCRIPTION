@@ -18,4 +18,5 @@ Depends:
   animation,
   gridExtra,
   markdown,
+  stringr,
   	R (>= 3.0.0)
