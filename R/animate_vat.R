@@ -17,7 +17,7 @@
 #' bmass <- "/path/to/outputBoxBiomass.txt"
 #' codes <- read.csv("functionalGroup.csv", header = T, stringsAsFactors = FALSE)
 #' savedir <- "/home/chris/"
-#' vat_animate(bgm = bgm, bmass = bmass, codes = codes$Code)
+#' animate_vat(bgm = bgm, bmass = bmass, codes = codes$Code, savedir = savedir)
 #' }
 #' 
 animate_vat <- function(bgm, bmass, interval = .3, codes, savedir){
@@ -73,14 +73,17 @@ animate_vat <- function(bgm, bmass, interval = .3, codes, savedir){
       # manipulating the graphs. For example, the layout specification needs to
       # be within animation loop to work properly.
       # layout(matrix(c(1, rep(2, 5)), 6, 1))
+      max_value <- max(bio_agg[,j])
+      min_value <- min(bio_agg[,j])
+      mid_value <- median(bio_agg[,j])
       
       # Adjust the margins a little
       #  par(mar=c(4,4,2,1) + 0.1)
    for(i in unique(bio_agg$Time)){
         plot1 <- qplot(1,5) + coord_cartesian(xlim = c(100,max(bio_agg$Time))) + theme(axis.text.x=element_blank(),axis.text.y=element_blank(),axis.ticks=element_blank(),axis.title.x=element_blank(), axis.title.y=element_blank(),legend.position="none", panel.background=element_blank(), panel.grid.major=element_blank(), panel.grid.minor=element_blank(), axis.line = element_line(colour = "black"), axis.line.y = element_blank()) +
-          geom_vline(xintercept = i, size = 2, colour = "cornflowerblue") +
-          geom_vline(xintercept = i - 10, size = 2, colour = "cornflowerblue") +
-          geom_vline(xintercept = i - 20, size = 2, colour = "cornflowerblue") 
+          geom_vline(xintercept = i, size = 2, colour = "black") +
+          geom_vline(xintercept = i - 10, size = 2, colour = "black") +
+          geom_vline(xintercept = i - 20, size = 2, colour = "black") 
         
         agg_tmp <- bio_agg[bio_agg$Time == i, c("Time", "boxid", j)]
         agg_map_data <- merge(map_base, agg_tmp)
@@ -92,9 +95,8 @@ animate_vat <- function(bgm, bmass, interval = .3, codes, savedir){
         #y <- agg_map_data[,5] > 0
         #y <- agg_map_data[,5][y]
         names(agg_map_data) <- c("boxid", "x", "y", "Time", "box_fill")     
-        plot2 <- ggplot(data = agg_map_data, aes(x = x, y = y, fill = box_fill)) + geom_polygon(aes(group = boxid, fill = box_fill), colour = "black") +
-          theme_bw() + xlab("Longitude") + ylab("Latitude") +
-          scale_fill_gradient2(high = "cornflowerblue", low = "white")  + guides(fill = guide_legend(keywidth = 2, keyheight = 1, override.aes = list(colour = NULL))) + theme(legend.title=element_blank(), legend.position = "bottom") 
+        plot2 <- ggplot(data = agg_map_data, aes(x = x, y = y, fill = box_fill)) + geom_polygon(aes(group = boxid, fill = box_fill), colour = "black") + theme_bw() + xlab("") + ylab("") + scale_x_continuous(breaks = NULL) + scale_y_continuous(breaks = NULL)   + guides(fill = guide_legend(keywidth = 2, keyheight = 1, override.aes = list(colour = NULL))) + theme(legend.title=element_blank(), legend.position = "bottom") + scale_fill_gradient2(limits = c(min_value, max_value), high = "blue", low = "red", midpoint = mid_value) 
+        
         grid.arrange(plot2, plot1, nrow=2, ncol=1, heights = c(5.5, .5))
    }}, movie.name = paste(savedir,j,"-aggbio.gif", sep = ""))
   }

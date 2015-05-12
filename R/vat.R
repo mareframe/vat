@@ -105,7 +105,7 @@ vat <- function(obj, anim){
                                                                     column(8,
                                                                            plotOutput("trace_map", height = "450px")))))),
                                
-                               tabPanel("Animated Spatial Biomass",
+                               tabPanel("Animated Spatial Biomass (tons)",
                                         column(5,
                                                           wellPanel(selectInput("aggbio",
                                                                    label = "Functional Group",
@@ -202,7 +202,7 @@ vat <- function(obj, anim){
         tmp <- obj$disagg[[input$disagg_var]]
         tmp.min <- min(tmp)
         tmp.max <- max(tmp)
-        tmp.mid <- (tmp.max - tmp.min) / 2
+        tmp.mid <- median(tmp)
         tmp <- obj$disagg[[input$disagg_var]][input$layer,,input$time]
         
         # Plot islands with a different color
@@ -249,7 +249,7 @@ vat <- function(obj, anim){
         tmp <- obj$trace_vars[[input$trace_sm]]
         tmp.min <- min(tmp)
         tmp.max <- max(tmp)
-        tmp.mid <- (tmp.max - tmp.min) / 2
+        tmp.mid <- median(tmp)
         if(length(dim(tmp)) == 3){
           tmp <- obj$trace_vars[[input$trace_sm]][input$trace_layer,,input$trace_time]
         } else tmp <- obj$trace_vars[[input$trace_sm]][,input$trace_time]
@@ -274,7 +274,7 @@ vat <- function(obj, anim){
         tmp <- obj$invert_vars[[input$invert_sm]]
         tmp.min <- min(tmp)
         tmp.max <- max(tmp)
-        tmp.mid <- (tmp.max - tmp.min) / 2
+        tmp.mid <- median(tmp)
         if(length(dim(tmp)) == 3){
           tmp <- obj$invert_vars[[input$invert_sm]][input$invert_layer,,input$invert_time]
         } else tmp <- obj$invert_vars[[input$invert_sm]][,input$invert_time]

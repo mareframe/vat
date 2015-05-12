@@ -29,7 +29,7 @@ bgm <- "/path/to/atlantis.bgm"
 bmass <- "/path/to/outputBoxBiomass.txt"
 codes <- read.csv("functionalGroup.csv", header = T, stringsAsFactors = FALSE)
 savedir <- "/home/chris/"
-vat_animate(bgm = bgm, bmass = bmass, codes = codes$Code)
+animate_vat(bgm = bgm, bmass = bmass, codes = codes$Code, savedir = savedir)
 }
 }
 \seealso{
