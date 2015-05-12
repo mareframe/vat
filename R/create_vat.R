@@ -23,7 +23,6 @@ create_vat <- function(outdir, fgfile, biolprm, ncout, startyear, toutinc){
   cat("### ------------ Reading in data                                         ------------ ###\n")
   nc_out <- ncdf4::nc_open(paste(outdir, ncout, ".nc", sep = ""))
   prod_out <- ncdf4::nc_open(paste(outdir, ncout, "PROD.nc", sep = ""))
-  tot_out <- ncdf4::nc_open(paste(outdir, ncout, "TOT.nc", sep = ""))
   bio_agg <- read.table(paste(outdir, ncout, "BoxBiomass.txt", sep = ""), header = T)
   ssb <- read.table(paste(outdir, ncout, "SSB.txt", sep = ""), header = TRUE)
   yoy <- read.table(paste(outdir, ncout, "YOY.txt", sep = ""), header = TRUE)
@@ -145,14 +144,27 @@ create_vat <- function(outdir, fgfile, biolprm, ncout, startyear, toutinc){
   names(vars) <- tot_num
   
   # extract physical tracers from the ncdf4 object
-  phys_trac <- c(1:22, min(grep("Zoo_N",names(nc_out$var))):length(names(nc_out$var)))
-  phy_names <- names(nc_out$var)[phys_trac]
+  phy_names <- names(nc_out$var)[!(names(nc_out$var) %in% tot_num)]
+  phy_names <- phy_names[-grep("_ResN", phy_names)] 
+  phy_names <- phy_names[-grep("_StructN", phy_names)]
+  phy_names <-  phy_names[!(phy_names %in% N[1:last(which(fun_group$NumCohorts == 10))])]
   phy_names <- phy_names[-which(phy_names == "nominal_dz")]
-  phy_vars <- list()
-  for (i in 1:length(phys_trac)){
-    phy_vars[[i]] <- ncdf4::ncvar_get(nc = nc_out, varid = phy_names[i])
+  invert_nums <- grep("_N", phy_names, value = F)
+  invert_mnames <- phy_names[invert_nums]
+  trace_names <- phy_names[-(invert_nums)]
+  
+  invert_vars <- list()
+  for (i in 1:length(invert_mnames)){
+    invert_vars[[i]] <- ncdf4::ncvar_get(nc = nc_out, varid = invert_mnames[i])
   }
-  names(phy_vars) <- phy_names
+  names(invert_vars) <- invert_mnames
+  
+  trace_vars <- list()
+  for (i in 1:length(trace_names)){
+    trace_vars[[i]] <- ncdf4::ncvar_get(nc = nc_out, varid = trace_names[i])
+  }
+  names(trace_vars) <- trace_names
+  
   
   cat("### ------------ Setting up data for production output                   ------------ ###\n")
   # Create the production output
@@ -187,7 +199,7 @@ create_vat <- function(outdir, fgfile, biolprm, ncout, startyear, toutinc){
     gather("variable", "value", -id)
   
   cat("### ------------ Setting up aggregated diagnostic plots                  ------------ ###\n")
-  cat("### ------------ This part takes a while. Better grab a Snickers.        ------------ ###\n")
+  cat("### ------------ This part takes a while. Better grab a kleina.        ------------ ###\n")
   # ------------------------------------ #
   # - Reserve/Structural Nitrogen Plots - #
   # ------------------------------------ #
@@ -238,7 +250,7 @@ create_vat <- function(outdir, fgfile, biolprm, ncout, startyear, toutinc){
   totalnums$Time <- as.numeric(as.character(totalnums$X1)) * toutinc / 365 + startyear
   #totalnums$Time <- as.numeric(as.character(totalnums$X1))/12 + startyear
   
-  output <- list(disagg = vars,phy_vars = phy_vars, phy_names = phy_names, var_names = tot_num, max_layers = max_layers, max_time = max_time, bioagg_names = bioagg_names, rs_names = rs_names, tot_pred = tot_pred, ssb_names = ssb_names, yoy_names = yoy_names, islands = islands, rel_bio = rel_bio, tot_bio = tot_bio, ssb = ssb, yoy = yoy, structN = structN, reserveN = reserveN, totalnums = totalnums, map_base = map_base, numboxes = numboxes, fun_group = fun_group, invert_names = invert_names, invert_l = invert_l, vert_l = vert_l, ab_params = ab_params)
+  output <- list(disagg = vars,invert_vars = invert_vars, invert_mnames = invert_mnames, trace_vars = trace_vars, trace_names = trace_names, var_names = tot_num, max_layers = max_layers, max_time = max_time, bioagg_names = bioagg_names, rs_names = rs_names, tot_pred = tot_pred, ssb_names = ssb_names, yoy_names = yoy_names, islands = islands, rel_bio = rel_bio, tot_bio = tot_bio, ssb = ssb, yoy = yoy, structN = structN, reserveN = reserveN, totalnums = totalnums, map_base = map_base, numboxes = numboxes, fun_group = fun_group, invert_names = invert_names, invert_l = invert_l, vert_l = vert_l, ab_params = ab_params)
   cat("### ------------ vat object created, you can now run the vat application ------------ ###\n") 
   return(output)
   class(output) <- "vat"

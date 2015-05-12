@@ -39,101 +39,85 @@ vat <- function(obj, anim){
                              column(1,
                                     img(src = "http://cddesja.github.com/vat/images/hi.gif", height = 45, width = 45)),
                              column(2))),
-                    tabPanel("Atlantis Glossary",
+                    tabPanel("Functional Groups",
                              dataTableOutput('fun_group_atl')),
-                    tabPanel("Information to Display",
-                             
-                             fluidRow(column(3),
-                                      column(6,
-                                             h3("What information should be displayed?", align = "center")),
-                                      column(3)),
-                             
-                             fluidRow(column(2),
-                                      column(4, wellPanel(checkboxInput(
-                                        "disagg", label = "Interactive spatial plots"))),
-                                      column(4, wellPanel(checkboxInput(
-                                        "anim", 
-                                        label = "Animated spatial biomass"))),
-                                      column(2)),
-                             
-                             fluidRow(column(2),
-                                      column(4, wellPanel(checkboxInput(
-                                        "nitrogen", label = "Age disaggregated"))),
-                                      column(4, wellPanel(checkboxInput(
-                                        "diet", 
-                                        label = "Diet Information "))),
-                                      column(2)),
-                             
-                             fluidRow(column(2),
-                                      column(4, wellPanel(checkboxInput(
-                                        "agg", label = "Vertebrate summaries"))),
-                                      column(4, wellPanel(checkboxInput(
-                                        "invert", label = "Non-vertebrate summaries"))),
-                                      column(2))),     
                     
                     # Disaggregated Spatial Maps
                     navbarMenu("Spatial Plots",
-                               tabPanel("Interactive Vertebrate Plots",
-                                        conditionalPanel(
-                                          condition = "input.disagg == true",
-                                          sidebarLayout(
-                                            sidebarPanel(selectInput("disagg_var",
-                                                                   label = "Vertebrate Group",
+                               tabPanel("Interactive Plots",
+                                       navlistPanel(widths = c(2, 10),
+                                                       tabPanel("Vertebrates",
+                                                         fluidRow(
+                                                           column(4,
+                                                   wellPanel(
+                                                     selectInput("disagg_var",
+                                                                   label = "",
                                                                    selected = obj$var_names[1],
                                                                    choices = obj$var_names),
-                                                       sliderInput("layer", 
+                                                     sliderInput("layer", 
                                                                    label = "Choose a layer to display",
                                                                    min = 1,
                                                                    step = 1,
                                                                    max = obj$max_layers, 
                                                                    value = 1,
                                                                    round = TRUE),
-                                                       sliderInput("time",
+                                                     sliderInput("time",
                                                                    label = "Choose a time to display",
                                                                    min = 1,
                                                                    step = 1,
                                                                    max = obj$max_time, 
                                                                    value = 1,
-                                                                   round = TRUE)),
-                                          mainPanel(
-                                            plotOutput("map"))))),
-                               
-                               tabPanel("Interactive Tracer and Invertebrate Plots",
-                               conditionalPanel(
-                                 condition = "input.disagg == true",
-                                 sidebarLayout(
-                                   sidebarPanel(selectInput("trace_var",
-                                                             label = "Tracer or Functional Group",
-                                                             selected = obj$phy_names[1],
-                                                             choices = obj$phy_names),
-                                                uiOutput("ui"),
-                                                sliderInput("trace_time",
-                                                            label = "Choose a time to display",
-                                                            min = 1,
-                                                            step = 1,
-                                                            max = obj$max_time, 
-                                                            value = 1,
-                                                            round = TRUE)),
-                                          mainPanel(
-                                            plotOutput("tracer_map"))))),
+                                                                   round = TRUE))),
+                                                  column(8,
+                                                          plotOutput("map", height = "450px")))),
+                                                  tabPanel("Invertebrates",
+                                                                 fluidRow(column(4,
+                                                          wellPanel(
+                                                            selectInput("invert_sm",
+                                                                        label = "",
+                                                                        selected = obj$invert_mnames[1],
+                                                                        choices = obj$invert_mnames),
+                                                            uiOutput("ui_invert"),
+                                                            sliderInput("invert_time",
+                                                                        label = "Choose a time to display",
+                                                                        min = 1,
+                                                                        step = 1,
+                                                                        max = obj$max_time, 
+                                                                        value = 1,
+                                                                        round = TRUE))),
+                                                   column(8,
+                                                          plotOutput("invert_map", height = "450px")))),
+                                                  tabPanel("Tracers",
+                                                           fluidRow(column(4,
+                                                                           wellPanel(
+                                                                             selectInput("trace_sm",
+                                                                                         label = "",
+                                                                                         selected = obj$trace_names[1],
+                                                                                         choices = obj$trace_names),
+                                                                             uiOutput("ui_trace"),
+                                                                             sliderInput("trace_time",
+                                                                                         label = "Choose a time to display",
+                                                                                         min = 1,
+                                                                                         step = 1,
+                                                                                         max = obj$max_time, 
+                                                                                         value = 1,
+                                                                                         round = TRUE))),
+                                                                    column(8,
+                                                                           plotOutput("trace_map", height = "450px")))))),
                                
                                tabPanel("Animated Spatial Biomass",
-                                        conditionalPanel(
-                                          condition = "input.anim == true",
-                                          column(5,
+                                        column(5,
                                                           wellPanel(selectInput("aggbio",
                                                                    label = "Functional Group",
                                                                    selected = obj$bioagg_names[1],
                                                                    choices = obj$bioagg_names))),
                                                    column(7,
-                                                          plotOutput("agg_image", inline = TRUE, "100%", "550px"))))),
+                                                          plotOutput("agg_image", inline = TRUE, "100%", "550px")))),
                     
                     # The diagnostic plots UI
                     navbarMenu("Diagnostic Information",
                                tabPanel("Age Disaggregated",
-                                        conditionalPanel(
-                                          condition = "input.nitrogen == true",
-                                          fluidRow(column(4),
+                                       fluidRow(column(4),
                                                    column(4,wellPanel(selectInput("sn",
                                                                               label = "Functional Group",
                                                                               choices = obj$rs_names)))),
@@ -151,13 +135,10 @@ vat <- function(obj, anim){
                                                  column(5,
                                                         plotOutput("lw_plot", height = "450px")),
                                                  column(5,
-                                                        plotOutput("totalbio", height = "450px"))))),
+                                                        plotOutput("totalbio", height = "450px")))),
                                
                                tabPanel("Diet Information",
-                                        conditionalPanel(
-                                          condition = "input.diet == true",
-                                          # Create a new Row in the UI for selectInputs
-                                          fluidRow(
+                                      fluidRow(
                                             column(2),
                                             column(4,
                                                    selectInput("diet_pred", 
@@ -171,11 +152,9 @@ vat <- function(obj, anim){
                                                                c("All", 
                                                                  unique(as.character(obj$tot_pred$Prey)))))),
                                           dataTableOutput('diet_table'))),
-                               
-                               tabPanel("Vertebrate Summaries",
-                                        conditionalPanel(
-                                          condition = "input.agg == true",
-                                         fluidRow(column(4),
+                    navbarMenu("Summaries",
+                               tabPanel("Vertebrates",
+                                        fluidRow(column(4),
                                                   column(4,
                                                          wellPanel(
                                                            selectInput("ssb_var",
@@ -191,12 +170,10 @@ vat <- function(obj, anim){
                                                            column(5,
                                                                   plotOutput("rel_map", height = "300px")),
                                                            column(5,
-                                                                  plotOutput("yoy_map", height = "300px"))))),
+                                                                  plotOutput("yoy_map", height = "300px")))),
                                
-                               tabPanel("Non-vertbrate Summaries",
-                                        conditionalPanel(
-                                          condition = "input.invert == true",
-                                          fluidRow(column(4),
+                               tabPanel("Invertebrates and Other Tracers",
+                                        fluidRow(column(4),
                                                    column(4,
                                                           wellPanel(
                                                             selectInput("invert_var",
@@ -212,7 +189,7 @@ vat <- function(obj, anim){
                                                    column(5,
                                                           plotOutput("invertgraze", height = "300px")),
                                                    column(5,
-                                                          plotOutput("invertprod", height = "300px"))))))),
+                                                          plotOutput("invertprod", height = "300px")))))),
     server = function(input, output) {
       
       # Disaggregated spatial plot
@@ -240,13 +217,13 @@ vat <- function(obj, anim){
           geom_polygon(aes(group = boxid, fill = tmp), colour = "black") +
           theme_bw() + xlab("") + ylab("") +
           scale_fill_gradient2(limits = c(tmp.min, tmp.max), midpoint = tmp.mid, low = muted("red"), high = muted("blue")) +
-          theme(legend.title=element_blank()) + scale_y_continuous(breaks=NULL) + scale_x_continuous(breaks=NULL)
+          theme(legend.title=element_blank(), plot.background = element_blank()) + scale_y_continuous(breaks=NULL) + scale_x_continuous(breaks=NULL)
         })
     
-      output$ui <- renderUI({
-        tmp <- obj$phy_vars[[input$trace_var]]
+      output$ui_invert <- renderUI({
+        tmp <- obj$invert_vars[[input$invert_sm]]
         if(length(dim(tmp)) == 3)
-          sliderInput("trace_layer", 
+          sliderInput("invert_layer", 
                       label = "Choose a layer to display",
                       min = 1,
                       step = 1,
@@ -255,14 +232,52 @@ vat <- function(obj, anim){
                       round = TRUE)
         })
       
-      output$tracer_map <- renderPlot({
-        tmp <- obj$phy_vars[[input$trace_var]]
+      output$ui_trace <- renderUI({
+        tmp <- obj$trace_vars[[input$trace_sm]]
+        if(length(dim(tmp)) == 3)
+          sliderInput("trace_layer", 
+                      label = "Choose a layer to display",
+                      min = 1,
+                      step = 1,
+                      max = obj$max_layers, 
+                      value = 1,
+                      round = TRUE)
+      })
+      
+      # Tracer plot
+      output$trace_map <- renderPlot({
+        tmp <- obj$trace_vars[[input$trace_sm]]
         tmp.min <- min(tmp)
         tmp.max <- max(tmp)
         tmp.mid <- (tmp.max - tmp.min) / 2
         if(length(dim(tmp)) == 3){
-          tmp <- obj$phy_vars[[input$trace_var]][input$trace_layer,,input$trace_time]
-        } else tmp <- obj$phy_vars[[input$trace_var]][,input$trace_time]
+          tmp <- obj$trace_vars[[input$trace_sm]][input$trace_layer,,input$trace_time]
+        } else tmp <- obj$trace_vars[[input$trace_sm]][,input$trace_time]
+        
+        # Plot islands with a different color
+        if(is.character(obj$islands)){
+          islands <- as.numeric(obj$islands)
+          tmp[islands + 1] <- NA
+        }
+        data_tmp <- data.frame(boxid = 0:(obj$numboxes - 1), tmp)
+        
+        unagg_map_data <- merge(obj$map_base, data_tmp)
+        ggplot(data = unagg_map_data, aes(x = x, y = y)) +
+          geom_polygon(aes(group = boxid, fill = tmp), colour = "black") +
+          theme_bw() + xlab("") + ylab("") +
+          scale_fill_gradient2(limits = c(tmp.min, tmp.max), low = muted("red"), midpoint = tmp.mid, high = muted("blue")) +
+          theme(legend.title=element_blank()) + scale_y_continuous(breaks=NULL) + scale_x_continuous(breaks=NULL)
+      })
+      
+      # Invertebrate plot
+      output$invert_map <- renderPlot({
+        tmp <- obj$invert_vars[[input$invert_sm]]
+        tmp.min <- min(tmp)
+        tmp.max <- max(tmp)
+        tmp.mid <- (tmp.max - tmp.min) / 2
+        if(length(dim(tmp)) == 3){
+          tmp <- obj$invert_vars[[input$invert_sm]][input$invert_layer,,input$invert_time]
+        } else tmp <- obj$invert_vars[[input$invert_sm]][,input$invert_time]
         
         # Plot islands with a different color
         if(is.character(obj$islands)){
