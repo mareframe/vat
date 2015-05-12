@@ -50,7 +50,7 @@ vat <- function(obj, anim){
                              
                              fluidRow(column(2),
                                       column(4, wellPanel(checkboxInput(
-                                        "disagg", label = "Interactive spatial biomass"))),
+                                        "disagg", label = "Interactive spatial plots"))),
                                       column(4, wellPanel(checkboxInput(
                                         "anim", 
                                         label = "Animated spatial biomass"))),
@@ -73,12 +73,12 @@ vat <- function(obj, anim){
                     
                     # Disaggregated Spatial Maps
                     navbarMenu("Spatial Plots",
-                               tabPanel("Interactive Spatial Biomass",
+                               tabPanel("Interactive Vertebrate Plots",
                                         conditionalPanel(
                                           condition = "input.disagg == true",
-                                        sidebarLayout(
-                                          sidebarPanel(selectInput("disagg_var",
-                                                                   label = "Functional Group",
+                                          sidebarLayout(
+                                            sidebarPanel(selectInput("disagg_var",
+                                                                   label = "Vertebrate Group",
                                                                    selected = obj$var_names[1],
                                                                    choices = obj$var_names),
                                                        sliderInput("layer", 
@@ -97,6 +97,26 @@ vat <- function(obj, anim){
                                                                    round = TRUE)),
                                           mainPanel(
                                             plotOutput("map"))))),
+                               
+                               tabPanel("Interactive Tracer and Invertebrate Plots",
+                               conditionalPanel(
+                                 condition = "input.disagg == true",
+                                 sidebarLayout(
+                                   sidebarPanel(selectInput("trace_var",
+                                                             label = "Tracer or Functional Group",
+                                                             selected = obj$phy_names[1],
+                                                             choices = obj$phy_names),
+                                                uiOutput("ui"),
+                                                sliderInput("trace_time",
+                                                            label = "Choose a time to display",
+                                                            min = 1,
+                                                            step = 1,
+                                                            max = obj$max_time, 
+                                                            value = 1,
+                                                            round = TRUE)),
+                                          mainPanel(
+                                            plotOutput("tracer_map"))))),
+                               
                                tabPanel("Animated Spatial Biomass",
                                         conditionalPanel(
                                           condition = "input.anim == true",
@@ -164,12 +184,12 @@ vat <- function(obj, anim){
                                                   column(4)),
                                                   fluidRow(column(1),
                                                            column(5,
-                                                                  plotOutput("rel_map", height = "300px")),
+                                                                  plotOutput("tot_map", height = "300px")),
                                                            column(5,
-                                                                  plotOutput("tot_map", height = "300px"))),
+                                                                  plotOutput("ssb_map", height = "300px"))),
                                                   fluidRow(column(1),
                                                            column(5,
-                                                                  plotOutput("ssb_map", height = "300px")),
+                                                                  plotOutput("rel_map", height = "300px")),
                                                            column(5,
                                                                   plotOutput("yoy_map", height = "300px"))))),
                                
@@ -203,9 +223,10 @@ vat <- function(obj, anim){
       
       output$map <- renderPlot({
         tmp <- obj$disagg[[input$disagg_var]]
-        if(length(dim(tmp)) == 3){
-          tmp <- obj$disagg[[input$disagg_var]][input$layer,,input$time]
-        } else tmp <- obj$disagg[[input$disagg_var]][,input$time]
+        tmp.min <- min(tmp)
+        tmp.max <- max(tmp)
+        tmp.mid <- (tmp.max - tmp.min) / 2
+        tmp <- obj$disagg[[input$disagg_var]][input$layer,,input$time]
         
         # Plot islands with a different color
         if(is.character(obj$islands)){
@@ -217,9 +238,46 @@ vat <- function(obj, anim){
         unagg_map_data <- merge(obj$map_base, data_tmp)
         ggplot(data = unagg_map_data, aes(x = x, y = y)) +
           geom_polygon(aes(group = boxid, fill = tmp), colour = "black") +
-          theme_bw() + xlab("Longitude") + ylab("Latitude") +
-          scale_fill_gradient2(low = muted("blue"), high = muted("cornflowerblue")) +
-          theme(legend.title=element_blank())})
+          theme_bw() + xlab("") + ylab("") +
+          scale_fill_gradient2(limits = c(tmp.min, tmp.max), midpoint = tmp.mid, low = muted("red"), high = muted("blue")) +
+          theme(legend.title=element_blank()) + scale_y_continuous(breaks=NULL) + scale_x_continuous(breaks=NULL)
+        })
+    
+      output$ui <- renderUI({
+        tmp <- obj$phy_vars[[input$trace_var]]
+        if(length(dim(tmp)) == 3)
+          sliderInput("trace_layer", 
+                      label = "Choose a layer to display",
+                      min = 1,
+                      step = 1,
+                      max = obj$max_layers, 
+                      value = 1,
+                      round = TRUE)
+        })
+      
+      output$tracer_map <- renderPlot({
+        tmp <- obj$phy_vars[[input$trace_var]]
+        tmp.min <- min(tmp)
+        tmp.max <- max(tmp)
+        tmp.mid <- (tmp.max - tmp.min) / 2
+        if(length(dim(tmp)) == 3){
+          tmp <- obj$phy_vars[[input$trace_var]][input$trace_layer,,input$trace_time]
+        } else tmp <- obj$phy_vars[[input$trace_var]][,input$trace_time]
+        
+        # Plot islands with a different color
+        if(is.character(obj$islands)){
+          islands <- as.numeric(obj$islands)
+          tmp[islands + 1] <- NA
+        }
+        data_tmp <- data.frame(boxid = 0:(obj$numboxes - 1), tmp)
+        
+        unagg_map_data <- merge(obj$map_base, data_tmp)
+        ggplot(data = unagg_map_data, aes(x = x, y = y)) +
+          geom_polygon(aes(group = boxid, fill = tmp), colour = "black") +
+          theme_bw() + xlab("") + ylab("") +
+          scale_fill_gradient2(limits = c(tmp.min, tmp.max), low = muted("red"), midpoint = tmp.mid, high = muted("blue")) +
+          theme(legend.title=element_blank()) + scale_y_continuous(breaks=NULL) + scale_x_continuous(breaks=NULL)
+      })
       
       
       output$agg_image <- renderImage({

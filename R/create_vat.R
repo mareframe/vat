@@ -144,11 +144,15 @@ create_vat <- function(outdir, fgfile, biolprm, ncout, startyear, toutinc){
   }
   names(vars) <- tot_num
   
-  # extract tracers from the ncdf4 object
-  #var_trac_agg <- list()
-  #for (i in 1:length(tot_out)){
-  #  var_trac_agg[[i]] <- ncdf4::ncvar_get(nc = tot_out, varid = names(tot_out$vars)i)
-  #}
+  # extract physical tracers from the ncdf4 object
+  phys_trac <- c(1:22, min(grep("Zoo_N",names(nc_out$var))):length(names(nc_out$var)))
+  phy_names <- names(nc_out$var)[phys_trac]
+  phy_names <- phy_names[-which(phy_names == "nominal_dz")]
+  phy_vars <- list()
+  for (i in 1:length(phys_trac)){
+    phy_vars[[i]] <- ncdf4::ncvar_get(nc = nc_out, varid = phy_names[i])
+  }
+  names(phy_vars) <- phy_names
   
   cat("### ------------ Setting up data for production output                   ------------ ###\n")
   # Create the production output
@@ -234,7 +238,7 @@ create_vat <- function(outdir, fgfile, biolprm, ncout, startyear, toutinc){
   totalnums$Time <- as.numeric(as.character(totalnums$X1)) * toutinc / 365 + startyear
   #totalnums$Time <- as.numeric(as.character(totalnums$X1))/12 + startyear
   
-  output <- list(disagg = vars,var_names = tot_num, max_layers = max_layers, max_time = max_time, bioagg_names = bioagg_names, rs_names = rs_names, tot_pred = tot_pred, ssb_names = ssb_names, yoy_names = yoy_names, islands = islands, rel_bio = rel_bio, tot_bio = tot_bio, ssb = ssb, yoy = yoy, structN = structN, reserveN = reserveN, totalnums = totalnums, map_base = map_base, numboxes = numboxes, fun_group = fun_group, invert_names = invert_names, invert_l = invert_l, vert_l = vert_l, ab_params = ab_params)
+  output <- list(disagg = vars,phy_vars = phy_vars, phy_names = phy_names, var_names = tot_num, max_layers = max_layers, max_time = max_time, bioagg_names = bioagg_names, rs_names = rs_names, tot_pred = tot_pred, ssb_names = ssb_names, yoy_names = yoy_names, islands = islands, rel_bio = rel_bio, tot_bio = tot_bio, ssb = ssb, yoy = yoy, structN = structN, reserveN = reserveN, totalnums = totalnums, map_base = map_base, numboxes = numboxes, fun_group = fun_group, invert_names = invert_names, invert_l = invert_l, vert_l = vert_l, ab_params = ab_params)
   cat("### ------------ vat object created, you can now run the vat application ------------ ###\n") 
   return(output)
   class(output) <- "vat"
