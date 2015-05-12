@@ -199,7 +199,7 @@ create_vat <- function(outdir, fgfile, biolprm, ncout, startyear, toutinc){
     gather("variable", "value", -id)
   
   cat("### ------------ Setting up aggregated diagnostic plots                  ------------ ###\n")
-  cat("### ------------ This part takes a while. Better grab a kleina.        ------------ ###\n")
+  cat("### ------------ This part takes a while. Better grab a kleina.          ------------ ###\n")
   # ------------------------------------ #
   # - Reserve/Structural Nitrogen Plots - #
   # ------------------------------------ #
