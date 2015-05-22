@@ -8,6 +8,7 @@
 #'  @param ncout Name of output ncdf4 file excluding nc suffix (i.e. name given after -o flag)
 #'  @param startyear Year that the model starts
 #'  @param toutinc Periodicity of writing output (in days)
+#'  @param version Either bec_dev or trunk
 #'  @export
 #'  @seealso \code{\link{vat}}, \code{\link{animate_vat}}
 #'  @examples
@@ -20,6 +21,8 @@ create_vat <- function(outdir, fgfile, biolprm, ncout, startyear, toutinc){
   require("dplyr")
   require("tidyr")
   require("stringr")
+  if (!require("DT")) devtools::install_github("rstudio/DT")
+  require("DT")
   cat("### ------------ Reading in data                                         ------------ ###\n")
   nc_out <- ncdf4::nc_open(paste(outdir, ncout, ".nc", sep = ""))
   prod_out <- ncdf4::nc_open(paste(outdir, ncout, "PROD.nc", sep = ""))
@@ -52,19 +55,23 @@ create_vat <- function(outdir, fgfile, biolprm, ncout, startyear, toutinc){
   
   
   
-  fun_group <- read.csv(fgfile, header = T, stringsAsFactors = FALSE)[, c(1,3, 4,5,6, 9,16, 12)]
+  fun_group <- read.csv(fgfile, header = T, stringsAsFactors = FALSE)#[, c(1,3, 4,5,6, 9,16, 12)]
+  
   
   ## Drop those functional groups that are not turned on
-  fun_group <- fun_group[fun_group$IsTurnedOn == 1, c(1,3:8)]
+  fun_group <- fun_group[fun_group$IsTurnedOn == 1,]# c(1,3:8)]
   
-  fun_group$isFished <- ifelse(fun_group$isFished == 1, "Yes", "No")
-  fun_group$isAssessed <- ifelse(fun_group$isAssessed == 1, "Yes", "No")
+  #fun_group$isFished <- ifelse(fun_group$isFished == 1, "Yes", "No")
+  #fun_group$isAssessed <- ifelse(fun_group$isAssessed == 1, "Yes", "No")
+  
+  if(sum(names(fun_group) == "InvertType") > 0)
+    names(fun_group)[names(fun_group) == "InvertType"] <- "GroupType"
   
   # Subset vertebrates
-  rs_names <- fun_group[fun_group$InvertType %in% c("FISH", "MAMMAL", "SHARK", "BIRD"), "Name"]
+  rs_names <- fun_group[fun_group$GroupType %in% c("FISH", "MAMMAL", "SHARK", "BIRD"), "Name"]
   
   # Subset invertebrates
-  invert_names <-fun_group[!(fun_group$InvertType %in% c("FISH", "MAMMAL", "SHARK", "BIRD")),]
+  invert_names <-fun_group[!(fun_group$GroupType %in% c("FISH", "MAMMAL", "SHARK", "BIRD")),]
   
   colnames(ssb) <- c("Time", rs_names)
   colnames(yoy) <- c("Time", rs_names)
@@ -124,12 +131,6 @@ create_vat <- function(outdir, fgfile, biolprm, ncout, startyear, toutinc){
     group_by(Predator,Prey) %>%
     summarize(Eaten = mean(eaten))
 
-# diet$Predator <- factor(diet$Predator, levels = unique(diet$Predator))
-#  diet <- subset(diet, Time == unique(diet$Time)[2])
-#  diet$Habitat <- ifelse(diet$Habitat == "WC", "Water Column", ifelse(diet$Habitat == "SED", "Sediment", "Epibenthic"))
-#  diet$Time <- NULL
-#  diet_m <- reshape::melt(diet, id.vars = c("Predator", "Habitat"))
-  
   cat("### ------------ Setting up disaggregated spatial plots                  ------------ ###\n")
   nums <- grep("Nums", var_names, value = TRUE)
   N <- grep("_N", var_names, value = TRUE)
@@ -184,6 +185,7 @@ create_vat <- function(outdir, fgfile, biolprm, ncout, startyear, toutinc){
   for(i in invert_group){
     invert_all[[i]] <- ncvar_get(prod_out, i)
   }
+  
   invert_all <- ldply(invert_all, colSums)
   colnames(invert_all) <- c("id", time)
   invert_l <- invert_all %>%
@@ -207,12 +209,12 @@ create_vat <- function(outdir, fgfile, biolprm, ncout, startyear, toutinc){
   res_N <- grep("ResN", var_names, value = TRUE)
   
   # Subset vertebrates
-  rs_names <- fun_group[fun_group$InvertType %in% c("FISH", "MAMMAL", "SHARK", "BIRD"), "Name"]
+  rs_names <- fun_group[fun_group$GroupType %in% c("FISH", "MAMMAL", "SHARK", "BIRD"), "Name"]
   
   # Subset invertebrates
-  invert_names <-fun_group[!(fun_group$InvertType %in% c("FISH", "MAMMAL", "SHARK", "BIRD")),]
+  invert_names <-fun_group[!(fun_group$GroupType %in% c("FISH", "MAMMAL", "SHARK", "BIRD")),]
   
-  colnames(fun_group) <- c("Code", "Name", "Long Name", "Number of Age Groups", "Is it Fished?", "Is it Assessed?", "Type of Group")
+  #colnames(fun_group) <- c("Code", "Name", "Long Name", "Number of Age Groups", "Is it Fished?", "Is it Assessed?", "Type of Group")
   
   
   sn_list <- list()

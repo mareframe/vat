@@ -40,7 +40,7 @@ vat <- function(obj, anim){
                                     img(src = "http://cddesja.github.com/vat/images/hi.gif", height = 45, width = 45)),
                              column(2))),
                     tabPanel("Functional Groups",
-                             dataTableOutput('fun_group_atl')),
+                             DT::dataTableOutput('fun_group_atl')),
                     
                     # Disaggregated Spatial Maps
                     navbarMenu("Spatial Plots",
@@ -197,8 +197,8 @@ vat <- function(obj, anim){
       
       # Disaggregated spatial plot
       
-      output$fun_group_atl = renderDataTable({
-        obj$fun_group
+      output$fun_group_atl = DT::renderDataTable({
+        DT::datatable(obj$fun_group)
       })
       
       output$map <- renderPlot({
@@ -325,7 +325,7 @@ vat <- function(obj, anim){
           ylab("") +  theme_bw() + ggtitle("YOY Biomass")})
       
       # Diet Table 
-        output$diet_table <- renderDataTable({
+        output$diet_table <- DT::renderDataTable({
           diet_tab <- obj$tot_pred
           if (input$diet_pred != "All"){
             diet_tab <- diet_tab[diet_tab$Predator == input$diet_pred,]
@@ -334,7 +334,11 @@ vat <- function(obj, anim){
             diet_tab <- diet_tab[diet_tab$Prey == input$diet_prey,]
           }
           options(scipen = 999)
-          diet_tab
+          DT::datatable(diet_tab,,
+                        caption = htmltools::tags$caption(
+                          style = 'caption-side: bottom; text-align: center;',
+                          'Diet Matrix: ', htmltools::em('Units are number consumed per second for vertebrates and mg N/m3 consumed per second for biomass pools.')
+                        ))
         })
          
       # Structural nitrogen
