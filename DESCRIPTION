@@ -19,4 +19,5 @@ Depends:
   gridExtra,
   markdown,
   stringr,
+  DT,
   	R (>= 3.0.0)

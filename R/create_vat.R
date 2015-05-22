@@ -8,7 +8,6 @@
 #'  @param ncout Name of output ncdf4 file excluding nc suffix (i.e. name given after -o flag)
 #'  @param startyear Year that the model starts
 #'  @param toutinc Periodicity of writing output (in days)
-#'  @param version Either bec_dev or trunk
 #'  @export
 #'  @seealso \code{\link{vat}}, \code{\link{animate_vat}}
 #'  @examples
