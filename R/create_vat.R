@@ -20,7 +20,6 @@ create_vat <- function(outdir, fgfile, biolprm, ncout, startyear, toutinc){
   require("dplyr")
   require("tidyr")
   require("stringr")
-  if (!require("DT")) devtools::install_github("rstudio/DT")
   require("DT")
   cat("### ------------ Reading in data                                         ------------ ###\n")
   nc_out <- ncdf4::nc_open(paste(outdir, ncout, ".nc", sep = ""))
@@ -92,7 +91,7 @@ create_vat <- function(outdir, fgfile, biolprm, ncout, startyear, toutinc){
   var_names <- names(nc_out$var)
   
   cat("### ------------ Creating map from BGM file                              ------------ ###\n")
- 
+  
   # Find number of boxes
   numboxes <- length(grep("# Box number", bgm))
   
@@ -129,7 +128,7 @@ create_vat <- function(outdir, fgfile, biolprm, ncout, startyear, toutinc){
   tot_pred <- diet_l %>%
     group_by(Predator,Prey) %>%
     summarize(Eaten = mean(eaten))
-
+  
   cat("### ------------ Setting up disaggregated spatial plots                  ------------ ###\n")
   nums <- grep("Nums", var_names, value = TRUE)
   N <- grep("_N", var_names, value = TRUE)
@@ -189,7 +188,7 @@ create_vat <- function(outdir, fgfile, biolprm, ncout, startyear, toutinc){
   colnames(invert_all) <- c("id", time)
   invert_l <- invert_all %>%
     gather("variable", "value", -id)
-
+  
   vert_all <- list()
   for(i in vert_group){
     vert_all[[i]] <- ncvar_get(prod_out, i)
