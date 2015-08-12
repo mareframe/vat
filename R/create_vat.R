@@ -123,8 +123,8 @@ create_vat <- function(outdir, fgfile, biolprm, ncout, startyear, toutinc){
   }
   cat("### ------------ Setting up diet matrix plot                             ------------ ###\n")
   diet_l <- diet %>%
-    gather("Prey", "eaten", 4:ncol(diet))
-  colnames(diet_l) <- c("Time", "Predator", "Habitat", "Prey", "eaten")
+    gather("Prey", "eaten", 5:ncol(diet))
+  colnames(diet_l) <- c("Time", "Predator", "Cohort", "Stock", "Prey", "eaten")
   tot_pred <- diet_l %>%
     group_by(Predator,Prey) %>%
     summarize(Eaten = mean(eaten))
@@ -250,7 +250,7 @@ create_vat <- function(outdir, fgfile, biolprm, ncout, startyear, toutinc){
   totalnums$Time <- as.numeric(as.character(totalnums$X1)) * toutinc / 365 + startyear
   #totalnums$Time <- as.numeric(as.character(totalnums$X1))/12 + startyear
   
-  output <- list(disagg = vars,invert_vars = invert_vars, invert_mnames = invert_mnames, trace_vars = trace_vars, trace_names = trace_names, var_names = tot_num, max_layers = max_layers, max_time = max_time, bioagg_names = bioagg_names, rs_names = rs_names, tot_pred = tot_pred, ssb_names = ssb_names, yoy_names = yoy_names, islands = islands, rel_bio = rel_bio, tot_bio = tot_bio, ssb = ssb, yoy = yoy, structN = structN, reserveN = reserveN, totalnums = totalnums, map_base = map_base, numboxes = numboxes, fun_group = fun_group, invert_names = invert_names, invert_l = invert_l, vert_l = vert_l, ab_params = ab_params)
+  output <- list(disagg = vars,invert_vars = invert_vars, invert_mnames = invert_mnames, trace_vars = trace_vars, trace_names = trace_names, var_names = tot_num, max_layers = max_layers, max_time = max_time, bioagg_names = bioagg_names, rs_names = rs_names, tot_pred = tot_pred, ssb_names = ssb_names, yoy_names = yoy_names, islands = islands, rel_bio = rel_bio, tot_bio = tot_bio, ssb = ssb, yoy = yoy, structN = structN, reserveN = reserveN, totalnums = totalnums, map_base = map_base, numboxes = numboxes, fun_group = fun_group, invert_names = invert_names, invert_l = invert_l, vert_l = vert_l, ab_params = ab_params, diet_l = diet_l)
   cat("### ------------ vat object created, you can now run the vat application ------------ ###\n") 
   return(output)
   class(output) <- "vat"

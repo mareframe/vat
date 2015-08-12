@@ -22,7 +22,7 @@ vat <- function(obj, anim){
   shinyApp(
     ui = navbarPage("vat",
                     # Starting "Welcome" Tab"
-                    tabPanel("Welcome",
+                      tabPanel("Welcome",
                              fluidRow(column(12,
                                              h1("Visualising Atlantis Toolbox", align = "center"))),
                              p(),
@@ -114,9 +114,7 @@ vat <- function(obj, anim){
                                         column(7,
                                                plotOutput("agg_image", inline = TRUE, "100%", "550px")))),
                     
-                    # The diagnostic plots UI
-                    navbarMenu("Diagnostic Information",
-                               tabPanel("Age Disaggregated",
+                    tabPanel("Age Disaggregated",
                                         fluidRow(column(4),
                                                  column(4,wellPanel(selectInput("sn",
                                                                                 label = "Functional Group",
@@ -139,22 +137,66 @@ vat <- function(obj, anim){
                                         fluidRow(column(1),
                                                  column(5,
                                                         plotOutput("totalfirst", height = "450px")))),
+                    
+                    # The diagnostic plots UI
+                    navbarMenu("Diet Data",
+                               tabPanel("Diet by Predator and Prey",
+                                        fluidRow(column(2),
+                                                 column(4,
+                                                        wellPanel(
+                                                          selectInput("diet_dispred",
+                                                                      label = "Predator",
+                                                                      choices = obj$bioagg_names))),
+                                                 column(4,
+                                                        wellPanel(
+                                                          selectInput("diet_disprey",
+                                                                      label = "Prey",
+                                                                      choices = obj$bioagg_names))),
+                                                 column(2)),
+                                        fluidRow(column(2),
+                                                 column(4,
+                                                        plotOutput("diet_pprey", height = "600px")),
+                                                 column(4,
+                                                        plotOutput("diet_pprey_collapsed", height = "600px")))),
                                
-                               tabPanel("Diet Information",
+                               tabPanel("Consumption by Predator",
+                                        fluidRow(column(4),
+                                                 column(4,wellPanel(selectInput("diet_pred",
+                                                                                label = "Predator",
+                                                                                choices = obj$bioagg_names)))),
+                                        fluidRow(column(2),
+                                                 column(4,
+                                                        plotOutput("diet_predator", height = "600px")),
+                                                 column(4,
+                                                        plotOutput("diet_predator_collapsed", height = "600px")))),
+                               
+                               tabPanel("Consumption by Prey",
+                                        fluidRow(column(4),
+                                                 column(4,wellPanel(selectInput("diet_prey",
+                                                                                label = "Prey",
+                                                                                choices = obj$bioagg_names)))),
+                                        fluidRow(column(2),
+                                                 column(4,
+                                                        plotOutput("diet_prey", height = "600px")),
+                                                 column(4,
+                                                        plotOutput("diet_prey_collapsed", height = "600px")))),
+                               
+                               tabPanel("Mean Diet Time",
                                         fluidRow(
                                           column(2),
                                           column(4,
-                                                 selectInput("diet_pred", 
+                                                 selectInput("mean_diet_pred", 
                                                              "Predator:", 
                                                              c("All", 
                                                                unique(as.character(obj$tot_pred$Predator))))
                                           ),
                                           column(4, 
-                                                 selectInput("diet_prey", 
+                                                 selectInput("mean_diet_prey", 
                                                              "Prey:", 
                                                              c("All", 
                                                                unique(as.character(obj$tot_pred$Prey)))))),
                                         DT::dataTableOutput('diet_table'))),
+                    
                     navbarMenu("Summaries",
                                tabPanel("Vertebrates",
                                         fluidRow(column(4),
@@ -327,10 +369,10 @@ vat <- function(obj, anim){
       # Diet Table 
       output$diet_table <- DT::renderDataTable({
         diet_tab <- obj$tot_pred
-        if (input$diet_pred != "All"){
+        if (input$mean_diet_pred != "All"){
           diet_tab <- diet_tab[diet_tab$Predator == input$diet_pred,]
         }
-        if (input$diet_prey != "All"){
+        if (input$mean_diet_prey != "All"){
           diet_tab <- diet_tab[diet_tab$Prey == input$diet_prey,]
         }
         options(scipen = 999)
@@ -354,6 +396,42 @@ vat <- function(obj, anim){
         dat_rn <- subset(obj$reserve, .id %in% rn_ids)
         ggplot(data = dat_rn, aes(y = V1, x = Time)) + geom_line(aes(group = .id, color = .id), size = 2, alpha = .75) +  
           scale_x_continuous(breaks=seq(round(min(dat_rn$Time)), round(max(dat_rn$Time)), 5)) + ylab("Reserve Nitrogen (mg N)")  + scale_color_brewer(name = "Ageclass",type = "div",palette = 5, labels = 1:10) + theme_bw() + guides(fill = guide_legend(override.aes = list(colour = NULL)))+ theme(panel.background=element_blank(), legend.key = element_rect(), legend.background = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), panel.background = element_blank(), legend.key = element_rect(colour = NA),axis.line = element_line(size = .2))})
+      
+      # Diet Predator by prey
+      output$diet_pprey <- renderPlot({
+        data_dpp <- subset(obj$diet_l, obj$diet_l$Predator == input$diet_dispred & obj$diet_l$Prey == input$diet_disprey)
+        ggplot(data = data_dpp, aes(x = Time/365, y = eaten, color = as.character(Cohort))) + geom_line(size = 1, alpha = .75) + scale_color_brewer(name = "Ageclass", type = "div",palette = 5, labels = 1:10) + xlab("Years since simulation started") + ylab("Consumed") + ggtitle(paste("Consumption of ", data_dpp[1,5], " by ", data_dpp[1,2], " by age class", sep = ""))
+        })
+      
+      # Diet Predator by prey collapsed over age class
+      output$diet_pprey_collapsed <- renderPlot({
+        data_dpp <- subset(obj$diet_l, obj$diet_l$Predator == input$diet_dispred & obj$diet_l$Prey == input$diet_disprey)
+        ggplot(data = data_dpp, aes(x = Time/365, y = eaten)) + stat_summary(aes(group =1), fun.y = mean, geom = "line", size = 1, alpha = .75) + xlab("Years since simulation started") + ylab("Consumed") + ggtitle(paste("Consumption of ", data_dpp[1,5], " by ", data_dpp[1,2], " collapsed over age class", sep = ""))
+      })
+      
+      # Consumption by Predator
+      output$diet_predator <- renderPlot({
+        data_dpp <- subset(obj$diet_l, obj$diet_l$Predator == input$diet_pred)
+        ggplot(data = data_dpp, aes(x = Time/365, y = eaten, color = as.character(Cohort))) + geom_line(size = 1, alpha = .75) + scale_color_brewer(name = "Ageclass", type = "div",palette = 5, labels = 1:10) + xlab("Years since simulation started") + ylab("Consumed") + ggtitle(paste("Consumption by ", data_dpp[1,2], " by age class", sep = "")) + facet_wrap(~ Prey)
+      })
+      
+      # Consumption by Predator collapsed
+      output$diet_predator_collapsed <- renderPlot({
+        data_dpp <- subset(obj$diet_l, obj$diet_l$Predator == input$diet_pred)
+        ggplot(data = data_dpp, aes(x = Time/365, y = eaten))+ stat_summary(aes(group =1), fun.y = mean, geom = "line", size = 1, alpha = .75) + xlab("Years since simulation started") + ylab("Consumed") + ggtitle(paste("Consumption by ", data_dpp[1,2], " collapsed over age class", sep = "")) + facet_wrap(~ Prey)
+      })
+      
+      # Consumption by Prey
+      output$diet_prey <- renderPlot({
+        data_dpp <- subset(obj$diet_l, obj$diet_l$Prey == input$diet_prey)
+        ggplot(data = data_dpp, aes(x = Time/365, y = eaten, color = as.character(Cohort))) + geom_line(size = 1, alpha = .75) + scale_color_brewer(name = "Ageclass", type = "div",palette = 5, labels = 1:10) + xlab("Years since simulation started") + ylab("Consumed") + ggtitle(paste("Consumption of ", data_dpp[1,5], " by age class", sep = "")) + facet_wrap(~ Predator)
+      })
+      
+      # Consumption by Prey collapsed
+      output$diet_prey_collapsed <- renderPlot({
+        data_dpp <- subset(obj$diet_l, obj$diet_l$Prey == input$diet_prey)
+        ggplot(data = data_dpp, aes(x = Time/365, y = eaten)) + stat_summary(aes(group =1), fun.y = mean, geom = "line", size = 1, alpha = .75) + xlab("Years since simulation started") + ylab("Consumed") + ggtitle(paste("Consumption of ", data_dpp[1,5], " collapsed over age class", sep = "")) + facet_wrap(~ Predator)
+      })
       
       # Total Biomass
       output$totalbio <- renderPlot({
