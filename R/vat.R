@@ -166,7 +166,7 @@ vat <- function(obj, anim){
                                                                                 choices = obj$bioagg_names)))),
                                         fluidRow(column(1),
                                                  column(5,
-                                                        plotOutput("diet_predator", height = "600px")),
+                                                        plotOutput("diet_pred_plot", height = "600px")),
                                                  column(5,
                                                         plotOutput("diet_predator_collapsed", height = "600px")))),
                                
@@ -177,7 +177,7 @@ vat <- function(obj, anim){
                                                                                 choices = obj$bioagg_names)))),
                                         fluidRow(column(1),
                                                  column(5,
-                                                        plotOutput("diet_prey", height = "600px")),
+                                                        plotOutput("diet_prey_plot", height = "600px")),
                                                  column(5,
                                                         plotOutput("diet_prey_collapsed", height = "600px")))),
                                
@@ -370,10 +370,10 @@ vat <- function(obj, anim){
       output$diet_table <- DT::renderDataTable({
         diet_tab <- obj$tot_pred
         if (input$mean_diet_pred != "All"){
-          diet_tab <- diet_tab[diet_tab$Predator == input$diet_pred,]
+          diet_tab <- diet_tab[diet_tab$Predator == input$mean_diet_pred,]
         }
         if (input$mean_diet_prey != "All"){
-          diet_tab <- diet_tab[diet_tab$Prey == input$diet_prey,]
+          diet_tab <- diet_tab[diet_tab$Prey == input$mean_diet_prey,]
         }
         options(scipen = 999)
         DT::datatable(diet_tab,rownames = FALSE,
@@ -410,7 +410,7 @@ vat <- function(obj, anim){
       })
       
       # Consumption by Predator
-      output$diet_predator <- renderPlot({
+      output$diet_pred_plot <- renderPlot({
         data_dpp <- subset(obj$diet_l, obj$diet_l$Predator == input$diet_pred)
         ggplot(data = data_dpp, aes(x = Time/365, y = eaten, color = as.character(Cohort))) + geom_line(size = 1, alpha = .75) + scale_color_brewer(name = "Ageclass", type = "div",palette = 5, labels = 1:10) + xlab("Years since simulation started") + ylab("Consumed") + ggtitle(paste("Consumption by ", data_dpp[1,2], " by age class", sep = "")) + facet_wrap(~ Prey)
       })
@@ -422,7 +422,7 @@ vat <- function(obj, anim){
       })
       
       # Consumption by Prey
-      output$diet_prey <- renderPlot({
+      output$diet_prey_plot <- renderPlot({
         data_dpp <- subset(obj$diet_l, obj$diet_l$Prey == input$diet_prey)
         ggplot(data = data_dpp, aes(x = Time/365, y = eaten, color = as.character(Cohort))) + geom_line(size = 1, alpha = .75) + scale_color_brewer(name = "Ageclass", type = "div",palette = 5, labels = 1:10) + xlab("Years since simulation started") + ylab("Consumed") + ggtitle(paste("Consumption of ", data_dpp[1,5], " by age class", sep = "")) + facet_wrap(~ Predator)
       })
