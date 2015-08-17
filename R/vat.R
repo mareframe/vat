@@ -5,20 +5,22 @@
 #' 
 #'@param obj Object of class vat returned by create_vat
 #'@param anim Directory to stored animated plot created by vat_animate function
+#'@import ggplot2
+#'@import shiny
+#'@importFrom DT dataTableOutput
+#'@importFrom DT renderDataTable
+#'@importFrom DT datatable
+#'@importFrom scales muted
 #'@export
-#'@seealso \code{\link{create_vat}}, \code{\link{vat_animate}}
-#'\dontrun{
+#'@seealso \code{\link{create_vat}}, \code{\link{animate_vat}}
 #' anim <- "/path/to/animinated/gifs"
-#' obj <- create_vat(outdir = "/atlantis/output_dir/", fgfile = "/atlantis/functionalgroup.csv", ncout = "output_atlantis")
+#' obj <- create_vat(outdir = "/atlantis/output_dir/",
+#' fgfile = "/atlantis/functionalgroup.csv", 
+#' ncout = "output_atlantis")
 #' vat(obj, anim)
-#'}
+#'
 
 vat <- function(obj, anim){
-  require("shiny")
-  require("ggplot2")
-  require("markdown")
-  require("scales")
-  require("grid")
   shinyApp(
     ui = navbarPage("vat",
                     # Starting "Welcome" Tab"
@@ -40,7 +42,7 @@ vat <- function(obj, anim){
                                              img(src = "http://cddesja.github.com/vat/images/hi.gif", height = 45, width = 45)),
                                       column(2))),
                     tabPanel("Functional Groups",
-                             DT::dataTableOutput('fun_group_atl')),
+                             dataTableOutput('fun_group_atl')),
                     
                     # Disaggregated Spatial Maps
                     navbarMenu("Spatial Plots",
@@ -195,7 +197,7 @@ vat <- function(obj, anim){
                                                              "Prey:", 
                                                              c("All", 
                                                                unique(as.character(obj$tot_pred$Prey)))))),
-                                        DT::dataTableOutput('diet_table'))),
+                                        dataTableOutput('diet_table'))),
                     
                     navbarMenu("Summaries",
                                tabPanel("Vertebrates",
@@ -239,8 +241,8 @@ vat <- function(obj, anim){
       
       # Disaggregated spatial plot
       
-      output$fun_group_atl = DT::renderDataTable({
-        DT::datatable(obj$fun_group, rownames = FALSE)
+      output$fun_group_atl = renderDataTable({
+        datatable(obj$fun_group, rownames = FALSE)
       })
       
       output$map <- renderPlot({
@@ -367,7 +369,7 @@ vat <- function(obj, anim){
           ylab("") +  theme_bw() + ggtitle("YOY Biomass")})
       
       # Diet Table 
-      output$diet_table <- DT::renderDataTable({
+      output$diet_table <- renderDataTable({
         diet_tab <- obj$tot_pred
         if (input$mean_diet_pred != "All"){
           diet_tab <- diet_tab[diet_tab$Predator == input$mean_diet_pred,]
@@ -376,10 +378,10 @@ vat <- function(obj, anim){
           diet_tab <- diet_tab[diet_tab$Prey == input$mean_diet_prey,]
         }
         options(scipen = 999)
-        DT::datatable(diet_tab,rownames = FALSE,
-                      caption = htmltools::tags$caption(
+        datatable(diet_tab,rownames = FALSE,
+                      caption = tags$caption(
                         style = 'caption-side: bottom; text-align: center;',
-                        'Diet Matrix: ', htmltools::em('Units are number consumed per second for vertebrates and mg N/m3 consumed per second for biomass pools.')
+                        'Diet Matrix: ', em('Units are number consumed per second for vertebrates and mg N/m3 consumed per second for biomass pools.')
                       ))
       })
       

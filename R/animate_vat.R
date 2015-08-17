@@ -9,6 +9,10 @@
 #' @param interval Speed of animination (unit in seconds)
 #' @param codes Vector of containing all the Atlantis functional group codes needed to create GIFs
 #' @param savedir Where should the gifs be saved?
+#' @import ggplot2
+#' @importFrom animation ani.options
+#' @importFrom animation saveGIF
+#' @importFrom gridExtra grid.arrange
 #' @export
 #' @seealso \code{\link{create_vat}}, \code{\link{vat}}
 #' @examples
@@ -23,10 +27,6 @@
 animate_vat <- function(bgm, bmass, interval = .3, codes, savedir){
   if(exists("savedir")  == FALSE)
     savedir <- getwd()
-  
-  require("animation")
-  require("gridExtra")
-  require("ggplot2")
   bgm <- readLines(bgm)
   bio_agg <- read.table(bmass, header = T)
   

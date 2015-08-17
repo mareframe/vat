@@ -8,6 +8,15 @@
 #'  @param ncout Name of output ncdf4 file excluding nc suffix (i.e. name given after -o flag)
 #'  @param startyear Year that the model starts
 #'  @param toutinc Periodicity of writing output (in days)
+#'  @import dplyr
+#'  @importFrom ncdf4 nc_open
+#'  @importFrom ncdf4 ncvar_get
+#'  @importFrom plyr ldply
+#'  @importFrom plyr adply
+#'  @importFrom tidyr gather
+#'  @importFrom stringr str_split_fixed
+#'  @importFrom stringr str_trim
+#'  
 #'  @export
 #'  @seealso \code{\link{vat}}, \code{\link{animate_vat}}
 #'  @examples
@@ -15,15 +24,9 @@
 #' obj <- create_vat(outdir = "/atlantis/output_dir/", fgfile = "/atlantis/functionalgroup.csv", biolprm = "/atlantis/biol.prm", ncout = "output_atlantis", startyear = 1948, toutinc = 30)
 #'  }
 create_vat <- function(outdir, fgfile, biolprm, ncout, startyear, toutinc){
-  require("ncdf4")
-  require("plyr")
-  require("dplyr")
-  require("tidyr")
-  require("stringr")
-  require("DT")
   cat("### ------------ Reading in data                                         ------------ ###\n")
-  nc_out <- ncdf4::nc_open(paste(outdir, ncout, ".nc", sep = ""))
-  prod_out <- ncdf4::nc_open(paste(outdir, ncout, "PROD.nc", sep = ""))
+  nc_out <- nc_open(paste(outdir, ncout, ".nc", sep = ""))
+  prod_out <- nc_open(paste(outdir, ncout, "PROD.nc", sep = ""))
   bio_agg <- read.table(paste(outdir, ncout, "BoxBiomass.txt", sep = ""), header = T)
   ssb <- read.table(paste(outdir, ncout, "SSB.txt", sep = ""), header = TRUE)
   yoy <- read.table(paste(outdir, ncout, "YOY.txt", sep = ""), header = TRUE)
@@ -138,7 +141,7 @@ create_vat <- function(outdir, fgfile, biolprm, ncout, startyear, toutinc){
   # extract tracers from the ncdf4 object
   vars <- list()
   for (i in 1:length(tot_num)){
-    vars[[i]] <- ncdf4::ncvar_get(nc = nc_out, varid = tot_num[i])
+    vars[[i]] <- ncvar_get(nc = nc_out, varid = tot_num[i])
   }
   names(vars) <- tot_num
   
@@ -154,13 +157,13 @@ create_vat <- function(outdir, fgfile, biolprm, ncout, startyear, toutinc){
   
   invert_vars <- list()
   for (i in 1:length(invert_mnames)){
-    invert_vars[[i]] <- ncdf4::ncvar_get(nc = nc_out, varid = invert_mnames[i])
+    invert_vars[[i]] <- ncvar_get(nc = nc_out, varid = invert_mnames[i])
   }
   names(invert_vars) <- invert_mnames
   
   trace_vars <- list()
   for (i in 1:length(trace_names)){
-    trace_vars[[i]] <- ncdf4::ncvar_get(nc = nc_out, varid = trace_names[i])
+    trace_vars[[i]] <- ncvar_get(nc = nc_out, varid = trace_names[i])
   }
   names(trace_vars) <- trace_names
   
@@ -226,16 +229,16 @@ create_vat <- function(outdir, fgfile, biolprm, ncout, startyear, toutinc){
   
   # Aggregate arrays
   mean_agg <- function(x){
-    plyr::adply(x, 3, mean)
+    adply(x, 3, mean)
   }
   
   sum_agg <- function(x){
-    plyr::adply(x, 3, sum)
+    adply(x, 3, sum)
   }
   
-  structN <- plyr::ldply(sn_list, mean_agg)
-  reserveN <- plyr::ldply(rn_list, mean_agg)
-  totalnums <- plyr::ldply(vars, sum_agg)
+  structN <- ldply(sn_list, mean_agg)
+  reserveN <- ldply(rn_list, mean_agg)
+  totalnums <- ldply(vars, sum_agg)
   
   structN$.id <- factor(structN$.id, levels = unique(structN$.id))
   structN$Time <- as.numeric(as.character(structN$X1)) * toutinc / 365 + startyear
