@@ -1,2 +1,4 @@
 language: r
 sudo: required
+r_binary_packages:
+ - ncdf4
