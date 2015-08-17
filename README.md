@@ -1,5 +1,5 @@
 # vat
-###Visualising Atlantis Toolbox 
+###Visualising Atlantis Toolbox [![Build Status](https://travis-ci.org/cddesja/vat.svg)](https://travis-ci.org/cddesja/vat)
 
 `vat` is an interactive R package used with the [Atlantis](http://atlantis.cmar.csiro.au/) ecosystem model. 
 
