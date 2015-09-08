@@ -239,7 +239,9 @@ vat <- function(obj, anim){
                                                         plotOutput("invertprod", height = "300px")))))),
     server = function(input, output) {
       
-      # Disaggregated spatial plot
+      # -----------------------------------------
+      # SPATIAL PLOTS
+      # -----------------------------------------
       
       output$fun_group_atl = renderDataTable({
         datatable(obj$fun_group, rownames = FALSE)
@@ -348,42 +350,11 @@ vat <- function(obj, anim){
         list(src = filename)
       }, deleteFile = FALSE)
       
-      # Relative biomass map
-      output$rel_map <- renderPlot({
-        qplot(y = obj$rel_bio[[match(input$ssb_var, names(obj$rel_bio))]], x = Time, data = obj$rel_bio, geom = "line") +
-          ylab("") +  theme_bw() + ggtitle("Relative Biomass")}) 
+      # -----------------------------------------
+      # AGE DISAGGREGATED TAB
+      # -----------------------------------------
       
-      # Total biomass map
-      output$tot_map <- renderPlot({
-        qplot(y = obj$tot_bio[[match(input$ssb_var, names(obj$tot_bio))]], x = Time, data = obj$tot_bio, geom = "line") +
-          ylab("") +  theme_bw() + ggtitle("Total Biomass")}) 
-      
-      # SSB map
-      output$ssb_map <- renderPlot({
-        qplot(y = obj$ssb[[match(input$ssb_var, names(obj$ssb))]], x = Time, data = obj$ssb, geom = "line") +
-          ylab("") +  theme_bw() + ggtitle("Spawning Stock Biomass")}) 
-      
-      # YOY map
-      output$yoy_map <- renderPlot({
-        qplot(y = obj$yoy[[match(input$ssb_var, names(obj$yoy))]], x = Time, data = obj$yoy, geom = "line") +
-          ylab("") +  theme_bw() + ggtitle("YOY Biomass")})
-      
-      # Diet Table 
-      output$diet_table <- renderDataTable({
-        diet_tab <- obj$tot_pred
-        if (input$mean_diet_pred != "All"){
-          diet_tab <- diet_tab[diet_tab$Predator == input$mean_diet_pred,]
-        }
-        if (input$mean_diet_prey != "All"){
-          diet_tab <- diet_tab[diet_tab$Prey == input$mean_diet_prey,]
-        }
-        options(scipen = 999)
-        datatable(diet_tab,rownames = FALSE,
-                      caption = tags$caption(
-                        style = 'caption-side: bottom; text-align: center;',
-                        'Diet Matrix: ', em('Units are number consumed per second for vertebrates and mg N/m3 consumed per second for biomass pools.')
-                      ))
-      })
+    
       
       # Structural nitrogen
       output$structn <- renderPlot({
@@ -399,41 +370,6 @@ vat <- function(obj, anim){
         ggplot(data = dat_rn, aes(y = V1, x = Time)) + geom_line(aes(group = .id, color = .id), size = 2, alpha = .75) +  
           scale_x_continuous(breaks=seq(round(min(dat_rn$Time)), round(max(dat_rn$Time)), 5)) + ylab("Reserve Nitrogen (mg N)")  + scale_color_brewer(name = "Ageclass",type = "div",palette = 5, labels = 1:10) + theme_bw() + guides(fill = guide_legend(override.aes = list(colour = NULL)))+ theme(panel.background=element_blank(), legend.key = element_rect(), legend.background = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), panel.background = element_blank(), legend.key = element_rect(colour = NA),axis.line = element_line(size = .2))})
       
-      # Diet Predator by prey
-      output$diet_pprey <- renderPlot({
-        data_dpp <- subset(obj$diet_l, obj$diet_l$Predator == input$diet_dispred & obj$diet_l$Prey == input$diet_disprey)
-        ggplot(data = data_dpp, aes(x = Time/365, y = eaten, color = as.character(Cohort))) + geom_line(size = 1, alpha = .75) + scale_color_brewer(name = "Ageclass", type = "div",palette = 5, labels = 1:10) + xlab("Years since simulation started") + ylab("Consumed") + ggtitle(paste("Consumption of ", data_dpp[1,5], " by ", data_dpp[1,2], " by age class", sep = ""))
-        })
-      
-      # Diet Predator by prey collapsed over age class
-      output$diet_pprey_collapsed <- renderPlot({
-        data_dpp <- subset(obj$diet_l, obj$diet_l$Predator == input$diet_dispred & obj$diet_l$Prey == input$diet_disprey)
-        ggplot(data = data_dpp, aes(x = Time/365, y = eaten)) + stat_summary(aes(group =1), fun.y = mean, geom = "line", size = 1, alpha = .75) + xlab("Years since simulation started") + ylab("Consumed") + ggtitle(paste("Consumption of ", data_dpp[1,5], " by ", data_dpp[1,2], " collapsed over age class", sep = ""))
-      })
-      
-      # Consumption by Predator
-      output$diet_pred_plot <- renderPlot({
-        data_dpp <- subset(obj$diet_l, obj$diet_l$Predator == input$diet_pred)
-        ggplot(data = data_dpp, aes(x = Time/365, y = eaten, color = as.character(Cohort))) + geom_line(size = 1, alpha = .75) + scale_color_brewer(name = "Ageclass", type = "div",palette = 5, labels = 1:10) + xlab("Years since simulation started") + ylab("Consumed") + ggtitle(paste("Consumption by ", data_dpp[1,2], " by age class", sep = "")) + facet_wrap(~ Prey)
-      })
-      
-      # Consumption by Predator collapsed
-      output$diet_predator_collapsed <- renderPlot({
-        data_dpp <- subset(obj$diet_l, obj$diet_l$Predator == input$diet_pred)
-        ggplot(data = data_dpp, aes(x = Time/365, y = eaten))+ stat_summary(aes(group =1), fun.y = mean, geom = "line", size = 1, alpha = .75) + xlab("Years since simulation started") + ylab("Consumed") + ggtitle(paste("Consumption by ", data_dpp[1,2], " collapsed over age class", sep = "")) + facet_wrap(~ Prey)
-      })
-      
-      # Consumption by Prey
-      output$diet_prey_plot <- renderPlot({
-        data_dpp <- subset(obj$diet_l, obj$diet_l$Prey == input$diet_prey)
-        ggplot(data = data_dpp, aes(x = Time/365, y = eaten, color = as.character(Cohort))) + geom_line(size = 1, alpha = .75) + scale_color_brewer(name = "Ageclass", type = "div",palette = 5, labels = 1:10) + xlab("Years since simulation started") + ylab("Consumed") + ggtitle(paste("Consumption of ", data_dpp[1,5], " by age class", sep = "")) + facet_wrap(~ Predator)
-      })
-      
-      # Consumption by Prey collapsed
-      output$diet_prey_collapsed <- renderPlot({
-        data_dpp <- subset(obj$diet_l, obj$diet_l$Prey == input$diet_prey)
-        ggplot(data = data_dpp, aes(x = Time/365, y = eaten)) + stat_summary(aes(group =1), fun.y = mean, geom = "line", size = 1, alpha = .75) + xlab("Years since simulation started") + ylab("Consumed") + ggtitle(paste("Consumption of ", data_dpp[1,5], " collapsed over age class", sep = "")) + facet_wrap(~ Predator)
-      })
       
       # Total Biomass
       output$totalbio <- renderPlot({
@@ -480,8 +416,95 @@ vat <- function(obj, anim){
         lw_data$length <- (lw_data$wt_grams/param_a)^(1/param_b)
         
         ggplot(data = lw_data, aes(y = length, x = Time)) + geom_line(aes(group = .id, color = .id), size = 2, alpha = .75) +  scale_x_continuous(breaks=seq(round(min(lw_data$Time)), round(max(lw_data$Time)), 5)) + ylab("Length-At-Age (cm)") + scale_color_brewer(name = "Ageclass", type = "div",palette = 5, labels = 1:10) + theme_bw()  + guides(fill = guide_legend(override.aes = list(colour = NULL)))+ theme(panel.background=element_blank(), legend.key = element_rect(), legend.background = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), panel.background = element_blank(), legend.key = element_rect(colour = NA),axis.line = element_line(size = .2, color = "black")) 
-        
       })
+      
+      # -----------------------------------------
+      # DIET DATA TAB
+      # -----------------------------------------
+      
+      # Diet Table 
+      output$diet_table <- renderDataTable({
+        diet_tab <- obj$tot_pred
+        if (input$mean_diet_pred != "All"){
+          diet_tab <- diet_tab[diet_tab$Predator == input$mean_diet_pred,]
+        }
+        if (input$mean_diet_prey != "All"){
+          diet_tab <- diet_tab[diet_tab$Prey == input$mean_diet_prey,]
+        }
+        options(scipen = 999)
+        if(!obj$diet_unit){
+          datatable(diet_tab,rownames = FALSE,
+                    caption = tags$caption(
+                      style = 'caption-side: bottom; text-align: center;',
+                      'Diet Matrix: ', em('Units are number consumed per second for the vertebrates and mg N per m3 consumed per second for biomass pools.')))
+        } 
+        else {
+          datatable(diet_tab,rownames = FALSE,
+                    caption = tags$caption(
+                      style = 'caption-side: bottom; text-align: center;',
+                      'Diet Matrix: ', em('Units are total annual biomass consumed for the vertebrates and tons per m3 consumed per year for the biomass pools.'))) 
+        }
+      })
+      
+        # Diet Predator by prey
+      output$diet_pprey <- renderPlot({
+        data_dpp <- subset(obj$diet_l, obj$diet_l$Predator == input$diet_dispred & obj$diet_l$Prey == input$diet_disprey)
+        ggplot(data = data_dpp, aes(x = Time/365, y = eaten, color = as.character(Cohort))) + geom_line(size = 1, alpha = .75) + scale_color_brewer(name = "Ageclass", type = "div",palette = 5, labels = 1:10) + xlab("Years since simulation started") + ylab("Consumed") + ggtitle(paste("Consumption of ", data_dpp[1,5], " by ", data_dpp[1,2], " by age class", sep = "")) + theme_bw() + guides(fill = guide_legend(override.aes = list(colour = NULL)))+ theme(panel.background=element_blank(), legend.key = element_rect(), legend.background = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), panel.background = element_blank(), legend.key = element_rect(colour = NA),axis.line = element_line(size = .2))
+        })
+        
+      # Diet Predator by prey collapsed over age class
+      output$diet_pprey_collapsed <- renderPlot({
+        data_dpp <- subset(obj$diet_l, obj$diet_l$Predator == input$diet_dispred & obj$diet_l$Prey == input$diet_disprey)
+        ggplot(data = data_dpp, aes(x = Time/365, y = eaten)) + stat_summary(aes(group =1), fun.y = sum, geom = "line", size = 1, alpha = .75) + xlab("Years since simulation started") + ylab("Consumed") + ggtitle(paste("Consumption of ", data_dpp[1,5], " by ", data_dpp[1,2], " collapsed over age class", sep = "")) + theme_bw() + guides(fill = guide_legend(override.aes = list(colour = NULL)))+ theme(panel.background=element_blank(), legend.key = element_rect(), legend.background = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), panel.background = element_blank(), legend.key = element_rect(colour = NA),axis.line = element_line(size = .2))
+      })
+      
+      # Consumption by Predator
+      output$diet_pred_plot <- renderPlot({
+        data_dpp <- subset(obj$diet_l, obj$diet_l$Predator == input$diet_pred)
+        ggplot(data = data_dpp, aes(x = Time/365, y = eaten, color = as.character(Cohort))) + geom_line(size = 1, alpha = .75) + scale_color_brewer(name = "Ageclass", type = "div",palette = 5, labels = 1:10) + xlab("Years since simulation started") + ylab("Consumed") + ggtitle(paste("Consumption by ", data_dpp[1,2], " by age class", sep = "")) + facet_wrap(~ Prey) + theme_bw() + guides(fill = guide_legend(override.aes = list(colour = NULL)))+ theme(panel.background=element_blank(), legend.key = element_rect(), legend.background = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), panel.background = element_blank(), legend.key = element_rect(colour = NA),axis.line = element_line(size = .2))
+      })
+      
+      # Consumption by Predator collapsed
+      output$diet_predator_collapsed <- renderPlot({
+        data_dpp <- subset(obj$diet_l, obj$diet_l$Predator == input$diet_pred)
+        ggplot(data = data_dpp, aes(x = Time/365, y = eaten))+ stat_summary(aes(group =1), fun.y = sum, geom = "line", size = 1, alpha = .75) + xlab("Years since simulation started") + ylab("Consumed") + ggtitle(paste("Consumption by ", data_dpp[1,2], " collapsed over age class", sep = "")) + facet_wrap(~ Prey) + theme_bw() + guides(fill = guide_legend(override.aes = list(colour = NULL)))+ theme(panel.background=element_blank(), legend.key = element_rect(), legend.background = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), panel.background = element_blank(), legend.key = element_rect(colour = NA),axis.line = element_line(size = .2))
+      })
+      
+      # Consumption by Prey
+      output$diet_prey_plot <- renderPlot({
+        data_dpp <- subset(obj$diet_l, obj$diet_l$Prey == input$diet_prey)
+        ggplot(data = data_dpp, aes(x = Time/365, y = eaten, color = as.character(Cohort))) + geom_line(size = 1, alpha = .75) + scale_color_brewer(name = "Ageclass", type = "div",palette = 5, labels = 1:10) + xlab("Years since simulation started") + ylab("Consumed") + ggtitle(paste("Consumption of ", data_dpp[1,5], " by age class", sep = "")) + facet_wrap(~ Predator) + theme_bw() + guides(fill = guide_legend(override.aes = list(colour = NULL)))+ theme(panel.background=element_blank(), legend.key = element_rect(), legend.background = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), panel.background = element_blank(), legend.key = element_rect(colour = NA),axis.line = element_line(size = .2))
+      })
+      
+      # Consumption by Prey collapsed
+      output$diet_prey_collapsed <- renderPlot({
+        data_dpp <- subset(obj$diet_l, obj$diet_l$Prey == input$diet_prey)
+        ggplot(data = data_dpp, aes(x = Time/365, y = eaten)) + stat_summary(aes(group =1), fun.y = sum, geom = "line", size = 1, alpha = .75) + xlab("Years since simulation started") + ylab("Consumed") + ggtitle(paste("Consumption of ", data_dpp[1,5], " collapsed over age class", sep = "")) + facet_wrap(~ Predator) + theme_bw() + guides(fill = guide_legend(override.aes = list(colour = NULL)))+ theme(panel.background=element_blank(), legend.key = element_rect(), legend.background = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), panel.background = element_blank(), legend.key = element_rect(colour = NA),axis.line = element_line(size = .2))
+      })
+      
+      # -----------------------------------------
+      # SUMMARIES TAB
+      # -----------------------------------------
+      
+      # Relative biomass map
+      output$rel_map <- renderPlot({
+        qplot(y = obj$rel_bio[[match(input$ssb_var, names(obj$rel_bio))]], x = Time, data = obj$rel_bio, geom = "line") +
+          ylab("") +  theme_bw() + ggtitle("Relative Biomass")}) 
+      
+      # Total biomass map
+      output$tot_map <- renderPlot({
+        qplot(y = obj$tot_bio[[match(input$ssb_var, names(obj$tot_bio))]], x = Time, data = obj$tot_bio, geom = "line") +
+          ylab("") +  theme_bw() + ggtitle("Total Biomass")}) 
+      
+      # SSB map
+      output$ssb_map <- renderPlot({
+        qplot(y = obj$ssb[[match(input$ssb_var, names(obj$ssb))]], x = Time, data = obj$ssb, geom = "line") +
+          ylab("") +  theme_bw() + ggtitle("Spawning Stock Biomass")}) 
+      
+      # YOY map
+      output$yoy_map <- renderPlot({
+        qplot(y = obj$yoy[[match(input$ssb_var, names(obj$yoy))]], x = Time, data = obj$yoy, geom = "line") +
+          ylab("") +  theme_bw() + ggtitle("YOY Biomass")})
       
       
       
