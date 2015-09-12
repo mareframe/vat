@@ -24,7 +24,7 @@
 #'  \dontrun{
 #' obj <- create_vat(outdir = "/atlantis/output_dir/", fgfile = "/atlantis/functionalgroup.csv", biolprm = "/atlantis/biol.prm", ncout = "output_atlantis", startyear = 1948, toutinc = 30)
 #'  }
-create_vat <- function(outdir, fgfile, biolprm, ncout, startyear, toutinc, avewt){
+create_vat <- function(outdir, fgfile, biolprm, ncout, startyear, toutinc, avewt = NULL){
   # contants
   nsecs <- 86400
   ndays <- 365
