@@ -46,8 +46,15 @@ vat <- function(obj, anim){
                     
                     # Disaggregated Spatial Maps
                     navbarMenu("Spatial Plots",
+                          ,
                                tabPanel("Interactive Plots",
-                                        navlistPanel(widths = c(2, 10),
+                                        navlistPanel(widt     tabPanel("Vertebrate Distribution by Boxes",
+                                        fluidRow(column(4),
+                                                 column(4,wellPanel(selectInput("erla_plot_select",
+                                                                                label = "Functional Group",
+                                                                                choices = names(obj$erla_plots))))),
+                                        fluidRow(column(12,
+                                                        plotOutput("vert_erla_plot", height = "800px"))))hs = c(2, 10),
                                                      tabPanel("Vertebrates",
                                                               fluidRow(
                                                                 column(4,
@@ -316,6 +323,20 @@ vat <- function(obj, anim){
           theme_bw() + xlab("") + ylab("") +
           scale_fill_gradient2(limits = c(tmp.min, tmp.max), low = muted("red"), midpoint = tmp.mid, high = muted("blue")) +
           theme(legend.title=element_blank()) + scale_y_continuous(breaks=NULL) + scale_x_continuous(breaks=NULL)
+      })
+      
+      ## Erla's Vertebrate Number Plots
+      output$vert_erla_plot <- renderPlot({
+        tmp <- obj$erla_plots[[input$erla_plot_select]]
+        tmp$Time <- as.numeric(as.character(tmp$Time)) * obj$toutinc / 365 + obj$startyear
+        
+        if(nlevels(tmp$Layer) == 7){
+        cbpalette <- c("#a50026", "#d73027", "#f46d43", "#fdae61","#74add1", "#4575b4", "#313695")
+        ggplot(data = tmp, aes(y = number, x = Time, group = Layer, color = Layer)) + geom_line(size = 1) + ylab("Total Number") + xlab("Time Elapsed") + facet_wrap(~ Box) + scale_color_manual(values = cbpalette) + theme_bw() + guides(fill = guide_legend(override.aes = list(colour = NULL))) +  
+          scale_x_continuous(breaks=seq(round(min(tmp$Time)), round(max(tmp$Time)), 10))  + theme(panel.background=element_blank(), legend.key = element_rect(), legend.background = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), panel.background = element_blank(), legend.key = element_rect(colour = NA),axis.line = element_line(size = .2)) 
+        } else {
+          ggplot(data = tmp, aes(y = number, x = Time, group = Layer, color = Layer)) + geom_line(size = 1) + ylab("Total Number") + facet_wrap(~ Box)  + theme_bw() + guides(fill = guide_legend(override.aes = list(colour = NULL))) + theme(panel.background=element_blank(), legend.key = element_rect(), legend.background = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), panel.background = element_blank(), legend.key = element_rect(colour = NA),axis.line = element_line(size = .2))
+        }
       })
       
       # Invertebrate plot

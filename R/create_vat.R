@@ -74,9 +74,6 @@ create_vat <- function(outdir, fgfile, biolprm, ncout, startyear, toutinc, avewt
                           b_name = b_group, b = as.numeric(as.character(b_param)))
   
   
-  
-
-  
   ## Drop those functional groups that are not turned on
   fun_group <- fun_group[fun_group$IsTurnedOn == 1,]# c(1,3:8)]
   
@@ -162,6 +159,69 @@ create_vat <- function(outdir, fgfile, biolprm, ncout, startyear, toutinc, avewt
     vars[[i]] <- ncvar_get(nc = nc_out, varid = tot_num[i])
   }
   names(vars) <- tot_num
+  
+  # Create Erla's plots
+  nominal_dz <- ncvar_get(nc = nc_out, varid = "nominal_dz")
+  depth_layers <- nominal_dz[,which.max(colSums(nominal_dz))]
+  depth_layers <- depth_layers[-c(1, length(depth_layers))]
+  depth_layers <- cumsum(rev(depth_layers))
+  
+  depth_labels <- rep(NA, (length(depth_layers) + 1))
+  for(i in 1:(length(depth_layers) + 1)){
+    if(i == 1){
+      depth_labels[i] <- paste("0 - ", depth_layers[i], sep = "")
+    } else if(i == (length(depth_layers) + 1))
+    {
+      depth_labels[i] <- paste(depth_layers[i - 1], " + ", sep ="")
+    } else depth_labels[i] <- paste(depth_layers[i - 1], " - ",  depth_layers[i], sep ="")
+  }
+  depth_labels <- c(depth_labels, "Sediment")
+  
+  mat_age <- grep("_age_mat", biolprm, value = T)
+  species_ids <- str_split_fixed(mat_age, "_age_mat", n = 2)[,1]  
+  juvenile_age <- as.numeric(gsub("[^\\d]+", "", mat_age, perl=TRUE))
+  
+  erla_plots <- list()
+  for(i in 1:length(species_ids)){
+    spp <- fun_group[fun_group$Code == species_ids[i],c("Name", "NumCohorts")]
+    juv <- paste(spp[[1]], 1:(juvenile_age[i] - 1), "_Nums", sep = "")
+    ad <- paste(spp[[1]], juvenile_age[i]:spp[[2]], "_Nums", sep = "")
+    
+    # Create the juveniles data
+    juv_tmp <- NULL
+    for(j in juv){
+      x <- adply(vars[[j]], c(1, 3))
+      juv_tmp <- rbind(juv_tmp, x)
+    }
+    juv_tmp <- juv_tmp %>%
+      group_by(X1, X2) %>%
+      summarize_each(funs(sum))
+    colnames(juv_tmp) <- c("Layer", "Time", paste("Box", 0:(ncol(juv_tmp)-3), sep =" "))
+    juv_tmp$Layer <- factor(juv_tmp$Layer,levels(juv_tmp$Layer)[c(((length(unique(juv_tmp$Layer)))-1):1, length(unique(juv_tmp$Layer)))])
+    levels(juv_tmp$Layer) <- depth_labels
+    juv_tmp <- gather(juv_tmp, Box, number, 3:ncol(juv_tmp))
+    
+    erla_plots[[paste(spp[[1]], "Juvenile")]] <- juv_tmp
+    
+    # Create the adults data
+    ad_tmp <- NULL
+    for(j in ad){
+      x <- adply(vars[[j]], c(1, 3))
+      ad_tmp <- rbind(ad_tmp, x)
+    }
+    
+    ad_tmp <- ad_tmp %>%
+      group_by(X1, X2) %>%
+      summarize_each(funs(sum))
+    colnames(ad_tmp) <- c("Layer", "Time", paste("Box", 0:(ncol(ad_tmp)-3), sep =" "))
+    ad_tmp$Layer <- factor(ad_tmp$Layer,levels(ad_tmp$Layer)[c(((length(unique(ad_tmp$Layer)))-1):1, length(unique(ad_tmp$Layer)))])
+    levels(ad_tmp$Layer) <- depth_labels
+    ad_tmp <- gather(ad_tmp, Box, number, 3:ncol(ad_tmp))
+    
+    erla_plots[[paste(spp[[1]], "Adult")]] <- ad_tmp
+  }
+  
+  # --- End Erla Plots -- #
   
   # extract physical tracers from the ncdf4 object
   phy_names <- names(nc_out$var)[!(names(nc_out$var) %in% tot_num)]
@@ -271,7 +331,7 @@ create_vat <- function(outdir, fgfile, biolprm, ncout, startyear, toutinc, avewt
   totalnums$Time <- as.numeric(as.character(totalnums$X1)) * toutinc / 365 + startyear
   #totalnums$Time <- as.numeric(as.character(totalnums$X1))/12 + startyear
   
-  output <- list(disagg = vars,invert_vars = invert_vars, invert_mnames = invert_mnames, trace_vars = trace_vars, trace_names = trace_names, var_names = tot_num, max_layers = max_layers, max_time = max_time, bioagg_names = bioagg_names, rs_names = rs_names, tot_pred = tot_pred, ssb_names = ssb_names, yoy_names = yoy_names, islands = islands, rel_bio = rel_bio, tot_bio = tot_bio, ssb = ssb, yoy = yoy, structN = structN, reserveN = reserveN, totalnums = totalnums, map_base = map_base, numboxes = numboxes, fun_group = fun_group, invert_names = invert_names, invert_l = invert_l, vert_l = vert_l, ab_params = ab_params, diet_l = diet_l, diet_unit = diet_unit)
+  output <- list(disagg = vars,invert_vars = invert_vars, invert_mnames = invert_mnames, trace_vars = trace_vars, trace_names = trace_names, var_names = tot_num, max_layers = max_layers, max_time = max_time, bioagg_names = bioagg_names, rs_names = rs_names, tot_pred = tot_pred, ssb_names = ssb_names, yoy_names = yoy_names, islands = islands, rel_bio = rel_bio, tot_bio = tot_bio, ssb = ssb, yoy = yoy, structN = structN, reserveN = reserveN, totalnums = totalnums, map_base = map_base, numboxes = numboxes, fun_group = fun_group, invert_names = invert_names, invert_l = invert_l, vert_l = vert_l, ab_params = ab_params, diet_l = diet_l, diet_unit = diet_unit, erla_plots = erla_plots, toutinc = toutinc, startyear = startyear)
   cat("### ------------ vat object created, you can now run the vat application ------------ ###\n") 
   return(output)
   class(output) <- "vat"
