@@ -46,15 +46,15 @@ vat <- function(obj, anim){
                     
                     # Disaggregated Spatial Maps
                     navbarMenu("Spatial Plots",
-                          ,
-                               tabPanel("Interactive Plots",
-                                        navlistPanel(widt     tabPanel("Vertebrate Distribution by Boxes",
+                               tabPanel("Vertebrate Distribution by Boxes",
                                         fluidRow(column(4),
                                                  column(4,wellPanel(selectInput("erla_plot_select",
                                                                                 label = "Functional Group",
                                                                                 choices = names(obj$erla_plots))))),
                                         fluidRow(column(12,
-                                                        plotOutput("vert_erla_plot", height = "800px"))))hs = c(2, 10),
+                                                        plotOutput("vert_erla_plot", height = "800px")))),
+                               tabPanel("Interactive Plots",
+                                        navlistPanel(widths = c(2, 10),
                                                      tabPanel("Vertebrates",
                                                               fluidRow(
                                                                 column(4,
