@@ -8,7 +8,6 @@
 #'  @param ncout Name of output ncdf4 file excluding nc suffix (i.e. name given after -o flag)
 #'  @param startyear Year that the model starts
 #'  @param toutinc Periodicity of writing output (in days)
-#'  @param avewt Vector of the average weights of functional groups for the vertebrates in the same order as the Functional group file, this is an optional argument
 #'  @import dplyr
 #'  @importFrom ncdf4 nc_open
 #'  @importFrom ncdf4 ncvar_get
@@ -24,7 +23,7 @@
 #'  \dontrun{
 #' obj <- create_vat(outdir = "/atlantis/output_dir/", fgfile = "/atlantis/functionalgroup.csv", biolprm = "/atlantis/biol.prm", ncout = "output_atlantis", startyear = 1948, toutinc = 30)
 #'  }
-create_vat <- function(outdir, fgfile, biolprm, ncout, startyear, toutinc, avewt = NULL){
+create_vat <- function(outdir, fgfile, biolprm, ncout, startyear, toutinc, ...){
   # contants
   nsecs <- 86400
   ndays <- 365
@@ -44,16 +43,6 @@ create_vat <- function(outdir, fgfile, biolprm, ncout, startyear, toutinc, avewt
   tot_bio <- biomass[,c(1:(grep("Rel",colnames(biomass))[1]-1))]
   diet <- read.table(paste(outdir, ncout, "DietCheck.txt", sep = ""), header = TRUE, stringsAsFactors = TRUE)
   fun_group <- read.csv(fgfile, header = T, stringsAsFactors = FALSE)#[, c(1,3, 4,5,6, 9,16, 12)]
-  
-  if(!is.null(avewt)){
-  ## This is for number of individuals or mg N/m3 per year
-  verts_only <- subset(fun_group, GroupType %in% species, "Code")
-  diet[,5:ncol(diet)] <- diet[,5:ncol(diet)] * nsecs * ndays
-  avewt_matrix <- matrix(rep(avewt, nrow(diet)), nrow = nrow(diet), byrow = T)
-  diet[,5:(ncol(avewt_matrix)+4)] <- diet[,5:(ncol(avewt_matrix)+4)] * avewt_matrix / g_per_ton
-  diet[, (ncol(avewt_matrix)+5):ncol(diet)] <- tons(diet[, (ncol(avewt_matrix)+5):ncol(diet)])
-  }
-  diet_unit <- !is.null(avewt)
   
   # Extract a and b parameters from biology parameter
   biolprm <- readLines(biolprm)
@@ -235,13 +224,59 @@ create_vat <- function(outdir, fgfile, biolprm, ncout, startyear, toutinc, avewt
   
   invert_vars <- list()
   for (i in 1:length(invert_mnames)){
-    invert_vars[[i]] <- ncvar_get(nc = nc_out, varid = invert_mnames[i])
+    tmp <- ncvar_get(nc = nc_out, varid = invert_mnames[i])
+    if(length(dim(tmp)) == 2){
+      if(dim(tmp)[1] == 53){
+        tmp_invert <- tmp
+        tmp_invert <- as.data.frame(tmp_invert)
+        tmp_invert$Box <- paste("Box", 0:52)
+        tmp_invert <- gather(tmp_invert, Time, value = number, 1:(ncol(tmp_invert)-1))
+        levels(tmp_invert$Time) <- 0:length(unique(tmp_invert$Time))
+        tmp_invert$Time <- as.numeric(as.character(tmp_invert$Time))
+        erla_plots[[invert_mnames[i]]] <- tmp_invert
+        invert_vars[[i]] <- tmp
+      }
+    } else{
+        tmp_array <- adply(tmp, c(1,3))
+        tmp_invert <- tmp_array %>%
+          group_by(X1, X2) %>%
+          summarize_each(funs(sum))
+        colnames(tmp_invert) <- c("Layer", "Time", paste("Box", 0:(ncol(tmp_invert)-3), sep =" "))
+        tmp_invert$Layer <- factor(tmp_invert$Layer,levels(tmp_invert$Layer)[c(((length(unique(tmp_invert$Layer)))-1):1, length(unique(tmp_invert$Layer)))])
+        levels(tmp_invert$Layer) <- depth_labels
+        tmp_invert <- gather(tmp_invert, Box, number, 3:ncol(tmp_invert))
+        invert_vars[[i]] <- tmp
+        erla_plots[[invert_mnames[i]]] <- tmp_invert
+    }
   }
-  names(invert_vars) <- invert_mnames
-  
+    names(invert_vars) <- invert_mnames
+    
   trace_vars <- list()
   for (i in 1:length(trace_names)){
-    trace_vars[[i]] <- ncvar_get(nc = nc_out, varid = trace_names[i])
+    tmp <- ncvar_get(nc = nc_out, varid = trace_names[i])
+    if(length(dim(tmp)) == 2){
+      if(dim(tmp)[1] == 53){
+        tmp_trace <- tmp
+        tmp_trace <- as.data.frame(tmp_trace)
+        tmp_trace$Box <- paste("Box", 0:52)
+        tmp_trace <- gather(tmp_trace, Time, value = number, 1:(ncol(tmp_trace)-1))
+        levels(tmp_trace$Time) <- 0:length(unique(tmp_trace$Time))
+        tmp_trace$Time <- as.numeric(as.character(tmp_trace$Time))
+        erla_plots[[trace_names[i]]] <- tmp_trace
+        trace_vars[[i]] <- tmp
+      }
+    } else{
+      tmp_array <- adply(tmp, c(1,3))
+      tmp_trace <- tmp_array %>%
+        group_by(X1, X2) %>%
+        summarize_each(funs(sum))
+      colnames(tmp_trace) <- c("Layer", "Time", paste("Box", 0:(ncol(tmp_trace)-3), sep =" "))
+      tmp_trace$Layer <- factor(tmp_trace$Layer,levels(tmp_trace$Layer)[c(((length(unique(tmp_trace$Layer)))-1):1, length(unique(tmp_trace$Layer)))])
+      levels(tmp_trace$Layer) <- depth_labels
+      tmp_trace <- gather(tmp_trace, Box, number, 3:ncol(tmp_trace))
+      trace_vars[[i]] <- tmp
+      erla_plots[[trace_names[i]]] <- tmp_trace
+    }
   }
   names(trace_vars) <- trace_names
   
@@ -331,7 +366,7 @@ create_vat <- function(outdir, fgfile, biolprm, ncout, startyear, toutinc, avewt
   totalnums$Time <- as.numeric(as.character(totalnums$X1)) * toutinc / 365 + startyear
   #totalnums$Time <- as.numeric(as.character(totalnums$X1))/12 + startyear
   
-  output <- list(disagg = vars,invert_vars = invert_vars, invert_mnames = invert_mnames, trace_vars = trace_vars, trace_names = trace_names, var_names = tot_num, max_layers = max_layers, max_time = max_time, bioagg_names = bioagg_names, rs_names = rs_names, tot_pred = tot_pred, ssb_names = ssb_names, yoy_names = yoy_names, islands = islands, rel_bio = rel_bio, tot_bio = tot_bio, ssb = ssb, yoy = yoy, structN = structN, reserveN = reserveN, totalnums = totalnums, map_base = map_base, numboxes = numboxes, fun_group = fun_group, invert_names = invert_names, invert_l = invert_l, vert_l = vert_l, ab_params = ab_params, diet_l = diet_l, diet_unit = diet_unit, erla_plots = erla_plots, toutinc = toutinc, startyear = startyear)
+  output <- list(disagg = vars,invert_vars = invert_vars, invert_mnames = invert_mnames, trace_vars = trace_vars, trace_names = trace_names, var_names = tot_num, max_layers = max_layers, max_time = max_time, bioagg_names = bioagg_names, rs_names = rs_names, tot_pred = tot_pred, ssb_names = ssb_names, yoy_names = yoy_names, islands = islands, rel_bio = rel_bio, tot_bio = tot_bio, ssb = ssb, yoy = yoy, structN = structN, reserveN = reserveN, totalnums = totalnums, map_base = map_base, numboxes = numboxes, fun_group = fun_group, invert_names = invert_names, invert_l = invert_l, vert_l = vert_l, ab_params = ab_params, diet_l = diet_l, erla_plots = erla_plots, toutinc = toutinc, startyear = startyear)
   cat("### ------------ vat object created, you can now run the vat application ------------ ###\n") 
   return(output)
   class(output) <- "vat"

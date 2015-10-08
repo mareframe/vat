@@ -329,15 +329,20 @@ vat <- function(obj, anim){
       output$vert_erla_plot <- renderPlot({
         tmp <- obj$erla_plots[[input$erla_plot_select]]
         tmp$Time <- as.numeric(as.character(tmp$Time)) * obj$toutinc / 365 + obj$startyear
-        
+        if(is.null(tmp$Layer)){
+        ggplot(data = tmp, aes(y = number, x = Time)) + geom_line(size = 1) + ylab("") + xlab("Time") + facet_wrap(~ Box) + scale_color_manual(values = cbpalette) + theme_bw() + guides(fill = guide_legend(override.aes = list(colour = NULL))) +  
+          scale_x_continuous(breaks=floor(as.numeric(quantile(tmp$Time, probs = seq(0, 1, .2)))))  + theme(panel.background=element_blank(), legend.key = element_rect(), legend.background = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), panel.background = element_blank(), legend.key = element_rect(colour = NA),axis.line = element_line(size = .2))
+      } else {
         if(nlevels(tmp$Layer) == 7){
         cbpalette <- c("#a50026", "#d73027", "#f46d43", "#fdae61","#74add1", "#4575b4", "#313695")
-        ggplot(data = tmp, aes(y = number, x = Time, group = Layer, color = Layer)) + geom_line(size = 1) + ylab("Total Number") + xlab("Time Elapsed") + facet_wrap(~ Box) + scale_color_manual(values = cbpalette) + theme_bw() + guides(fill = guide_legend(override.aes = list(colour = NULL))) +  
-          scale_x_continuous(breaks=seq(round(min(tmp$Time)), round(max(tmp$Time)), 10))  + theme(panel.background=element_blank(), legend.key = element_rect(), legend.background = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), panel.background = element_blank(), legend.key = element_rect(colour = NA),axis.line = element_line(size = .2)) 
+        ggplot(data = tmp, aes(y = number, x = Time, group = Layer, color = Layer)) + geom_line(size = 1) + ylab("") + xlab("Time") + facet_wrap(~ Box) + scale_color_manual(values = cbpalette) + theme_bw() + guides(fill = guide_legend(override.aes = list(colour = NULL))) +  
+          scale_x_continuous(breaks=floor(as.numeric(quantile(tmp$Time, probs = seq(0, 1, .2)))))  + theme(panel.background=element_blank(), legend.key = element_rect(), legend.background = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), panel.background = element_blank(), legend.key = element_rect(colour = NA),axis.line = element_line(size = .2)) 
         } else {
-          ggplot(data = tmp, aes(y = number, x = Time, group = Layer, color = Layer)) + geom_line(size = 1) + ylab("Total Number") + facet_wrap(~ Box)  + theme_bw() + guides(fill = guide_legend(override.aes = list(colour = NULL))) + theme(panel.background=element_blank(), legend.key = element_rect(), legend.background = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), panel.background = element_blank(), legend.key = element_rect(colour = NA),axis.line = element_line(size = .2))
+          ggplot(data = tmp, aes(y = number, x = Time, group = Layer, color = Layer)) + geom_line(size = 1)  + ylab("") + xlab("Time") + facet_wrap(~ Box) + theme_bw() + guides(fill = guide_legend(override.aes = list(colour = NULL))) +  
+            scale_x_continuous(breaks=floor(as.numeric(quantile(tmp$Time, probs = seq(0, 1, .2))))) + theme(panel.background=element_blank(), legend.key = element_rect(), legend.background = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), panel.background = element_blank(), legend.key = element_rect(colour = NA),axis.line = element_line(size = .2))
         }
-      })
+      }
+        })
       
       # Invertebrate plot
       output$invert_map <- renderPlot({
@@ -453,19 +458,11 @@ vat <- function(obj, anim){
           diet_tab <- diet_tab[diet_tab$Prey == input$mean_diet_prey,]
         }
         options(scipen = 999)
-        if(!obj$diet_unit){
           datatable(diet_tab,rownames = FALSE,
                     caption = tags$caption(
                       style = 'caption-side: bottom; text-align: center;',
-                      'Diet Matrix: ', em('Units are number consumed per second for the vertebrates and mg N per m3 consumed per second for biomass pools.')))
-        } 
-        else {
-          datatable(diet_tab,rownames = FALSE,
-                    caption = tags$caption(
-                      style = 'caption-side: bottom; text-align: center;',
-                      'Diet Matrix: ', em('Units are total annual biomass consumed for the vertebrates and tons per m3 consumed per year for the biomass pools.'))) 
-        }
-      })
+                      'Diet Matrix '))
+        })
       
         # Diet Predator by prey
       output$diet_pprey <- renderPlot({
