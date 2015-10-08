@@ -52,7 +52,7 @@ vat <- function(obj, anim){
                                                                                 label = "Functional Group",
                                                                                 choices = names(obj$erla_plots))))),
                                         fluidRow(column(12,
-                                                        plotOutput("vert_erla_plot", height = "800px")))),
+                                                        plotOutput("vert_erla_plot", height = "1000px")))),
                                tabPanel("Interactive Plots",
                                         navlistPanel(widths = c(2, 10),
                                                      tabPanel("Vertebrates",
