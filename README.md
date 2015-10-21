@@ -24,6 +24,6 @@ Please see each functions respective manpage for details on its usage.
 
 At present `vat` is a moving target. I welcome all feedback on it's UI as well as any additional features, you would like to see added. Please report issues and feature requests. Once I am happy with `vat`'s UI, I will freeze this branch and take all new development to a different branch. 
 
-Please note if you if you are interested in running `vat` in the manner shown in the example (i.e. on a web server), you must install [shiny-server](https://www.rstudio.com/products/shiny/shiny-server/).
+Please note if you if you are interested in running `vat` in the manner shown in the example (i.e. on a locally hosted web server), you must install [shiny-server](https://www.rstudio.com/products/shiny/shiny-server/) and you need to modify `vat`. If there is interest in this from other Atlantis modelers, please open an issue and I will start maintaining a seperate repository for that code.
 
 Atlantis users may also be interested in the [rlantis](http://github.com/mareframe/rlantis) package. This package contains helper files for Atlantis as well as creating static graphs. 
