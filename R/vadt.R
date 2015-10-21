@@ -1,6 +1,6 @@
-#' The visualizing Atlantis toolbox
+#' The visualizing Atlantis diagnostic tool
 #' 
-#' The visualizing Atlantis toolbox is an interactive Shiny-based toolbox. It includes various plots, both aggregrated and unaggregated, that are useful for diagnostic, tuning, and visualizing output. To use \code{vat}, the user must first run the \code{create_vat} function which will create an object of class \code{vat} which can be fed to the \code{vat} function. The user must also run the \code{vat_animate} to create the animated GIFs required my the function. If you don't want to use the animated plots, you can just make the \code{anim} option and the warning message. 
+#' The visualizing Atlantis diagnostic tool is an interactive Shiny-based tool for model tuning and calibration. It includes various plots, both aggregrated and unaggregated, that are useful for diagnostic, tuning, and visualizing output. To use \code{vadt}, the user must first run the \code{create_vadt} function which will create an object of class \code{vadt} which can be fed to the \code{vadt} function. The user must also run the \code{animate_vadt} to create the animated GIFs required my the function. If you don't want to use the animated plots, you can just ignore the \code{anim} option and the warning message. 
 #' 
 #' 
 #'@param obj Object of class vat returned by create_vat
@@ -12,34 +12,35 @@
 #'@importFrom DT datatable
 #'@importFrom scales muted
 #'@export
-#'@seealso \code{\link{create_vat}}, \code{\link{animate_vat}}
+#'@seealso \code{\link{create_vadt}}, \code{\link{animate_vadt}}
 #' anim <- "/path/to/animinated/gifs"
-#' obj <- create_vat(outdir = "/atlantis/output_dir/",
+#' obj <- create_vadt(outdir = "/atlantis/output_dir/",
 #' fgfile = "/atlantis/functionalgroup.csv", 
 #' ncout = "output_atlantis")
-#' vat(obj, anim)
+#' vadt(obj, anim)
 #'
 
-vat <- function(obj, anim){
+vadt <- function(obj, anim){
   shinyApp(
-    ui = navbarPage("vat",
+    ui = navbarPage("vadt",
                     # Starting "Welcome" Tab"
                       tabPanel("Welcome",
                              fluidRow(column(12,
-                                             h1("Visualising Atlantis Toolbox", align = "center"))),
+                                             h1("Visualising Atlantis Diagnostic Tool", align = "center"))),
                              p(),
                              p(),
                              p(),
                              fluidRow(column(2),
                                       column(8,
-                                             includeMarkdown("http://cddesja.github.com/vat/markdown/iceatlantis.md")),
+                                             includeMarkdown("http://mareframe.github.io/vat_documentation/markdown/vat_diagnostic.md")),
                                       column(2)),
+                             br(),
                              fluidRow(column(2),
                                       column(1,
-                                             img(src = "http://cddesja.github.com/vat/images/MareFrame-Logo.jpg")),
-                                      column(6),
+                                             img(src = "http://mareframe.github.io/vat_documentation/images/mareframe_logo.png", height = 50)),
+                                      column(4),
                                       column(1,
-                                             img(src = "http://cddesja.github.com/vat/images/hi.gif", height = 45, width = 45)),
+                                             img(src = "http://mareframe.github.io/vat_documentation/images/eu.jpg", height = 50)),
                                       column(2))),
                     tabPanel("Functional Groups",
                              dataTableOutput('fun_group_atl')),
