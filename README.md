@@ -3,13 +3,13 @@
 
 `vat` is an interactive R package used with the [Atlantis](http://atlantis.cmar.csiro.au/) ecosystem model. 
 
-An older example of `vat` using data from the Iceland Atlantis model can be seen [here](http://130.208.71.121:3838/vat)
+An example of `vat` from the Icelandic Atlantis model can be seen [here](http://130.208.71.121:3838/vat). Note, that the model in that example is a moving Atlantis target.
 
 To install: 
 
 ```R
 library(devtools)
-install_github(repo = "cddesja/vat")
+install_github(repo = "mareframe/vat")
 ```
 
 To run the interactive [Shiny](http://shiny.rstudio.com/) application for `vat`, named `vat`. You need to running the following sequence of functions.
@@ -24,4 +24,6 @@ Please see each functions respective manpage for details on its usage.
 
 At present `vat` is a moving target. I welcome all feedback on it's UI as well as any additional features, you would like to see added. Please report issues and feature requests. Once I am happy with `vat`'s UI, I will freeze this branch and take all new development to a different branch. 
 
-Atlantis users may also be interested in my [rlantis](http://github.com/cddesja/rlantis) package. This package contains helper files for Atlantis as well as creating static graphs.
+Please note if you if you are interested in running `vat` in the manner shown in the example (i.e. on a web server), you must install [shiny-server](https://www.rstudio.com/products/shiny/shiny-server/).
+
+Atlantis users may also be interested in the [rlantis](http://github.com/mareframe/rlantis) package. This package contains helper files for Atlantis as well as creating static graphs. 
