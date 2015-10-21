@@ -26,7 +26,7 @@ vadt <- function(obj, anim){
                     # Starting "Welcome" Tab"
                       tabPanel("Welcome",
                              fluidRow(column(12,
-                                             h1("Visualising Atlantis Diagnostic Tool", align = "center"))),
+                                             h1("Visualizing Atlantis Diagnostic Tool", align = "center"))),
                              p(),
                              p(),
                              p(),
