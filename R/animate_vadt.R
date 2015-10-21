@@ -1,8 +1,8 @@
-#' Animated Atlantis plots for vat
+#' Animated Atlantis plots for vadt
 #'
 #' Create animated Atlantis plots of all the tracers
 #' 
-#' This function will create GIFs of all Atlantis tracers by default. WARNING: This can take a while. It is probably much, much better to specify certain groups! This function depends on having the unix command convert installed locally. Convert is part of imagemagick and can be downloaded here: http://www.imagemagick.org/.
+#' This function will create GIFs of all Atlantis tracers by default. WARNING: This can take a while and is not necessary to use \code{vadt}. It is probably much, much better to specify certain groups! This function depends on having the unix command convert installed locally. Convert is part of imagemagick and can be downloaded here: http://www.imagemagick.org/.
 #' 
 #' @param bgm An Atlantis bgm file
 #' @param bmass BoxBiomass.txt file from Atlantis out 
@@ -14,17 +14,17 @@
 #' @importFrom animation saveGIF
 #' @importFrom gridExtra grid.arrange
 #' @export
-#' @seealso \code{\link{create_vat}}, \code{\link{vat}}
+#' @seealso \code{\link{create_vadt}}, \code{\link{vadt}}
 #' @examples
 #' \dontrun{
 #' bgm <- "/path/to/atlantis.bgm"
 #' bmass <- "/path/to/outputBoxBiomass.txt"
 #' codes <- read.csv("functionalGroup.csv", header = T, stringsAsFactors = FALSE)
 #' savedir <- "/home/chris/"
-#' animate_vat(bgm = bgm, bmass = bmass, codes = codes$Code, savedir = savedir)
+#' animate_vadt(bgm = bgm, bmass = bmass, codes = codes$Code, savedir = savedir)
 #' }
 #' 
-animate_vat <- function(bgm, bmass, interval = .3, codes, savedir){
+animate_vadt <- function(bgm, bmass, interval = .3, codes, savedir){
   if(exists("savedir")  == FALSE)
     savedir <- getwd()
   bgm <- readLines(bgm)

@@ -1,6 +1,6 @@
-#' Create a visualising Atlantis toolbox object
+#' Create a visualizing Atlantis diagnostic tool object
 #' 
-#' This function creates a visualising Atlantis toolbox object which should be fed to the \code{vat} function. This object can be quite and this function may take a little while depending on how long you have run Atlantis for and how big your model is.
+#' This function creates a visualizing Atlantis diagnostic tool object which should be fed to the \code{vadt} function. This object can be quite large and this function may take a little while depending on how long you have run Atlantis for and the complexity of your model.
 #' 
 #'  @param outdir Path to Atlantis output directory
 #'  @param fgfile Functional group file
@@ -18,12 +18,12 @@
 #'  @importFrom stringr str_trim
 #'  
 #'  @export
-#'  @seealso \code{\link{vat}}, \code{\link{animate_vat}}
+#'  @seealso \code{\link{vadt}}, \code{\link{animate_vadt}}
 #'  @examples
 #'  \dontrun{
-#' obj <- create_vat(outdir = "/atlantis/output_dir/", fgfile = "/atlantis/functionalgroup.csv", biolprm = "/atlantis/biol.prm", ncout = "output_atlantis", startyear = 1948, toutinc = 30)
+#' obj <- create_vadt(outdir = "/atlantis/output_dir/", fgfile = "/atlantis/functionalgroup.csv", biolprm = "/atlantis/biol.prm", ncout = "output_atlantis", startyear = 1948, toutinc = 30)
 #'  }
-create_vat <- function(outdir, fgfile, biolprm, ncout, startyear, toutinc, ...){
+create_vadt <- function(outdir, fgfile, biolprm, ncout, startyear, toutinc, ...){
   # contants
   nsecs <- 86400
   ndays <- 365
@@ -369,5 +369,5 @@ create_vat <- function(outdir, fgfile, biolprm, ncout, startyear, toutinc, ...){
   output <- list(disagg = vars,invert_vars = invert_vars, invert_mnames = invert_mnames, trace_vars = trace_vars, trace_names = trace_names, var_names = tot_num, max_layers = max_layers, max_time = max_time, bioagg_names = bioagg_names, rs_names = rs_names, tot_pred = tot_pred, ssb_names = ssb_names, yoy_names = yoy_names, islands = islands, rel_bio = rel_bio, tot_bio = tot_bio, ssb = ssb, yoy = yoy, structN = structN, reserveN = reserveN, totalnums = totalnums, map_base = map_base, numboxes = numboxes, fun_group = fun_group, invert_names = invert_names, invert_l = invert_l, vert_l = vert_l, ab_params = ab_params, diet_l = diet_l, erla_plots = erla_plots, toutinc = toutinc, startyear = startyear)
   cat("### ------------ vat object created, you can now run the vat application ------------ ###\n") 
   return(output)
-  class(output) <- "vat"
+  class(output) <- "vadt"
 }
