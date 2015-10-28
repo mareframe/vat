@@ -149,8 +149,9 @@ vadt <- function(obj, anim){
                                                         plotOutput("totalfirst", height = "450px")))),
                     
                     # The diagnostic plots UI
+                    
                     navbarMenu("Diet Data",
-                               tabPanel("Diet by Predator and Prey",
+                            tabPanel("Diet by Predator and Prey",
                                         fluidRow(column(2),
                                                  column(4,
                                                         wellPanel(
@@ -165,10 +166,12 @@ vadt <- function(obj, anim){
                                                  column(2)),
                                         fluidRow(column(1),
                                                  column(5,
+                                                        if(is.null(obj$tot_pred) == FALSE)
                                                         plotOutput("diet_pprey", height = "600px")),
                                                  column(5,
+                                                        if(is.null(obj$tot_pred) == FALSE)
                                                         plotOutput("diet_pprey_collapsed", height = "600px")))),
-                               
+                            
                                tabPanel("Consumption by Predator",
                                         fluidRow(column(4),
                                                  column(4,wellPanel(selectInput("diet_pred",
@@ -176,8 +179,10 @@ vadt <- function(obj, anim){
                                                                                 choices = obj$bioagg_names)))),
                                         fluidRow(column(1),
                                                  column(5,
+                                                        if(is.null(obj$tot_pred) == FALSE)
                                                         plotOutput("diet_pred_plot", height = "600px")),
                                                  column(5,
+                                                        if(is.null(obj$tot_pred) == FALSE)
                                                         plotOutput("diet_predator_collapsed", height = "600px")))),
                                
                                tabPanel("Consumption by Prey",
@@ -187,8 +192,10 @@ vadt <- function(obj, anim){
                                                                                 choices = obj$bioagg_names)))),
                                         fluidRow(column(1),
                                                  column(5,
+                                                        if(is.null(obj$tot_pred) == FALSE)
                                                         plotOutput("diet_prey_plot", height = "600px")),
                                                  column(5,
+                                                        if(is.null(obj$tot_pred) == FALSE)
                                                         plotOutput("diet_prey_collapsed", height = "600px")))),
                                
                                tabPanel("Mean Diet Data",
@@ -205,7 +212,9 @@ vadt <- function(obj, anim){
                                                              "Prey:", 
                                                              c("All", 
                                                                unique(as.character(obj$tot_pred$Prey)))))),
-                                        dataTableOutput('diet_table'))),
+                                        if(is.null(obj$tot_pred) == FALSE)
+                                        dataTableOutput('diet_table'))
+                                 ),
                     
                     navbarMenu("Summaries",
                                tabPanel("Vertebrates",
