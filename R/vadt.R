@@ -1,6 +1,6 @@
-#' The visualizing Atlantis toolbox
+#' The visualizing Atlantis diagnostic tool
 #' 
-#' The visualizing Atlantis toolbox is an interactive Shiny-based toolbox. It includes various plots, both aggregrated and unaggregated, that are useful for diagnostic, tuning, and visualizing output. To use \code{vat}, the user must first run the \code{create_vat} function which will create an object of class \code{vat} which can be fed to the \code{vat} function. The user must also run the \code{vat_animate} to create the animated GIFs required my the function. If you don't want to use the animated plots, you can just make the \code{anim} option and the warning message. 
+#' The visualizing Atlantis diagnostic tool is an interactive Shiny-based tool for model tuning and calibration. It includes various plots, both aggregrated and unaggregated, that are useful for diagnostic, tuning, and visualizing output. To use \code{vadt}, the user must first run the \code{create_vadt} function which will create an object of class \code{vadt} which can be fed to the \code{vadt} function. The user must also run the \code{animate_vadt} to create the animated GIFs required my the function. If you don't want to use the animated plots, you can just ignore the \code{anim} option and the warning message. 
 #' 
 #' 
 #'@param obj Object of class vat returned by create_vat
@@ -12,40 +12,48 @@
 #'@importFrom DT datatable
 #'@importFrom scales muted
 #'@export
-#'@seealso \code{\link{create_vat}}, \code{\link{animate_vat}}
+#'@seealso \code{\link{create_vadt}}, \code{\link{animate_vadt}}
 #' anim <- "/path/to/animinated/gifs"
-#' obj <- create_vat(outdir = "/atlantis/output_dir/",
+#' obj <- create_vadt(outdir = "/atlantis/output_dir/",
 #' fgfile = "/atlantis/functionalgroup.csv", 
 #' ncout = "output_atlantis")
-#' vat(obj, anim)
+#' vadt(obj, anim)
 #'
 
-vat <- function(obj, anim){
+vadt <- function(obj, anim){
   shinyApp(
-    ui = navbarPage("vat",
+    ui = navbarPage("vadt",
                     # Starting "Welcome" Tab"
                       tabPanel("Welcome",
                              fluidRow(column(12,
-                                             h1("Visualising Atlantis Toolbox", align = "center"))),
+                                             h1("Visualizing Atlantis Diagnostic Tool", align = "center"))),
                              p(),
                              p(),
                              p(),
                              fluidRow(column(2),
                                       column(8,
-                                             includeMarkdown("http://cddesja.github.com/vat/markdown/iceatlantis.md")),
+                                             includeMarkdown("http://mareframe.github.io/vat_documentation/markdown/vat_diagnostic.md")),
                                       column(2)),
+                             br(),
                              fluidRow(column(2),
                                       column(1,
-                                             img(src = "http://cddesja.github.com/vat/images/MareFrame-Logo.jpg")),
-                                      column(6),
+                                             img(src = "http://mareframe.github.io/vat_documentation/images/mareframe_logo.png", height = 50)),
+                                      column(4),
                                       column(1,
-                                             img(src = "http://cddesja.github.com/vat/images/hi.gif", height = 45, width = 45)),
+                                             img(src = "http://mareframe.github.io/vat_documentation/images/eu.jpg", height = 50)),
                                       column(2))),
                     tabPanel("Functional Groups",
                              dataTableOutput('fun_group_atl')),
                     
                     # Disaggregated Spatial Maps
                     navbarMenu("Spatial Plots",
+                               tabPanel("Vertebrate Distribution by Boxes",
+                                        fluidRow(column(4),
+                                                 column(4,wellPanel(selectInput("erla_plot_select",
+                                                                                label = "Functional Group",
+                                                                                choices = names(obj$erla_plots))))),
+                                        fluidRow(column(12,
+                                                        plotOutput("vert_erla_plot", height = "1000px")))),
                                tabPanel("Interactive Plots",
                                         navlistPanel(widths = c(2, 10),
                                                      tabPanel("Vertebrates",
@@ -141,8 +149,9 @@ vat <- function(obj, anim){
                                                         plotOutput("totalfirst", height = "450px")))),
                     
                     # The diagnostic plots UI
+                    
                     navbarMenu("Diet Data",
-                               tabPanel("Diet by Predator and Prey",
+                            tabPanel("Diet by Predator and Prey",
                                         fluidRow(column(2),
                                                  column(4,
                                                         wellPanel(
@@ -157,10 +166,12 @@ vat <- function(obj, anim){
                                                  column(2)),
                                         fluidRow(column(1),
                                                  column(5,
+                                                        if(is.null(obj$tot_pred) == FALSE)
                                                         plotOutput("diet_pprey", height = "600px")),
                                                  column(5,
+                                                        if(is.null(obj$tot_pred) == FALSE)
                                                         plotOutput("diet_pprey_collapsed", height = "600px")))),
-                               
+                            
                                tabPanel("Consumption by Predator",
                                         fluidRow(column(4),
                                                  column(4,wellPanel(selectInput("diet_pred",
@@ -168,8 +179,10 @@ vat <- function(obj, anim){
                                                                                 choices = obj$bioagg_names)))),
                                         fluidRow(column(1),
                                                  column(5,
+                                                        if(is.null(obj$tot_pred) == FALSE)
                                                         plotOutput("diet_pred_plot", height = "600px")),
                                                  column(5,
+                                                        if(is.null(obj$tot_pred) == FALSE)
                                                         plotOutput("diet_predator_collapsed", height = "600px")))),
                                
                                tabPanel("Consumption by Prey",
@@ -179,8 +192,10 @@ vat <- function(obj, anim){
                                                                                 choices = obj$bioagg_names)))),
                                         fluidRow(column(1),
                                                  column(5,
+                                                        if(is.null(obj$tot_pred) == FALSE)
                                                         plotOutput("diet_prey_plot", height = "600px")),
                                                  column(5,
+                                                        if(is.null(obj$tot_pred) == FALSE)
                                                         plotOutput("diet_prey_collapsed", height = "600px")))),
                                
                                tabPanel("Mean Diet Data",
@@ -197,7 +212,9 @@ vat <- function(obj, anim){
                                                              "Prey:", 
                                                              c("All", 
                                                                unique(as.character(obj$tot_pred$Prey)))))),
-                                        dataTableOutput('diet_table'))),
+                                        if(is.null(obj$tot_pred) == FALSE)
+                                        dataTableOutput('diet_table'))
+                                 ),
                     
                     navbarMenu("Summaries",
                                tabPanel("Vertebrates",
@@ -318,6 +335,25 @@ vat <- function(obj, anim){
           theme(legend.title=element_blank()) + scale_y_continuous(breaks=NULL) + scale_x_continuous(breaks=NULL)
       })
       
+      ## Erla's Vertebrate Number Plots
+      output$vert_erla_plot <- renderPlot({
+        tmp <- obj$erla_plots[[input$erla_plot_select]]
+        tmp$Time <- as.numeric(as.character(tmp$Time)) * obj$toutinc / 365 + obj$startyear
+        if(is.null(tmp$Layer)){
+        ggplot(data = tmp, aes(y = number, x = Time)) + geom_line(size = 1) + ylab("") + xlab("Time") + facet_wrap(~ Box) + scale_color_manual(values = cbpalette) + theme_bw() + guides(fill = guide_legend(override.aes = list(colour = NULL))) +  
+          scale_x_continuous(breaks=floor(as.numeric(quantile(tmp$Time, probs = seq(0, 1, .2)))))  + theme(panel.background=element_blank(), legend.key = element_rect(), legend.background = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), panel.background = element_blank(), legend.key = element_rect(colour = NA),axis.line = element_line(size = .2))
+      } else {
+        if(nlevels(tmp$Layer) == 7){
+        cbpalette <- c("#a50026", "#d73027", "#f46d43", "#fdae61","#74add1", "#4575b4", "#313695")
+        ggplot(data = tmp, aes(y = number, x = Time, group = Layer, color = Layer)) + geom_line(size = 1) + ylab("") + xlab("Time") + facet_wrap(~ Box) + scale_color_manual(values = cbpalette) + theme_bw() + guides(fill = guide_legend(override.aes = list(colour = NULL))) +  
+          scale_x_continuous(breaks=floor(as.numeric(quantile(tmp$Time, probs = seq(0, 1, .2)))))  + theme(panel.background=element_blank(), legend.key = element_rect(), legend.background = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), panel.background = element_blank(), legend.key = element_rect(colour = NA),axis.line = element_line(size = .2)) 
+        } else {
+          ggplot(data = tmp, aes(y = number, x = Time, group = Layer, color = Layer)) + geom_line(size = 1)  + ylab("") + xlab("Time") + facet_wrap(~ Box) + theme_bw() + guides(fill = guide_legend(override.aes = list(colour = NULL))) +  
+            scale_x_continuous(breaks=floor(as.numeric(quantile(tmp$Time, probs = seq(0, 1, .2))))) + theme(panel.background=element_blank(), legend.key = element_rect(), legend.background = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), panel.background = element_blank(), legend.key = element_rect(colour = NA),axis.line = element_line(size = .2))
+        }
+      }
+        })
+      
       # Invertebrate plot
       output$invert_map <- renderPlot({
         tmp <- obj$invert_vars[[input$invert_sm]]
@@ -432,19 +468,11 @@ vat <- function(obj, anim){
           diet_tab <- diet_tab[diet_tab$Prey == input$mean_diet_prey,]
         }
         options(scipen = 999)
-        if(!obj$diet_unit){
           datatable(diet_tab,rownames = FALSE,
                     caption = tags$caption(
                       style = 'caption-side: bottom; text-align: center;',
-                      'Diet Matrix: ', em('Units are number consumed per second for the vertebrates and mg N per m3 consumed per second for biomass pools.')))
-        } 
-        else {
-          datatable(diet_tab,rownames = FALSE,
-                    caption = tags$caption(
-                      style = 'caption-side: bottom; text-align: center;',
-                      'Diet Matrix: ', em('Units are total annual biomass consumed for the vertebrates and tons per m3 consumed per year for the biomass pools.'))) 
-        }
-      })
+                      'Diet Matrix '))
+        })
       
         # Diet Predator by prey
       output$diet_pprey <- renderPlot({
