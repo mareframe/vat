@@ -215,9 +215,20 @@ vadt <- function(obj, anim){
                                         if(is.null(obj$tot_pred) == FALSE)
                                         dataTableOutput('diet_table'))
                                  ),
-                    
                     navbarMenu("Summaries",
-                               tabPanel("Vertebrates",
+                               tabPanel("Vertebrates - All",
+                                        fluidRow(
+                                          column(4),
+                                          column(4,
+                                                 selectInput("tot_vert_scale", 
+                                                             "Scale Type", 
+                                                             c("Unadjusted","Log Scale")))
+                                          ),
+                                        fluidRow(column(1),
+                                                 column(10, 
+                                                        plotOutput("tot_vert_sum", height = "800px")),
+                                                 column(1))),
+                               tabPanel("Vertebrates - Seperate",
                                         fluidRow(column(4),
                                                  column(4,
                                                         wellPanel(
@@ -235,7 +246,18 @@ vadt <- function(obj, anim){
                                                         plotOutput("rel_map", height = "300px")),
                                                  column(5,
                                                         plotOutput("yoy_map", height = "300px")))),
-                               
+                               tabPanel("Invertebrates - All",
+                                        fluidRow(
+                                          column(4),
+                                          column(4,
+                                                 selectInput("tot_invert_scale", 
+                                                             "Scale Type", 
+                                                             c("Unadjusted","Log Scale")))
+                                        ),
+                                        fluidRow(column(1),
+                                                 column(10,
+                                                 plotOutput("tot_invert_sum", height = "800px")),
+                                                 column(1))),
                                tabPanel("Invertebrates and Other Tracers",
                                         fluidRow(column(4),
                                                  column(4,
@@ -513,6 +535,22 @@ vadt <- function(obj, anim){
       # -----------------------------------------
       # SUMMARIES TAB
       # -----------------------------------------
+      
+      # Total biomass trellis
+      output$tot_vert_sum <- renderPlot({
+        if(input$tot_vert_scale == "Unadjusted"){
+        qplot(x = Time, y = value, data = obj$tot_bio_v, geom = "line") + facet_wrap(~Name, ncol = 4, scales = "free") + xlab("Years since simulation started") + ylab("Total Biomass") + theme_bw()
+        } else {
+          qplot(x = Time, y = log(value), data = obj$tot_bio_v, geom = "line") + facet_wrap(~Name, ncol = 4) + xlab("Years since simulation started") + ylab("Log(Total Biomass)") + theme_bw()
+        }
+      })
+      output$tot_invert_sum <- renderPlot({
+        if(input$tot_invert_scale == "Unadjusted"){
+        qplot(x = Time, y = value, data = obj$tot_bio_i, geom = "line") + facet_wrap(~Name, ncol = 4, scales = "free") + xlab("Years since simulation started") + ylab("Total Biomass") + theme_bw()
+        } else {
+            qplot(x = Time, y = log(value), data = obj$tot_bio_i, geom = "line") + facet_wrap(~Name, ncol = 4) + xlab("Years since simulation started") + ylab("Log(Total Biomass)") + theme_bw()
+        }
+      })
       
       # Relative biomass map
       output$rel_map <- renderPlot({

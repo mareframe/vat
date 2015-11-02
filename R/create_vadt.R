@@ -8,6 +8,7 @@
 #'  @param ncout Name of output ncdf4 file excluding nc suffix (i.e. name given after -o flag)
 #'  @param startyear Year that the model starts
 #'  @param toutinc Periodicity of writing output (in days)
+#'  @param diet Include diagnostic diet plots? Default: TRUE
 #'  @import dplyr
 #'  @importFrom ncdf4 nc_open
 #'  @importFrom ncdf4 ncvar_get
@@ -88,12 +89,22 @@ create_vadt <- function(outdir, fgfile, biolprm, ncout, startyear, toutinc, diet
   
   # Subset vertebrates
   rs_names <- fun_group[fun_group$GroupType %in% c("FISH", "MAMMAL", "SHARK", "BIRD"), "Name"]
-  
+  rs_codes <- fun_group[fun_group$GroupType %in% c("FISH", "MAMMAL", "SHARK", "BIRD"), "Code"]
   # Subset invertebrates
   invert_names <-fun_group[!(fun_group$GroupType %in% c("FISH", "MAMMAL", "SHARK", "BIRD")),]
   
   colnames(ssb) <- c("Time", rs_names)
   colnames(yoy) <- c("Time", rs_names)
+  
+  # Biomass Long
+  tot_bio_l <- tot_bio %>%
+    gather("Code", "value", -Time)
+  tot_bio_v <- filter(tot_bio_l, Code %in% rs_codes)
+  tot_bio_i <- filter(tot_bio_l, !(Code %in% rs_codes))
+  tot_bio_v <- merge(tot_bio_v, fun_group[c(1,4)], by = "Code")
+  tot_bio_v$Time <- startyear + tot_bio_v$Time/365
+  tot_bio_i <- merge(tot_bio_i, fun_group[c(1,4)], by = "Code")
+  tot_bio_i$Time <- startyear + tot_bio_i$Time/365
   
   colnames(rel_bio) <- c("Time", fun_group$Name, "DIN")
   colnames(tot_bio) <- c("Time", fun_group$Name, "DIN")
@@ -393,7 +404,7 @@ create_vadt <- function(outdir, fgfile, biolprm, ncout, startyear, toutinc, diet
   totalnums$Time <- as.numeric(as.character(totalnums$X1)) * toutinc / 365 + startyear
   #totalnums$Time <- as.numeric(as.character(totalnums$X1))/12 + startyear
   
-  output <- list(disagg = vars,invert_vars = invert_vars, invert_mnames = invert_mnames, trace_vars = trace_vars, trace_names = trace_names, var_names = tot_num, max_layers = max_layers, max_time = max_time, bioagg_names = bioagg_names, rs_names = rs_names, tot_pred = tot_pred, ssb_names = ssb_names, yoy_names = yoy_names, islands = islands, rel_bio = rel_bio, tot_bio = tot_bio, ssb = ssb, yoy = yoy, structN = structN, reserveN = reserveN, totalnums = totalnums, map_base = map_base, numboxes = numboxes, fun_group = fun_group, invert_names = invert_names, invert_l = invert_l, vert_l = vert_l, ab_params = ab_params, diet_l = diet_l, erla_plots = erla_plots, toutinc = toutinc, startyear = startyear)
+  output <- list(disagg = vars,invert_vars = invert_vars, invert_mnames = invert_mnames, trace_vars = trace_vars, trace_names = trace_names, var_names = tot_num, max_layers = max_layers, max_time = max_time, bioagg_names = bioagg_names, rs_names = rs_names, tot_pred = tot_pred, ssb_names = ssb_names, yoy_names = yoy_names, islands = islands, rel_bio = rel_bio, tot_bio = tot_bio, ssb = ssb, yoy = yoy, structN = structN, reserveN = reserveN, totalnums = totalnums, map_base = map_base, numboxes = numboxes, fun_group = fun_group, invert_names = invert_names, invert_l = invert_l, vert_l = vert_l, ab_params = ab_params, diet_l = diet_l, erla_plots = erla_plots, toutinc = toutinc, startyear = startyear, tot_bio_v = tot_bio_v, tot_bio_i = tot_bio_i)
   cat("### ------------ vat object created, you can now run the vat application ------------ ###\n") 
   return(output)
   class(output) <- "vadt"
