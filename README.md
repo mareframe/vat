@@ -20,7 +20,7 @@ To run the interactive [Shiny](http://shiny.rstudio.com/) application for `vat`,
 
 3. `vadt()`. This is the function that launches the actual Shiny application.
 
-Please see each functions respective manpage for details on its usage. 
+Please see each functions respective manpage for details on its usage. For example, `?create_vadt` and `?vadt` in `R`.
 
 At present `vat` is a moving target. We welcome all feedback on it's UI as well as any additional features, you would like to see added. Please report issues and feature requests. Once the `vadt` UI is frozen and when work in the Icelandic Atlantis model moves onto data presentation for stakeholders, then a new function(s) will be added to this package for data presentation.
 
