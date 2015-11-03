@@ -168,7 +168,7 @@ vadt <- function(obj, anim = NULL){
                                                            fluidRow(column(4),
                                                                     column(4,
                                                                            if(is.null(obj$tot_pred) == FALSE){
-                                                                             wellPanel(selectInput("diet_pred",
+                                                                             wellPanel(selectInput("diet_pred_unagg",
                                                                                                    label = "Predator",
                                                                                                    choices = obj$fgnames))}
                                                                     )),
@@ -179,7 +179,7 @@ vadt <- function(obj, anim = NULL){
                                                            fluidRow(column(4),
                                                                     column(4,
                                                                            if(is.null(obj$tot_pred) == FALSE){
-                                                                             wellPanel(selectInput("diet_pred",
+                                                                             wellPanel(selectInput("diet_pred_agg",
                                                                                                    label = "Predator",
                                                                                                    choices = obj$fgnames))}
                                                                     )),
@@ -192,7 +192,7 @@ vadt <- function(obj, anim = NULL){
                                                                        fluidRow(column(4),
                                                                                 column(4,
                                                                                        if(is.null(obj$tot_pred) == FALSE){
-                                                                                         wellPanel(selectInput("diet_prey",
+                                                                                         wellPanel(selectInput("diet_prey_unagg",
                                                                                                                label = "Prey",
                                                                                                                choices = obj$fgnames))}
                                                                                 )),
@@ -203,7 +203,7 @@ vadt <- function(obj, anim = NULL){
                                                                        fluidRow(column(4),
                                                                                 column(4,
                                                                                        if(is.null(obj$tot_pred) == FALSE){
-                                                                                         wellPanel(selectInput("diet_prey",
+                                                                                         wellPanel(selectInput("diet_prey_agg",
                                                                                                                label = "Prey",
                                                                                                                choices = obj$fgnames))}
                                                                                 )),
@@ -539,37 +539,37 @@ vadt <- function(obj, anim = NULL){
       
         # Diet Predator by prey
       output$diet_pprey <- renderPlot({
-        data_dpp <- subset(obj$diet_l, obj$diet_l$Predator == input$diet_dispred & obj$diet_l$Prey == input$diet_disprey)
+        data_dpp <- subset(obj$diet_l, Predator == input$diet_dispred & Prey == input$diet_disprey)
         ggplot(data = data_dpp, aes(x = Time/365, y = eaten, color = as.character(Cohort))) + geom_line(size = 1, alpha = .75) + scale_color_brewer(name = "Ageclass", type = "div",palette = 5, labels = 1:10) + xlab("Years since simulation started") + ylab("Consumed") + ggtitle(paste("Consumption of ", data_dpp[1,5], " by ", data_dpp[1,1], " by Age Class", sep = "")) + theme_bw() + guides(fill = guide_legend(override.aes = list(colour = NULL)))+ theme(panel.background=element_blank(), legend.key = element_rect(), legend.background = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), panel.background = element_blank(), legend.key = element_rect(colour = NA),axis.line = element_line(size = .2))
         })
         
       # Diet Predator by prey collapsed over age class
       output$diet_pprey_collapsed <- renderPlot({
-        data_dpp <- subset(obj$diet_l, obj$diet_l$Predator == input$diet_dispred & obj$diet_l$Prey == input$diet_disprey)
+        data_dpp <- filter(obj$diet_l, Predator == input$diet_dispred & Prey == input$diet_disprey)
         ggplot(data = data_dpp, aes(x = Time/365, y = eaten)) + stat_summary(aes(group =1), fun.y = sum, geom = "line", size = 1, alpha = .75) + xlab("Years since simulation started") + ylab("Consumed") + ggtitle(paste("Consumption of ", data_dpp[1,5], " by ", data_dpp[1,1], " Collapsed over Age Class", sep = "")) + theme_bw() + guides(fill = guide_legend(override.aes = list(colour = NULL)))+ theme(panel.background=element_blank(), legend.key = element_rect(), legend.background = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), panel.background = element_blank(), legend.key = element_rect(colour = NA),axis.line = element_line(size = .2))
       })
       
       # Consumption by Predator
       output$diet_pred_plot <- renderPlot({
-        data_dpp <- subset(obj$diet_l, obj$diet_l$Predator == input$diet_pred)
+        data_dpp <- subset(obj$diet_l, Predator == input$diet_pred_unagg)
         ggplot(data = data_dpp, aes(x = Time/365, y = eaten, color = as.character(Cohort))) + geom_line(size = 1, alpha = .75) + scale_color_brewer(name = "Ageclass", type = "div",palette = 5, labels = 1:10) + xlab("Years since simulation started") + ylab("Consumed") + ggtitle(paste("Consumption by ", data_dpp[1,1], " by Age Class", sep = "")) + facet_wrap(~ Prey) + theme_bw() + guides(fill = guide_legend(override.aes = list(colour = NULL)))+ theme(panel.background=element_blank(), legend.key = element_rect(), legend.background = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), panel.background = element_blank(), legend.key = element_rect(colour = NA),axis.line = element_line(size = .2))
       })
       
       # Consumption by Predator collapsed
       output$diet_predator_collapsed <- renderPlot({
-        data_dpp <- subset(obj$diet_l, obj$diet_l$Predator == input$diet_pred)
+        data_dpp <- subset(obj$diet_l, Predator == input$diet_pred_agg)
         ggplot(data = data_dpp, aes(x = Time/365, y = eaten))+ stat_summary(aes(group =1), fun.y = sum, geom = "line", size = 1, alpha = .75) + xlab("Years since simulation started") + ylab("Consumed") + ggtitle(paste("Consumption by ", data_dpp[1,1], " Collapsed over Age Class", sep = "")) + facet_wrap(~ Prey) + theme_bw() + guides(fill = guide_legend(override.aes = list(colour = NULL)))+ theme(panel.background=element_blank(), legend.key = element_rect(), legend.background = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), panel.background = element_blank(), legend.key = element_rect(colour = NA),axis.line = element_line(size = .2))
       })
       
       # Consumption by Prey
       output$diet_prey_plot <- renderPlot({
-        data_dpp <- subset(obj$diet_l, obj$diet_l$Prey == input$diet_prey)
-        ggplot(data = data_dpp, aes(x = Time/365, y = eaten, color = as.character(Cohort))) + geom_line(size = 1, alpha = .75) + scale_color_brewer(name = "Ageclass", type = "div",palette = 5, labels = 1:10) + xlab("Years since simulation started") + ylab("Consumed") + ggtitle(paste("Consumption of ", data_dpp[1,5], " by age class", sep = "")) + facet_wrap(~ Predator) + theme_bw() + guides(fill = guide_legend(override.aes = list(colour = NULL)))+ theme(panel.background=element_blank(), legend.key = element_rect(), legend.background = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), panel.background = element_blank(), legend.key = element_rect(colour = NA),axis.line = element_line(size = .2))
+        data_dpp <- subset(obj$diet_l, Prey == input$diet_prey_unagg)
+        ggplot(data = data_dpp, aes(x = Time/365, y = eaten, color = as.character(Cohort))) + geom_line(size = 1, alpha = .75) + scale_color_brewer(name = "Ageclass", type = "div",palette = 5, labels = 1:10) + xlab("Years since simulation started") + ylab("Consumed") + ggtitle(paste("Consumption of ", data_dpp[1,5], " by Age class", sep = "")) + facet_wrap(~ Predator) + theme_bw() + guides(fill = guide_legend(override.aes = list(colour = NULL)))+ theme(panel.background=element_blank(), legend.key = element_rect(), legend.background = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), panel.background = element_blank(), legend.key = element_rect(colour = NA),axis.line = element_line(size = .2))
       })
       
       # Consumption by Prey collapsed
       output$diet_prey_collapsed <- renderPlot({
-        data_dpp <- subset(obj$diet_l, obj$diet_l$Prey == input$diet_prey)
+        data_dpp <- subset(obj$diet_l,Prey == input$diet_prey_agg)
         ggplot(data = data_dpp, aes(x = Time/365, y = eaten)) + stat_summary(aes(group =1), fun.y = sum, geom = "line", size = 1, alpha = .75) + xlab("Years since simulation started") + ylab("Consumed") + ggtitle(paste("Consumption of ", data_dpp[1,5], " collapsed over age class", sep = "")) + facet_wrap(~ Predator) + theme_bw() + guides(fill = guide_legend(override.aes = list(colour = NULL)))+ theme(panel.background=element_blank(), legend.key = element_rect(), legend.background = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), panel.background = element_blank(), legend.key = element_rect(colour = NA),axis.line = element_line(size = .2))
       })
       
