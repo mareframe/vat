@@ -4,15 +4,15 @@
 \alias{vadt}
 \title{The visualizing Atlantis diagnostic tool}
 \usage{
-vadt(obj, anim)
+vadt(obj, anim = NULL)
 }
 \arguments{
 \item{obj}{Object of class vat returned by create_vat}
 
-\item{anim}{Directory to stored animated plot created by vat_animate function (optional)}
+\item{anim}{Directory to stored animated plot created by vat_animate function (defaults to NULL)}
 }
 \description{
-The visualizing Atlantis diagnostic tool is an interactive Shiny-based tool for model tuning and calibration. It includes various plots, both aggregrated and unaggregated, that are useful for diagnostic, tuning, and visualizing output. To use \code{vadt}, the user must first run the \code{create_vadt} function which will create an object of class \code{vadt} which can be fed to the \code{vadt} function. The user must also run the \code{animate_vadt} to create the animated GIFs required my the function. If you don't want to use the animated plots, you can just ignore the \code{anim} option and the warning message.
+The visualizing Atlantis diagnostic tool is an interactive Shiny-based tool for model tuning and calibration. It includes various plots, both aggregrated and unaggregated, that are useful for diagnostic, tuning, and visualizing output. To use \code{vadt}, the user must first run the \code{create_vadt} function which will create an object of class \code{vadt} which can be fed to the \code{vadt} function. The user must also run the \code{animate_vadt} to create the animated GIFs required my the function.
 }
 \examples{
 \dontrun{
@@ -20,7 +20,7 @@ anim <- "/path/to/animinated/gifs"
 obj <- create_vadt(outdir = "/atlantis/output_dir/",
 fgfile = "/atlantis/functionalgroup.csv", 
 ncout = "output_atlantis")
-vadt(obj, anim)
+vadt(obj, anim = NULL)
 }
 
 }

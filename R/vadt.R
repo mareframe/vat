@@ -7,8 +7,8 @@
 #'@param anim Directory to stored animated plot created by vat_animate function (defaults to NULL)
 #'@import ggplot2
 #'@import shiny
-#'@importFrom dplyr filter
 #'@importFrom scales muted
+#'@importFrom DT datatable
 #'@export
 #'@seealso \code{\link{create_vadt}}, \code{\link{animate_vadt}}
 #'@examples
@@ -318,10 +318,10 @@ vadt <- function(obj, anim = NULL){
       # SPATIAL PLOTS
       # -----------------------------------------
       
-      output$fun_group_atl = renderDataTable({
-        datatable(obj$fun_group, rownames = FALSE)
-      })
-      
+      # output$fun_group_atl = renderDataTable({
+      #   datatable(obj$fun_group, rownames = FALSE)
+      # })
+      # 
       output$map <- renderPlot({
         tmp <- obj$disagg[[input$disagg_var]]
         tmp.min <- min(tmp)
