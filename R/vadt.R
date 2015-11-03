@@ -1,12 +1,13 @@
 #' The visualizing Atlantis diagnostic tool
 #' 
-#' The visualizing Atlantis diagnostic tool is an interactive Shiny-based tool for model tuning and calibration. It includes various plots, both aggregrated and unaggregated, that are useful for diagnostic, tuning, and visualizing output. To use \code{vadt}, the user must first run the \code{create_vadt} function which will create an object of class \code{vadt} which can be fed to the \code{vadt} function. The user must also run the \code{animate_vadt} to create the animated GIFs required my the function. If you don't want to use the animated plots, you can just ignore the \code{anim} option and the warning message. 
+#' The visualizing Atlantis diagnostic tool is an interactive Shiny-based tool for model tuning and calibration. It includes various plots, both aggregrated and unaggregated, that are useful for diagnostic, tuning, and visualizing output. To use \code{vadt}, the user must first run the \code{create_vadt} function which will create an object of class \code{vadt} which can be fed to the \code{vadt} function. The user must also run the \code{animate_vadt} to create the animated GIFs required my the function. 
 #' 
 #' 
 #'@param obj Object of class vat returned by create_vat
-#'@param anim Directory to stored animated plot created by vat_animate function (optional)
+#'@param anim Directory to stored animated plot created by vat_animate function (defaults to NULL)
 #'@import ggplot2
 #'@import shiny
+#'@importFrom dplyr filter
 #'@importFrom scales muted
 #'@export
 #'@seealso \code{\link{create_vadt}}, \code{\link{animate_vadt}}
@@ -16,11 +17,11 @@
 #' obj <- create_vadt(outdir = "/atlantis/output_dir/",
 #' fgfile = "/atlantis/functionalgroup.csv", 
 #' ncout = "output_atlantis")
-#' vadt(obj, anim)
+#' vadt(obj, anim = NULL)
 #' }
 #'
 
-vadt <- function(obj, anim){
+vadt <- function(obj, anim = NULL){
   shinyApp(
     ui = navbarPage("vadt",
                     # Starting "Welcome" Tab"
@@ -42,9 +43,9 @@ vadt <- function(obj, anim){
                                       column(1,
                                              img(src = "http://mareframe.github.io/vat_documentation/images/eu.jpg", height = 50)),
                                       column(2))),
-                    tabPanel("Functional Groups",
-                             dataTableOutput('fun_group_atl')),
-                    
+                    # tabPanel("Functional Groups",
+                    #          dataTableOutput('fun_group_atl')),
+                    # 
                     # Disaggregated Spatial Maps
                     navbarMenu("Spatial Plots",
                                tabPanel("Vertebrate Distribution by Boxes",
@@ -53,7 +54,14 @@ vadt <- function(obj, anim){
                                                                                 label = "Functional Group",
                                                                                 choices = names(obj$erla_plots))))),
                                         fluidRow(column(12,
-                                                        plotOutput("vert_erla_plot", height = "1000px")))),
+                                                        plotOutput("vert_erla_plot", height = "1200px")))),
+                               tabPanel("Within a Box Distribution",
+                                        fluidRow(column(4),
+                                                 column(4,wellPanel(selectInput("biomass_box_sel",
+                                                                                label = "Box",
+                                                                                choices = unique(obj$biomass_by_box$Box))))),
+                                        fluidRow(column(12,
+                                                        plotOutput("within_box_plot", height = "1200px")))),
                                tabPanel("Interactive Plots",
                                         navlistPanel(widths = c(2, 10),
                                                      tabPanel("Vertebrates",
@@ -115,15 +123,18 @@ vadt <- function(obj, anim){
                                                                        column(8,
                                                                               plotOutput("trace_map", height = "450px")))))),
                                
+                              
+                               
                                tabPanel("Animated Spatial Biomass (tons)",
                                         column(5,
+                                               if(is.null(anim) == FALSE){
                                                wellPanel(selectInput("aggbio",
                                                                      label = "Functional Group",
                                                                      selected = obj$bioagg_names[1],
-                                                                     choices = obj$bioagg_names))),
+                                                                     choices = obj$bioagg_names))}),
                                         column(7,
-                                               plotOutput("agg_image", inline = TRUE, "100%", "550px")))),
-                    
+                                               if(is.null(anim) == FALSE){
+                                               plotOutput("agg_image", inline = TRUE, "100%", "550px")}))),
                     tabPanel("Age Disaggregated",
                                         fluidRow(column(4),
                                                  column(4,wellPanel(selectInput("sn",
@@ -151,84 +162,121 @@ vadt <- function(obj, anim){
                     # The diagnostic plots UI
                     
                     navbarMenu("Diet Data",
-                            tabPanel("Diet by Predator and Prey",
-                                        fluidRow(column(2),
-                                                 column(4,
-                                                        wellPanel(
-                                                          selectInput("diet_dispred",
-                                                                      label = "Predator",
-                                                                      choices = obj$bioagg_names))),
-                                                 column(4,
-                                                        wellPanel(
-                                                          selectInput("diet_disprey",
-                                                                      label = "Prey",
-                                                                      choices = obj$bioagg_names))),
-                                                 column(2)),
-                                        fluidRow(column(1),
-                                                 column(5,
-                                                        if(is.null(obj$tot_pred) == FALSE)
-                                                        plotOutput("diet_pprey", height = "600px")),
-                                                 column(5,
-                                                        if(is.null(obj$tot_pred) == FALSE)
-                                                        plotOutput("diet_pprey_collapsed", height = "600px")))),
-                            
-                               tabPanel("Consumption by Predator",
-                                        fluidRow(column(4),
-                                                 column(4,wellPanel(selectInput("diet_pred",
-                                                                                label = "Predator",
-                                                                                choices = obj$bioagg_names)))),
-                                        fluidRow(column(1),
-                                                 column(5,
-                                                        if(is.null(obj$tot_pred) == FALSE)
-                                                        plotOutput("diet_pred_plot", height = "600px")),
-                                                 column(5,
-                                                        if(is.null(obj$tot_pred) == FALSE)
-                                                        plotOutput("diet_predator_collapsed", height = "600px")))),
-                               
+                           tabPanel("Consumption by Predator",
+                                     navlistPanel(widths = c(2, 10),
+                                                  tabPanel("By Age Class",
+                                                           fluidRow(column(4),
+                                                                    column(4,
+                                                                           if(is.null(obj$tot_pred) == FALSE){
+                                                                             wellPanel(selectInput("diet_pred",
+                                                                                                   label = "Predator",
+                                                                                                   choices = obj$fgnames))}
+                                                                    )),
+                                                           fluidRow(column(12,
+                                                                           if(is.null(obj$tot_pred) == FALSE)
+                                                                             plotOutput("diet_pred_plot", height = "800px")))),
+                                                  tabPanel("Over Age Class",
+                                                           fluidRow(column(4),
+                                                                    column(4,
+                                                                           if(is.null(obj$tot_pred) == FALSE){
+                                                                             wellPanel(selectInput("diet_pred",
+                                                                                                   label = "Predator",
+                                                                                                   choices = obj$fgnames))}
+                                                                    )),
+                                                           fluidRow(column(12,
+                                                                           if(is.null(obj$tot_pred) == FALSE)
+                                                                             plotOutput("diet_predator_collapsed", height = "800px")))))),   
                                tabPanel("Consumption by Prey",
-                                        fluidRow(column(4),
-                                                 column(4,wellPanel(selectInput("diet_prey",
-                                                                                label = "Prey",
-                                                                                choices = obj$bioagg_names)))),
-                                        fluidRow(column(1),
-                                                 column(5,
-                                                        if(is.null(obj$tot_pred) == FALSE)
-                                                        plotOutput("diet_prey_plot", height = "600px")),
-                                                 column(5,
-                                                        if(is.null(obj$tot_pred) == FALSE)
-                                                        plotOutput("diet_prey_collapsed", height = "600px")))),
-                               
-                               tabPanel("Mean Diet Data",
+                                        navlistPanel(widths = c(2, 10),
+                                                              tabPanel("By Age Class",
+                                                                       fluidRow(column(4),
+                                                                                column(4,
+                                                                                       if(is.null(obj$tot_pred) == FALSE){
+                                                                                         wellPanel(selectInput("diet_prey",
+                                                                                                               label = "Prey",
+                                                                                                               choices = obj$fgnames))}
+                                                                                )),
+                                                                       fluidRow(column(12,
+                                                                                       if(is.null(obj$tot_pred) == FALSE)
+                                                                                         plotOutput("diet_prey_plot", height = "600px")))),
+                                                              tabPanel("Over Age Class",
+                                                                       fluidRow(column(4),
+                                                                                column(4,
+                                                                                       if(is.null(obj$tot_pred) == FALSE){
+                                                                                         wellPanel(selectInput("diet_prey",
+                                                                                                               label = "Prey",
+                                                                                                               choices = obj$fgnames))}
+                                                                                )),
+                                                                       fluidRow(column(12,
+                                                                                       if(is.null(obj$tot_pred) == FALSE)
+                                                                                         plotOutput("diet_prey_collapsed", height = "600px")))))),
+                           tabPanel("Diet by Predator and Prey",
+                                    fluidRow(column(2),
+                                             column(4,
+                                                    if(is.null(obj$tot_pred) == FALSE){
+                                                      wellPanel(
+                                                        selectInput("diet_dispred",
+                                                                    label = "Predator",
+                                                                    choices = obj$fgnames))}),
+                                             column(4,
+                                                    if(is.null(obj$tot_pred) == FALSE){
+                                                      wellPanel(
+                                                        selectInput("diet_disprey",
+                                                                    label = "Prey",
+                                                                    choices = obj$fgnames))}),
+                                             column(2)),
+                                    fluidRow(column(1),
+                                             column(5,
+                                                    if(is.null(obj$tot_pred) == FALSE)
+                                                      plotOutput("diet_pprey", height = "600px")),
+                                             column(5,
+                                                    if(is.null(obj$tot_pred) == FALSE)
+                                                      plotOutput("diet_pprey_collapsed", height = "600px")))),
+
+                            tabPanel("Mean Diet Data",
                                         fluidRow(
                                           column(2),
                                           column(4,
+                                                 if(is.null(obj$tot_pred) == FALSE){
                                                  selectInput("mean_diet_pred", 
                                                              "Predator:", 
                                                              c("All", 
-                                                               unique(as.character(obj$tot_pred$Predator))))
+                                                               unique(as.character(obj$tot_pred$Predator))))}
                                           ),
                                           column(4, 
+                                                 if(is.null(obj$tot_pred) == FALSE){
                                                  selectInput("mean_diet_prey", 
                                                              "Prey:", 
                                                              c("All", 
-                                                               unique(as.character(obj$tot_pred$Prey)))))),
+                                                               unique(as.character(obj$tot_pred$Prey))))}
+                                                 )),
                                         if(is.null(obj$tot_pred) == FALSE)
                                         dataTableOutput('diet_table'))
                                  ),
                     navbarMenu("Summaries",
-                               tabPanel("Vertebrates - All",
-                                        fluidRow(
-                                          column(4),
-                                          column(4,
-                                                 selectInput("tot_vert_scale", 
-                                                             "Scale Type", 
-                                                             c("Unadjusted","Log Scale")))
-                                          ),
-                                        fluidRow(column(1),
-                                                 column(10, 
-                                                        plotOutput("tot_vert_sum", height = "800px")),
-                                                 column(1))),
-                               tabPanel("Vertebrates - Seperate",
+                               tabPanel("Biomass Facet Plots",
+                                        navlistPanel(widths = c(2, 10),
+                                                     tabPanel("Vertebrates",
+                                                              fluidRow(
+                                                                column(4),
+                                                                column(4,
+                                                                       selectInput("tot_vert_scale", 
+                                                                                   "Scale Type", 
+                                                                                   c("Unadjusted","Log Scale")))),
+                                                              fluidRow(
+                                                              column(12,
+                                                                       plotOutput("tot_vert_sum", height = "800px")))),
+                                                     tabPanel("Invertebrates and Other Tracers",
+                                                              fluidRow(
+                                                                column(4),
+                                                                column(4,
+                                                                        selectInput("tot_invert_scale", 
+                                                                                          "Scale Type", 
+                                                                                          c("Unadjusted","Log Scale")))),
+                                                              fluidRow( 
+                                                              column(12,
+                                                                              plotOutput("tot_invert_sum", height = "800px")))))),
+                               tabPanel("Vertebrates",
                                         fluidRow(column(4),
                                                  column(4,
                                                         wellPanel(
@@ -246,18 +294,6 @@ vadt <- function(obj, anim){
                                                         plotOutput("rel_map", height = "300px")),
                                                  column(5,
                                                         plotOutput("yoy_map", height = "300px")))),
-                               tabPanel("Invertebrates - All",
-                                        fluidRow(
-                                          column(4),
-                                          column(4,
-                                                 selectInput("tot_invert_scale", 
-                                                             "Scale Type", 
-                                                             c("Unadjusted","Log Scale")))
-                                        ),
-                                        fluidRow(column(1),
-                                                 column(10,
-                                                 plotOutput("tot_invert_sum", height = "800px")),
-                                                 column(1))),
                                tabPanel("Invertebrates and Other Tracers",
                                         fluidRow(column(4),
                                                  column(4,
@@ -357,20 +393,25 @@ vadt <- function(obj, anim){
           theme(legend.title=element_blank()) + scale_y_continuous(breaks=NULL) + scale_x_continuous(breaks=NULL)
       })
       
+      output$within_box_plot <- renderPlot({
+        tmp <- filter(obj$biomass_by_box, Box == input$biomass_box_sel)
+        qplot(y = round(value), x = Time, geom = "line", data = tmp) + facet_wrap(~ Name, scales = "free", ncol = 5) + theme_bw()
+      })
+      
       ## Erla's Vertebrate Number Plots
       output$vert_erla_plot <- renderPlot({
         tmp <- obj$erla_plots[[input$erla_plot_select]]
         tmp$Time <- as.numeric(as.character(tmp$Time)) * obj$toutinc / 365 + obj$startyear
         if(is.null(tmp$Layer)){
-        ggplot(data = tmp, aes(y = number, x = Time)) + geom_line(size = 1) + ylab("") + xlab("Time") + facet_wrap(~ Box) + scale_color_manual(values = cbpalette) + theme_bw() + guides(fill = guide_legend(override.aes = list(colour = NULL))) +  
+        ggplot(data = tmp, aes(y = number, x = Time)) + geom_line(size = 1) + ylab("") + xlab("Time") + facet_wrap(~ Box, ncol = 5) + scale_color_manual(values = cbpalette) + theme_bw() + guides(fill = guide_legend(override.aes = list(colour = NULL))) +  
           scale_x_continuous(breaks=floor(as.numeric(quantile(tmp$Time, probs = seq(0, 1, .2)))))  + theme(panel.background=element_blank(), legend.key = element_rect(), legend.background = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), panel.background = element_blank(), legend.key = element_rect(colour = NA),axis.line = element_line(size = .2))
       } else {
         if(nlevels(tmp$Layer) == 7){
         cbpalette <- c("#a50026", "#d73027", "#f46d43", "#fdae61","#74add1", "#4575b4", "#313695")
-        ggplot(data = tmp, aes(y = number, x = Time, group = Layer, color = Layer)) + geom_line(size = 1) + ylab("") + xlab("Time") + facet_wrap(~ Box) + scale_color_manual(values = cbpalette) + theme_bw() + guides(fill = guide_legend(override.aes = list(colour = NULL))) +  
+        ggplot(data = tmp, aes(y = number, x = Time, group = Layer, color = Layer)) + geom_line(size = 1) + ylab("") + xlab("Time") + facet_wrap(~ Box, ncol = 5) + scale_color_manual(values = cbpalette) + theme_bw() + guides(fill = guide_legend(override.aes = list(colour = NULL))) +  
           scale_x_continuous(breaks=floor(as.numeric(quantile(tmp$Time, probs = seq(0, 1, .2)))))  + theme(panel.background=element_blank(), legend.key = element_rect(), legend.background = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), panel.background = element_blank(), legend.key = element_rect(colour = NA),axis.line = element_line(size = .2)) 
         } else {
-          ggplot(data = tmp, aes(y = number, x = Time, group = Layer, color = Layer)) + geom_line(size = 1)  + ylab("") + xlab("Time") + facet_wrap(~ Box) + theme_bw() + guides(fill = guide_legend(override.aes = list(colour = NULL))) +  
+          ggplot(data = tmp, aes(y = number, x = Time, group = Layer, color = Layer)) + geom_line(size = 1)  + ylab("") + xlab("Time") + facet_wrap(~ Box, ncol = 5) + theme_bw() + guides(fill = guide_legend(override.aes = list(colour = NULL))) +  
             scale_x_continuous(breaks=floor(as.numeric(quantile(tmp$Time, probs = seq(0, 1, .2))))) + theme(panel.background=element_blank(), legend.key = element_rect(), legend.background = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), panel.background = element_blank(), legend.key = element_rect(colour = NA),axis.line = element_line(size = .2))
         }
       }
@@ -499,25 +540,25 @@ vadt <- function(obj, anim){
         # Diet Predator by prey
       output$diet_pprey <- renderPlot({
         data_dpp <- subset(obj$diet_l, obj$diet_l$Predator == input$diet_dispred & obj$diet_l$Prey == input$diet_disprey)
-        ggplot(data = data_dpp, aes(x = Time/365, y = eaten, color = as.character(Cohort))) + geom_line(size = 1, alpha = .75) + scale_color_brewer(name = "Ageclass", type = "div",palette = 5, labels = 1:10) + xlab("Years since simulation started") + ylab("Consumed") + ggtitle(paste("Consumption of ", data_dpp[1,5], " by ", data_dpp[1,2], " by age class", sep = "")) + theme_bw() + guides(fill = guide_legend(override.aes = list(colour = NULL)))+ theme(panel.background=element_blank(), legend.key = element_rect(), legend.background = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), panel.background = element_blank(), legend.key = element_rect(colour = NA),axis.line = element_line(size = .2))
+        ggplot(data = data_dpp, aes(x = Time/365, y = eaten, color = as.character(Cohort))) + geom_line(size = 1, alpha = .75) + scale_color_brewer(name = "Ageclass", type = "div",palette = 5, labels = 1:10) + xlab("Years since simulation started") + ylab("Consumed") + ggtitle(paste("Consumption of ", data_dpp[1,5], " by ", data_dpp[1,1], " by Age Class", sep = "")) + theme_bw() + guides(fill = guide_legend(override.aes = list(colour = NULL)))+ theme(panel.background=element_blank(), legend.key = element_rect(), legend.background = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), panel.background = element_blank(), legend.key = element_rect(colour = NA),axis.line = element_line(size = .2))
         })
         
       # Diet Predator by prey collapsed over age class
       output$diet_pprey_collapsed <- renderPlot({
         data_dpp <- subset(obj$diet_l, obj$diet_l$Predator == input$diet_dispred & obj$diet_l$Prey == input$diet_disprey)
-        ggplot(data = data_dpp, aes(x = Time/365, y = eaten)) + stat_summary(aes(group =1), fun.y = sum, geom = "line", size = 1, alpha = .75) + xlab("Years since simulation started") + ylab("Consumed") + ggtitle(paste("Consumption of ", data_dpp[1,5], " by ", data_dpp[1,2], " collapsed over age class", sep = "")) + theme_bw() + guides(fill = guide_legend(override.aes = list(colour = NULL)))+ theme(panel.background=element_blank(), legend.key = element_rect(), legend.background = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), panel.background = element_blank(), legend.key = element_rect(colour = NA),axis.line = element_line(size = .2))
+        ggplot(data = data_dpp, aes(x = Time/365, y = eaten)) + stat_summary(aes(group =1), fun.y = sum, geom = "line", size = 1, alpha = .75) + xlab("Years since simulation started") + ylab("Consumed") + ggtitle(paste("Consumption of ", data_dpp[1,5], " by ", data_dpp[1,1], " Collapsed over Age Class", sep = "")) + theme_bw() + guides(fill = guide_legend(override.aes = list(colour = NULL)))+ theme(panel.background=element_blank(), legend.key = element_rect(), legend.background = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), panel.background = element_blank(), legend.key = element_rect(colour = NA),axis.line = element_line(size = .2))
       })
       
       # Consumption by Predator
       output$diet_pred_plot <- renderPlot({
         data_dpp <- subset(obj$diet_l, obj$diet_l$Predator == input$diet_pred)
-        ggplot(data = data_dpp, aes(x = Time/365, y = eaten, color = as.character(Cohort))) + geom_line(size = 1, alpha = .75) + scale_color_brewer(name = "Ageclass", type = "div",palette = 5, labels = 1:10) + xlab("Years since simulation started") + ylab("Consumed") + ggtitle(paste("Consumption by ", data_dpp[1,2], " by age class", sep = "")) + facet_wrap(~ Prey) + theme_bw() + guides(fill = guide_legend(override.aes = list(colour = NULL)))+ theme(panel.background=element_blank(), legend.key = element_rect(), legend.background = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), panel.background = element_blank(), legend.key = element_rect(colour = NA),axis.line = element_line(size = .2))
+        ggplot(data = data_dpp, aes(x = Time/365, y = eaten, color = as.character(Cohort))) + geom_line(size = 1, alpha = .75) + scale_color_brewer(name = "Ageclass", type = "div",palette = 5, labels = 1:10) + xlab("Years since simulation started") + ylab("Consumed") + ggtitle(paste("Consumption by ", data_dpp[1,1], " by Age Class", sep = "")) + facet_wrap(~ Prey) + theme_bw() + guides(fill = guide_legend(override.aes = list(colour = NULL)))+ theme(panel.background=element_blank(), legend.key = element_rect(), legend.background = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), panel.background = element_blank(), legend.key = element_rect(colour = NA),axis.line = element_line(size = .2))
       })
       
       # Consumption by Predator collapsed
       output$diet_predator_collapsed <- renderPlot({
         data_dpp <- subset(obj$diet_l, obj$diet_l$Predator == input$diet_pred)
-        ggplot(data = data_dpp, aes(x = Time/365, y = eaten))+ stat_summary(aes(group =1), fun.y = sum, geom = "line", size = 1, alpha = .75) + xlab("Years since simulation started") + ylab("Consumed") + ggtitle(paste("Consumption by ", data_dpp[1,2], " collapsed over age class", sep = "")) + facet_wrap(~ Prey) + theme_bw() + guides(fill = guide_legend(override.aes = list(colour = NULL)))+ theme(panel.background=element_blank(), legend.key = element_rect(), legend.background = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), panel.background = element_blank(), legend.key = element_rect(colour = NA),axis.line = element_line(size = .2))
+        ggplot(data = data_dpp, aes(x = Time/365, y = eaten))+ stat_summary(aes(group =1), fun.y = sum, geom = "line", size = 1, alpha = .75) + xlab("Years since simulation started") + ylab("Consumed") + ggtitle(paste("Consumption by ", data_dpp[1,1], " Collapsed over Age Class", sep = "")) + facet_wrap(~ Prey) + theme_bw() + guides(fill = guide_legend(override.aes = list(colour = NULL)))+ theme(panel.background=element_blank(), legend.key = element_rect(), legend.background = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), panel.background = element_blank(), legend.key = element_rect(colour = NA),axis.line = element_line(size = .2))
       })
       
       # Consumption by Prey
@@ -541,14 +582,14 @@ vadt <- function(obj, anim){
         if(input$tot_vert_scale == "Unadjusted"){
         qplot(x = Time, y = value, data = obj$tot_bio_v, geom = "line") + facet_wrap(~Name, ncol = 4, scales = "free") + xlab("Year") + ylab("Total Biomass") + theme_bw()
         } else {
-          qplot(x = Time, y = log(value), data = obj$tot_bio_v, geom = "line") + facet_wrap(~Name, ncol = 4) + xlab("Year") + ylab("Log(Total Biomass)") + theme_bw()
+          qplot(x = Time, y = log(value), data = obj$tot_bio_v, geom = "line") + facet_wrap(~Name, ncol = 4, scales = "free_x") + xlab("Year") + ylab("Log(Total Biomass)") + theme_bw()
         }
       })
       output$tot_invert_sum <- renderPlot({
         if(input$tot_invert_scale == "Unadjusted"){
         qplot(x = Time, y = value, data = obj$tot_bio_i, geom = "line") + facet_wrap(~Name, ncol = 4, scales = "free") + xlab("Year") + ylab("Total Biomass") + theme_bw()
         } else {
-            qplot(x = Time, y = log(value), data = obj$tot_bio_i, geom = "line") + facet_wrap(~Name, ncol = 4) + xlab("Year") + ylab("Log(Total Biomass)") + theme_bw()
+            qplot(x = Time, y = log(value), data = obj$tot_bio_i, geom = "line") + facet_wrap(~Name, ncol = 4, scales = "free_x") + xlab("Year") + ylab("Log(Total Biomass)") + theme_bw()
         }
       })
       

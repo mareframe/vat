@@ -21,7 +21,14 @@
 #'@seealso \code{\link{vadt}}, \code{\link{animate_vadt}}
 #'@examples
 #'\dontrun{
-#' obj <- create_vadt(outdir = "output/", fgfile = "fg.csv", biolprm = "bio.prm", ncout = "atlout", startyear = 1948, toutinc = 30, diet = TRUE)
+#' outdir = "out/"
+#' fgfile = "fg.csv"
+#' biolprm = "bio.prm"
+#' ncout = "atlantis_output"
+#' startyear = 1948
+#' toutinc = 30
+#' diet = TRUE
+#' obj <- create_vadt(outdir, fgfile, biolprm, ncout, startyear, toutinc, diet)
 #' }
 #' 
 
@@ -43,14 +50,20 @@ create_vadt <- function(outdir, fgfile, biolprm, ncout, startyear, toutinc, diet
   biomass <- read.table(paste(outdir, ncout, "BiomIndx.txt", sep = ""), header = T)
   rel_bio <- biomass[,c(1, grep("Rel",colnames(biomass)))]
   tot_bio <- biomass[,c(1:(grep("Rel",colnames(biomass))[1]-1))]
-  
-  ## check diet
+  fun_group <- read.csv(fgfile, header = T, stringsAsFactors = FALSE)#[, c(1,3, 4,5,6, 9,16, 12)]
+   
+  ## Reads in and prepares the diet data if it's available
   if(diet){
     cat("### ------------ Setting up diet matrix plot                             ------------ ###\n")    
     diet <- read.table(paste(outdir, ncout, "DietCheck.txt", sep = ""), header = TRUE, stringsAsFactors = TRUE)
+    colnames(diet) <- c("Time", "Code", "Cohort", "Stock", fun_group[,4])
+    diet <- merge(diet, fun_group[,c(1,2,4)])
+    diet <- arrange(diet, Index)
+    diet$Code <- diet$Name
+    diet$Name <- NULL; diet$Index <- NULL
     diet_l <- diet %>%
       gather("Prey", "eaten", 5:ncol(diet))
-    colnames(diet_l) <- c("Time", "Predator", "Cohort", "Stock", "Prey", "eaten")
+    colnames(diet_l) <- c("Predator","Time","Cohort", "Stock", "Prey", "eaten")
     tot_pred <- diet_l %>%
       group_by(Predator,Prey) %>%
       summarize(Eaten = mean(eaten))
@@ -58,8 +71,15 @@ create_vadt <- function(outdir, fgfile, biolprm, ncout, startyear, toutinc, diet
     diet_l <- NULL
     tot_pred <- NULL
   }
-  fun_group <- read.csv(fgfile, header = T, stringsAsFactors = FALSE)#[, c(1,3, 4,5,6, 9,16, 12)]
   
+  # Calculate by biomass by box - this is for the within-box plot
+  biomass_by_box <- bio_agg %>%
+    gather("Code", "value", -c(Time,Box))
+  biomass_by_box <- merge(biomass_by_box, fun_group[,c(1, 2, 4)])
+  biomass_by_box <- arrange(biomass_by_box, Index)
+  biomass_by_box$Name <- factor(biomass_by_box$Name, levels = unique(biomass_by_box$Name))
+  biomass_by_box$Time <- startyear + biomass_by_box$Time/365
+
   # Extract a and b parameters from biology parameter
   biolprm <- readLines(biolprm)
   biol_a <- grep("li_a", biolprm, value = TRUE)
@@ -81,10 +101,7 @@ create_vadt <- function(outdir, fgfile, biolprm, ncout, startyear, toutinc, diet
   
   ## Drop those functional groups that are not turned on
   fun_group <- fun_group[fun_group$IsTurnedOn == 1,]# c(1,3:8)]
-  
-  #fun_group$isFished <- ifelse(fun_group$isFished == 1, "Yes", "No")
-  #fun_group$isAssessed <- ifelse(fun_group$isAssessed == 1, "Yes", "No")
-  
+
   if(sum(names(fun_group) == "InvertType") > 0)
     names(fun_group)[names(fun_group) == "InvertType"] <- "GroupType"
   
@@ -102,9 +119,13 @@ create_vadt <- function(outdir, fgfile, biolprm, ncout, startyear, toutinc, diet
     gather("Code", "value", -Time)
   tot_bio_v <- filter(tot_bio_l, Code %in% rs_codes)
   tot_bio_i <- filter(tot_bio_l, !(Code %in% rs_codes))
-  tot_bio_v <- merge(tot_bio_v, fun_group[c(1,4)], by = "Code")
+  tot_bio_v <- merge(tot_bio_v, fun_group[c(1,2,4)], by = "Code")
+  tot_bio_v <- arrange(tot_bio_v, Index)
+  tot_bio_v$Name <- factor(tot_bio_v$Name, levels = unique(tot_bio_v$Name))
   tot_bio_v$Time <- startyear + tot_bio_v$Time/365
-  tot_bio_i <- merge(tot_bio_i, fun_group[c(1,4)], by = "Code")
+  tot_bio_i <- merge(tot_bio_i, fun_group[c(1,2,4)], by = "Code")
+  tot_bio_i <- arrange(tot_bio_i, Index)
+  tot_bio_i$Name <- factor(tot_bio_i$Name, levels = unique(tot_bio_i$Name))
   tot_bio_i$Time <- startyear + tot_bio_i$Time/365
   
   colnames(rel_bio) <- c("Time", fun_group$Name, "DIN")
@@ -405,7 +426,7 @@ create_vadt <- function(outdir, fgfile, biolprm, ncout, startyear, toutinc, diet
   totalnums$Time <- as.numeric(as.character(totalnums$X1)) * toutinc / 365 + startyear
   #totalnums$Time <- as.numeric(as.character(totalnums$X1))/12 + startyear
   
-  output <- list(disagg = vars,invert_vars = invert_vars, invert_mnames = invert_mnames, trace_vars = trace_vars, trace_names = trace_names, var_names = tot_num, max_layers = max_layers, max_time = max_time, bioagg_names = bioagg_names, rs_names = rs_names, tot_pred = tot_pred, ssb_names = ssb_names, yoy_names = yoy_names, islands = islands, rel_bio = rel_bio, tot_bio = tot_bio, ssb = ssb, yoy = yoy, structN = structN, reserveN = reserveN, totalnums = totalnums, map_base = map_base, numboxes = numboxes, fun_group = fun_group, invert_names = invert_names, invert_l = invert_l, vert_l = vert_l, ab_params = ab_params, diet_l = diet_l, erla_plots = erla_plots, toutinc = toutinc, startyear = startyear, tot_bio_v = tot_bio_v, tot_bio_i = tot_bio_i)
+  output <- list(disagg = vars,invert_vars = invert_vars, invert_mnames = invert_mnames, trace_vars = trace_vars, trace_names = trace_names, var_names = tot_num, max_layers = max_layers, max_time = max_time, bioagg_names = bioagg_names, rs_names = rs_names, tot_pred = tot_pred, ssb_names = ssb_names, yoy_names = yoy_names, islands = islands, rel_bio = rel_bio, tot_bio = tot_bio, ssb = ssb, yoy = yoy, structN = structN, reserveN = reserveN, totalnums = totalnums, map_base = map_base, numboxes = numboxes, fun_group = fun_group, invert_names = invert_names, invert_l = invert_l, vert_l = vert_l, ab_params = ab_params, diet_l = diet_l, erla_plots = erla_plots, toutinc = toutinc, startyear = startyear, tot_bio_v = tot_bio_v, tot_bio_i = tot_bio_i, biomass_by_box = biomass_by_box, fgnames = fun_group[,4])
   cat("### ------------ vat object created, you can now run the vat application ------------ ###\n") 
   return(output)
   class(output) <- "vadt"

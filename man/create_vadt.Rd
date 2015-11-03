@@ -26,7 +26,7 @@ This function creates a visualizing Atlantis diagnostic tool object which should
 }
 \examples{
 \dontrun{
-obj <- create_vadt(outdir = "output/", fgfile = "fg.csv", biolprm = "bio.prm", ncout = "atlout", startyear = 1948, toutinc = 30, diet = TRUE)
+obj <- create_vadt(outdir = "out/", fgfile = "fg.csv", biolprm = "bio.prm", ncout = "atlout", startyear = 1948, toutinc = 30, diet = TRUE)
 }
 
 }
