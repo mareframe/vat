@@ -3,7 +3,7 @@
 
 `vat` is an interactive R package used with the [Atlantis](http://atlantis.cmar.csiro.au/) ecosystem model. 
 
-An example of `vat` from the Icelandic Atlantis model can be seen [here](http://130.208.71.121:3838/vat). Note, that the model in that example is a moving Atlantis target.
+An example of `vat` from the Icelandic Atlantis model can be seen [here](http://130.208.71.121:3838/vat). Note, that the Atlantis model in that example is a work-in-progress.
 
 To install: 
 
