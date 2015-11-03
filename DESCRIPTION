@@ -1,8 +1,8 @@
 Package: vat
 Type: Package
-Title: Visualizing Atlantis Toolbox
+Title: Visualizing Atlantis Tool
 Version: 0.1
-Date: 2015-03-24
+Date: 2015-11-03
 Author: Christopher David Desjardins <cddesjardins@gmail.com>
 Maintainer: Christopher David Desjardins <cddesjardins@gmail.com>
 Description: This package provides a suite of interactive tools for examining
@@ -20,6 +20,5 @@ Depends:
     animation,
     gridExtra,
     stringr,
-    DT,
     R (>= 3.0.0)
 RoxygenNote: 5.0.0

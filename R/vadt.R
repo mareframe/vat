@@ -4,20 +4,20 @@
 #' 
 #' 
 #'@param obj Object of class vat returned by create_vat
-#'@param anim Directory to stored animated plot created by vat_animate function
+#'@param anim Directory to stored animated plot created by vat_animate function (optional)
 #'@import ggplot2
 #'@import shiny
-#'@importFrom DT dataTableOutput
-#'@importFrom DT renderDataTable
-#'@importFrom DT datatable
 #'@importFrom scales muted
 #'@export
 #'@seealso \code{\link{create_vadt}}, \code{\link{animate_vadt}}
+#'@examples
+#'\dontrun{
 #' anim <- "/path/to/animinated/gifs"
 #' obj <- create_vadt(outdir = "/atlantis/output_dir/",
 #' fgfile = "/atlantis/functionalgroup.csv", 
 #' ncout = "output_atlantis")
 #' vadt(obj, anim)
+#' }
 #'
 
 vadt <- function(obj, anim){
@@ -539,16 +539,16 @@ vadt <- function(obj, anim){
       # Total biomass trellis
       output$tot_vert_sum <- renderPlot({
         if(input$tot_vert_scale == "Unadjusted"){
-        qplot(x = Time, y = value, data = obj$tot_bio_v, geom = "line") + facet_wrap(~Name, ncol = 4, scales = "free") + xlab("Years since simulation started") + ylab("Total Biomass") + theme_bw()
+        qplot(x = Time, y = value, data = obj$tot_bio_v, geom = "line") + facet_wrap(~Name, ncol = 4, scales = "free") + xlab("Year") + ylab("Total Biomass") + theme_bw()
         } else {
-          qplot(x = Time, y = log(value), data = obj$tot_bio_v, geom = "line") + facet_wrap(~Name, ncol = 4) + xlab("Years since simulation started") + ylab("Log(Total Biomass)") + theme_bw()
+          qplot(x = Time, y = log(value), data = obj$tot_bio_v, geom = "line") + facet_wrap(~Name, ncol = 4) + xlab("Year") + ylab("Log(Total Biomass)") + theme_bw()
         }
       })
       output$tot_invert_sum <- renderPlot({
         if(input$tot_invert_scale == "Unadjusted"){
-        qplot(x = Time, y = value, data = obj$tot_bio_i, geom = "line") + facet_wrap(~Name, ncol = 4, scales = "free") + xlab("Years since simulation started") + ylab("Total Biomass") + theme_bw()
+        qplot(x = Time, y = value, data = obj$tot_bio_i, geom = "line") + facet_wrap(~Name, ncol = 4, scales = "free") + xlab("Year") + ylab("Total Biomass") + theme_bw()
         } else {
-            qplot(x = Time, y = log(value), data = obj$tot_bio_i, geom = "line") + facet_wrap(~Name, ncol = 4) + xlab("Years since simulation started") + ylab("Log(Total Biomass)") + theme_bw()
+            qplot(x = Time, y = log(value), data = obj$tot_bio_i, geom = "line") + facet_wrap(~Name, ncol = 4) + xlab("Year") + ylab("Log(Total Biomass)") + theme_bw()
         }
       })
       

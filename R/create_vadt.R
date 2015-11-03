@@ -2,29 +2,30 @@
 #' 
 #' This function creates a visualizing Atlantis diagnostic tool object which should be fed to the \code{vadt} function. This object can be quite large and this function may take a little while depending on how long you have run Atlantis for and the complexity of your model.
 #' 
-#'  @param outdir Path to Atlantis output directory
-#'  @param fgfile Functional group file
-#'  @param biolprm Biology parameter file 
-#'  @param ncout Name of output ncdf4 file excluding nc suffix (i.e. name given after -o flag)
-#'  @param startyear Year that the model starts
-#'  @param toutinc Periodicity of writing output (in days)
-#'  @param diet Include diagnostic diet plots? Default: TRUE
-#'  @import dplyr
-#'  @importFrom ncdf4 nc_open
-#'  @importFrom ncdf4 ncvar_get
-#'  @importFrom plyr ldply
-#'  @importFrom plyr adply
-#'  @importFrom tidyr gather
-#'  @importFrom stringr str_split_fixed
-#'  @importFrom stringr str_trim
-#'  
-#'  @export
-#'  @seealso \code{\link{vadt}}, \code{\link{animate_vadt}}
-#'  @examples
-#'  \dontrun{
-#' obj <- create_vadt(outdir = "/atlantis/output_dir/", fgfile = "/atlantis/functionalgroup.csv", biolprm = "/atlantis/biol.prm", ncout = "output_atlantis", startyear = 1948, toutinc = 30)
-#'  }
-create_vadt <- function(outdir, fgfile, biolprm, ncout, startyear, toutinc, diet = TRUE, ...){
+#'@param outdir Path to Atlantis output directory
+#'@param fgfile Functional group file
+#'@param biolprm Biology parameter file 
+#'@param ncout Name of output ncdf4 file excluding nc suffix (i.e. name given after -o flag)
+#'@param startyear Year that the model starts
+#'@param toutinc Periodicity of writing output (in days)
+#'@param diet Include diagnostic diet plots? default is TRUE
+#'@import dplyr
+#'@importFrom ncdf4 nc_open
+#'@importFrom ncdf4 ncvar_get
+#'@importFrom plyr ldply
+#'@importFrom plyr adply
+#'@importFrom tidyr gather
+#'@importFrom stringr str_split_fixed
+#'@importFrom stringr str_trim
+#'@export
+#'@seealso \code{\link{vadt}}, \code{\link{animate_vadt}}
+#'@examples
+#'\dontrun{
+#' obj <- create_vadt(outdir = "output/", fgfile = "fg.csv", biolprm = "bio.prm", ncout = "atlout", startyear = 1948, toutinc = 30, diet = TRUE)
+#' }
+#' 
+
+create_vadt <- function(outdir, fgfile, biolprm, ncout, startyear, toutinc, diet = TRUE){
   # contants
   nsecs <- 86400
   ndays <- 365

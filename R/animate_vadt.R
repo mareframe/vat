@@ -68,11 +68,6 @@ animate_vadt <- function(bgm, bmass, interval = .3, codes, savedir){
   for(j in colnames(bio_agg)[c(-1,-2)]){
     saveGIF({
     
-      # For the most part, it’s safest to start with graphical settings in
-      # the animation loop, as the loop adds a layer of complexity to
-      # manipulating the graphs. For example, the layout specification needs to
-      # be within animation loop to work properly.
-      # layout(matrix(c(1, rep(2, 5)), 6, 1))
       max_value <- max(bio_agg[,j])
       min_value <- min(bio_agg[,j])
       mid_value <- median(bio_agg[,j])
