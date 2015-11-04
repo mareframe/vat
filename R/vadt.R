@@ -241,14 +241,14 @@ vadt <- function(obj, anim = NULL){
                                                  selectInput("mean_diet_pred", 
                                                              "Predator:", 
                                                              c("All", 
-                                                               unique(as.character(obj$tot_pred$Predator))))}
+                                                               unique(as.character(obj$fgnames))))}
                                           ),
                                           column(4, 
                                                  if(is.null(obj$tot_pred) == FALSE){
                                                  selectInput("mean_diet_prey", 
                                                              "Prey:", 
                                                              c("All", 
-                                                               unique(as.character(obj$tot_pred$Prey))))}
+                                                               unique(as.character(obj$fgnames))))}
                                                  )),
                                         if(is.null(obj$tot_pred) == FALSE)
                                         dataTableOutput('diet_table'))
