@@ -16,7 +16,7 @@ If you have installed Atlantis on the machine where you want to run `vadt`, you 
 
 ##### Windows users that are getting errors installing `ncdf4`, please see this page on the [wiki](https://github.com/mareframe/vat/wiki/Instructions-for-Windows-Users).
 
-##### If you are a Mac user and are getting installation errors, please make sure that the command line tools for [Xcode](https://developer.apple.com/xcode/).
+##### If you are a Mac user and are getting installation errors, please make sure that the command line tools for [Xcode](https://developer.apple.com/xcode/) are installed.
 
 #### How to run `vat`
 To run the interactive [Shiny](http://shiny.rstudio.com/) application for `vat`, named `vadt` for visualizing Atlantis diagnostic tool. You need to running the following sequence of functions.
