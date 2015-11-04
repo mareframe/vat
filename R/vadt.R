@@ -1,6 +1,6 @@
 #' The visualizing Atlantis diagnostic tool
 #' 
-#' The visualizing Atlantis diagnostic tool is an interactive Shiny-based tool for model tuning and calibration. It includes various plots, both aggregrated and unaggregated, that are useful for diagnostic, tuning, and visualizing output. To use \code{vadt}, the user must first run the \code{create_vadt} function which will create an object of class \code{vadt} which can be fed to the \code{vadt} function. The user must also run the \code{animate_vadt} to create the animated GIFs required my the function. 
+#' The visualizing Atlantis diagnostic tool is an interactive Shiny-based tool for model tuning and calibration. It includes various plots, both aggregated and unaggregated, that are useful for diagnostic, tuning, and visualizing output. To use \code{vadt}, the user must first run the \code{create_vadt} function which will create an object of class \code{vadt} which can be fed to the \code{vadt} function. The user may also run the \code{animate_vadt} to create the animated GIFs (this is optional)
 #' 
 #' 
 #'@param obj Object of class vat returned by create_vat
