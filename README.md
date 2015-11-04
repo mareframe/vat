@@ -13,7 +13,8 @@ install_github(repo = "mareframe/vat")
 ```
 
 
-#### Windows users that are getting errors installing `ncdf4` should read the [wiki](https://github.com/mareframe/vat/wiki/Instructions-for-Windows-Users) to install the `vat` R scripts seperately. If you can install `ncdf4` from source (i.e. because you can have installed Visual Studio) then the simple above commands should work for you.
+#### Windows users that are getting errors installing `ncdf4`
+Please read the [wiki](https://github.com/mareframe/vat/wiki/Instructions-for-Windows-Users) to install the `vat` R scripts seperately. If you can install the `R ncdf4` package from source (i.e. because you can have installed Visual Studio) then the simple commands shown above should work for you.
 
 To run the interactive [Shiny](http://shiny.rstudio.com/) application for `vat`, named `vadt` for visualizing Atlantis diagnostic tool. You need to running the following sequence of functions.
 
