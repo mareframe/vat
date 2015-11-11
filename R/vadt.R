@@ -48,7 +48,7 @@ vadt <- function(obj, anim = NULL){
                     # 
                     # Disaggregated Spatial Maps
                     navbarMenu("Spatial Plots",
-                               tabPanel("Vertebrate Distribution by Boxes",
+                               tabPanel("Distribution by Box",
                                         fluidRow(column(4),
                                                  column(4,wellPanel(selectInput("erla_plot_select",
                                                                                 label = "Functional Group",

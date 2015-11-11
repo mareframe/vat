@@ -105,19 +105,22 @@ create_vadt <- function(outdir, fgfile, biolprm, ncout, startyear, toutinc, diet
   if(sum(names(fun_group) == "InvertType") > 0)
     names(fun_group)[names(fun_group) == "InvertType"] <- "GroupType"
   
-  # Subset vertebrates
+  # Subset invertebrates and vertebrates
   rs_names <- fun_group[fun_group$GroupType %in% c("FISH", "MAMMAL", "SHARK", "BIRD"), "Name"]
   rs_codes <- fun_group[fun_group$GroupType %in% c("FISH", "MAMMAL", "SHARK", "BIRD"), "Code"]
-  # Subset invertebrates
   invert_names <-fun_group[!(fun_group$GroupType %in% c("FISH", "MAMMAL", "SHARK", "BIRD")),]
   
+  # Rename columns
   colnames(ssb) <- c("Time", rs_names)
   colnames(yoy) <- c("Time", rs_names)
   
   # Biomass Long
   tot_bio_l <- tot_bio %>%
     gather("Code", "value", -Time)
+  
+  # Subset vertebrates
   tot_bio_v <- filter(tot_bio_l, Code %in% rs_codes)
+  # Subset invertebrates
   tot_bio_i <- filter(tot_bio_l, !(Code %in% rs_codes))
   tot_bio_v <- merge(tot_bio_v, fun_group[c(1,2,4)], by = "Code")
   tot_bio_v <- arrange(tot_bio_v, Index)
@@ -298,10 +301,10 @@ create_vadt <- function(outdir, fgfile, biolprm, ncout, startyear, toutinc, diet
         invert_vars[[i]] <- tmp
       }
     } else{
-        tmp_array <- adply(tmp, c(1,3))
-        tmp_invert <- tmp_array %>%
-          group_by(X1, X2) %>%
-          summarize_each(funs(sum))
+       tmp_invert <- adply(tmp, c(1,3))
+        # tmp_invert <- tmp_array %>%
+        #   group_by(X1, X2) %>%
+        #   summarize_each(funs(sum))
         colnames(tmp_invert) <- c("Layer", "Time", paste("Box", 0:(ncol(tmp_invert)-3), sep =" "))
         tmp_invert$Layer <- factor(tmp_invert$Layer,levels(tmp_invert$Layer)[c(((length(unique(tmp_invert$Layer)))-1):1, length(unique(tmp_invert$Layer)))])
         levels(tmp_invert$Layer) <- depth_labels
@@ -310,7 +313,7 @@ create_vadt <- function(outdir, fgfile, biolprm, ncout, startyear, toutinc, diet
         erla_plots[[invert_mnames[i]]] <- tmp_invert
     }
   }
-    names(invert_vars) <- invert_mnames
+  names(invert_vars) <- invert_mnames
     
   trace_vars <- list()
   for (i in 1:length(trace_names)){
@@ -343,6 +346,7 @@ create_vadt <- function(outdir, fgfile, biolprm, ncout, startyear, toutinc, diet
   
   
   cat("### ------------ Setting up data for production output                   ------------ ###\n")
+  cat("### ------------ This part takes a while.                                ------------ ###\n")
   # Create the production output
   prod_names <- names(prod_out$var)
   t <- prod_out$dim$t$vals
@@ -376,20 +380,14 @@ create_vadt <- function(outdir, fgfile, biolprm, ncout, startyear, toutinc, diet
     gather("variable", "value", -id)
   
   cat("### ------------ Setting up aggregated diagnostic plots                  ------------ ###\n")
-  cat("### ------------ This part takes a while. Better grab a kleina.          ------------ ###\n")
-  # ------------------------------------ #
+  # ------------------------------------- #
   # - Reserve/Structural Nitrogen Plots - #
-  # ------------------------------------ #
+  # ------------------------------------- #
   str_N <- grep("StructN", var_names, value = TRUE)
   res_N <- grep("ResN", var_names, value = TRUE)
   
-  rs_names <- fun_group[fun_group$GroupType %in% c("FISH", "MAMMAL", "SHARK", "BIRD"), "Name"]
- 
   # Subset invertebrates
   invert_names <-fun_group[!(fun_group$GroupType %in% c("FISH", "MAMMAL", "SHARK", "BIRD")),]
-  
-  #colnames(fun_group) <- c("Code", "Name", "Long Name", "Number of Age Groups", "Is it Fished?", "Is it Assessed?", "Type of Group")
-  
   
   sn_list <- list()
   rn_list <- list()
@@ -416,15 +414,11 @@ create_vadt <- function(outdir, fgfile, biolprm, ncout, startyear, toutinc, diet
   structN$.id <- factor(structN$.id, levels = unique(structN$.id))
   structN$Time <- as.numeric(as.character(structN$X1)) * toutinc / 365 + startyear
   
-  #structN$Time <- as.numeric(as.character(structN$X1))/12 + startyear
-  
   reserveN$.id <- factor(reserveN$.id, levels = unique(reserveN$.id))
   reserveN$Time <- as.numeric(as.character(reserveN$X1)) * toutinc / 365 + startyear
-  #reserveN$Time <- as.numeric(as.character(reserveN$X1))/12 + startyear
   
   totalnums$.id <- factor(totalnums$.id, levels = unique(totalnums$.id))
   totalnums$Time <- as.numeric(as.character(totalnums$X1)) * toutinc / 365 + startyear
-  #totalnums$Time <- as.numeric(as.character(totalnums$X1))/12 + startyear
   
   output <- list(disagg = vars,invert_vars = invert_vars, invert_mnames = invert_mnames, trace_vars = trace_vars, trace_names = trace_names, var_names = tot_num, max_layers = max_layers, max_time = max_time, bioagg_names = bioagg_names, rs_names = rs_names, tot_pred = tot_pred, ssb_names = ssb_names, yoy_names = yoy_names, islands = islands, rel_bio = rel_bio, tot_bio = tot_bio, ssb = ssb, yoy = yoy, structN = structN, reserveN = reserveN, totalnums = totalnums, map_base = map_base, numboxes = numboxes, fun_group = fun_group, invert_names = invert_names, invert_l = invert_l, vert_l = vert_l, ab_params = ab_params, diet_l = diet_l, erla_plots = erla_plots, toutinc = toutinc, startyear = startyear, tot_bio_v = tot_bio_v, tot_bio_i = tot_bio_i, biomass_by_box = biomass_by_box, fgnames = fun_group[,4])
   cat("### ------------ vat object created, you can now run the vat application ------------ ###\n") 
