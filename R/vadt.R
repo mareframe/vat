@@ -9,6 +9,7 @@
 #'@import shiny
 #'@importFrom scales muted
 #'@importFrom DT datatable
+#'@importFrom stringr str_trim
 #'@export
 #'@seealso \code{\link{create_vadt}}, \code{\link{animate_vadt}}
 #'@examples
@@ -390,12 +391,13 @@ vadt <- function(obj, anim = NULL){
           geom_polygon(aes(group = boxid, fill = tmp), colour = "black") +
           theme_bw() + xlab("") + ylab("") +
           scale_fill_gradient2(limits = c(tmp.min, tmp.max), low = muted("red"), midpoint = tmp.mid, high = muted("blue")) +
-          theme(legend.title=element_blank()) + scale_y_continuous(breaks=NULL) + scale_x_continuous(breaks=NULL)
+          theme(legend.title=element_blank()) + scale_y_continuous(breaks=NULL) + scale_x_continuous(breaks=NULL) 
       })
       
       output$within_box_plot <- renderPlot({
         tmp <- filter(obj$biomass_by_box, Box == input$biomass_box_sel)
-        qplot(y = round(value), x = Time, geom = "line", data = tmp) + facet_wrap(~ Name, scales = "free", ncol = 5) + theme_bw()
+        qplot(y = round(value), x = Time, geom = "line", data = tmp) + facet_wrap(~ Name, scales = "free", ncol = 5) + theme_bw() + xlab("Year") +  
+          scale_x_continuous(breaks=round(as.numeric(quantile(tmp$Time, probs = seq(0, 1, .2))))) + ylab("")
       })
       
       ## Erla's Vertebrate Number Plots
@@ -403,16 +405,16 @@ vadt <- function(obj, anim = NULL){
         tmp <- obj$erla_plots[[input$erla_plot_select]]
         tmp$Time <- as.numeric(as.character(tmp$Time)) * obj$toutinc / 365 + obj$startyear
         if(is.null(tmp$Layer)){
-        ggplot(data = tmp, aes(y = number, x = Time)) + geom_line(size = 1) + ylab("") + xlab("Time") + facet_wrap(~ Box, ncol = 5) + theme_bw() + guides(fill = guide_legend(override.aes = list(colour = NULL))) +  
-          scale_x_continuous(breaks=floor(as.numeric(quantile(tmp$Time, probs = seq(0, 1, .2)))))  + theme(panel.background=element_blank(), legend.key = element_rect(), legend.background = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), panel.background = element_blank(), legend.key = element_rect(colour = NA),axis.line = element_line(size = .2))
+        ggplot(data = tmp, aes(y = number, x = Time)) + geom_line(size = 1) + ylab("") + xlab("Year") + facet_wrap(~ Box, ncol = 5) + theme_bw() + guides(fill = guide_legend(override.aes = list(colour = NULL))) +  
+          scale_x_continuous(breaks=round(as.numeric(quantile(tmp$Time, probs = seq(0, 1, .2)))))  + theme(panel.background=element_blank(), legend.key = element_rect(), legend.background = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), panel.background = element_blank(), legend.key = element_rect(colour = NA),axis.line = element_line(size = .2))
       } else {
         if(nlevels(tmp$Layer) == 7){
         cbpalette <- c("#a50026", "#d73027", "#f46d43", "#fdae61","#74add1", "#4575b4", "#313695")
-        ggplot(data = tmp, aes(y = number, x = Time, group = Layer, color = Layer)) + geom_line(size = 1) + ylab("") + xlab("Time") + facet_wrap(~ Box, ncol = 5) + scale_color_manual(values = cbpalette) + theme_bw() + guides(fill = guide_legend(override.aes = list(colour = NULL))) +  
-          scale_x_continuous(breaks=floor(as.numeric(quantile(tmp$Time, probs = seq(0, 1, .2)))))  + theme(panel.background=element_blank(), legend.key = element_rect(), legend.background = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), panel.background = element_blank(), legend.key = element_rect(colour = NA),axis.line = element_line(size = .2)) 
+        ggplot(data = tmp, aes(y = number, x = Time, group = Layer, color = Layer)) + geom_line(size = 1) + ylab("") + xlab("Year") + facet_wrap(~ Box, ncol = 5) + scale_color_manual(values = cbpalette) + theme_bw() + guides(fill = guide_legend(override.aes = list(colour = NULL))) +  
+          scale_x_continuous(breaks=round(as.numeric(quantile(tmp$Time, probs = seq(0, 1, .2)))))  + theme(panel.background=element_blank(), legend.key = element_rect(), legend.background = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), panel.background = element_blank(), legend.key = element_rect(colour = NA),axis.line = element_line(size = .2)) 
         } else {
-          ggplot(data = tmp, aes(y = number, x = Time, group = Layer, color = Layer)) + geom_line(size = 1)  + ylab("") + xlab("Time") + facet_wrap(~ Box, ncol = 5) + theme_bw() + guides(fill = guide_legend(override.aes = list(colour = NULL))) +  
-            scale_x_continuous(breaks=floor(as.numeric(quantile(tmp$Time, probs = seq(0, 1, .2))))) + theme(panel.background=element_blank(), legend.key = element_rect(), legend.background = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), panel.background = element_blank(), legend.key = element_rect(colour = NA),axis.line = element_line(size = .2))
+          ggplot(data = tmp, aes(y = number, x = Time, group = Layer, color = Layer)) + geom_line(size = 1)  + ylab("") + xlab("Year") + facet_wrap(~ Box, ncol = 5) + theme_bw() + guides(fill = guide_legend(override.aes = list(colour = NULL))) +  
+            scale_x_continuous(breaks=round(as.numeric(quantile(tmp$Time, probs = seq(0, 1, .2))))) + theme(panel.background=element_blank(), legend.key = element_rect(), legend.background = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), panel.background = element_blank(), legend.key = element_rect(colour = NA),axis.line = element_line(size = .2))
         }
       }
         })
@@ -460,14 +462,13 @@ vadt <- function(obj, anim = NULL){
         sn_ids <- paste(input$sn, 1:10, "_StructN", sep = "")
         dat_sn <- subset(obj$structN, .id %in% sn_ids)
         ggplot(data = dat_sn, aes(y = V1, x = Time)) + geom_line(aes(group = .id, color = .id), size = 2, alpha = .75) +  
-          scale_x_continuous(breaks=seq(round(min(dat_sn$Time)), round(max(dat_sn$Time)), 5)) + ylab("Structural Nitrogen (mg N)")  + scale_color_brewer(name = "Ageclass", type = "div",palette = 5, labels = 1:10)  + theme_bw() + guides(fill = guide_legend(override.aes = list(colour = NULL))) + theme(panel.background=element_blank(), legend.key = element_rect(), legend.background = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), panel.background = element_blank(), legend.key = element_rect(colour = NA),axis.line = element_line(size = .2))})
+          scale_x_continuous(breaks=round(as.numeric(quantile(dat_sn$Time, probs = seq(0, 1, .2))))) + ylab("Structural Nitrogen (mg N)")  + scale_color_brewer(name = "Ageclass", type = "div",palette = 5, labels = 1:10)  + theme_bw() + guides(fill = guide_legend(override.aes = list(colour = NULL))) + theme(panel.background=element_blank(), legend.key = element_rect(), legend.background = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), panel.background = element_blank(), legend.key = element_rect(colour = NA),axis.line = element_line(size = .2)) + xlab("Year")})
       
       # Reserve nitrogen
       output$reserven <- renderPlot({
         rn_ids <- paste(input$sn, 1:10, "_ResN", sep = "")
         dat_rn <- subset(obj$reserve, .id %in% rn_ids)
-        ggplot(data = dat_rn, aes(y = V1, x = Time)) + geom_line(aes(group = .id, color = .id), size = 2, alpha = .75) +  
-          scale_x_continuous(breaks=seq(round(min(dat_rn$Time)), round(max(dat_rn$Time)), 5)) + ylab("Reserve Nitrogen (mg N)")  + scale_color_brewer(name = "Ageclass",type = "div",palette = 5, labels = 1:10) + theme_bw() + guides(fill = guide_legend(override.aes = list(colour = NULL)))+ theme(panel.background=element_blank(), legend.key = element_rect(), legend.background = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), panel.background = element_blank(), legend.key = element_rect(colour = NA),axis.line = element_line(size = .2))})
+        ggplot(data = dat_rn, aes(y = V1, x = Time)) + geom_line(aes(group = .id, color = .id), size = 2, alpha = .75) +  scale_x_continuous(breaks=round(as.numeric(quantile(dat_rn$Time, probs = seq(0, 1, .2))))) + ylab("Reserve Nitrogen (mg N)")  + scale_color_brewer(name = "Ageclass",type = "div",palette = 5, labels = 1:10) + theme_bw() + guides(fill = guide_legend(override.aes = list(colour = NULL)))+ theme(panel.background=element_blank(), legend.key = element_rect(), legend.background = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), panel.background = element_blank(), legend.key = element_rect(colour = NA),axis.line = element_line(size = .2)) + xlab("Year")})
       
       
       # Total Biomass
@@ -477,7 +478,7 @@ vadt <- function(obj, anim = NULL){
         totn_ids <- paste(input$sn, 1:10, "_Nums", sep = "")
         dat_tn <- subset(obj$totalnums, .id %in% totn_ids)
         dat_tn$V1 <- (3.65*sn$V1*5.7*20)/1e3 * dat_tn$V1 / 1e6
-        ggplot(data = dat_tn, aes(y = V1, x = Time)) + geom_line(aes(color = .id), size = 2, alpha = .75) + scale_x_continuous(breaks=seq(round(min(dat_tn$Time)), round(max(dat_tn$Time)), 5)) + ylab("Total Biomass (Tons)") + scale_color_brewer(name = "Ageclass", type = "div",palette = 5, labels = 1:10) + theme_bw()  + guides(fill = guide_legend(override.aes = list(colour = NULL)))+ theme(panel.background=element_blank(), legend.key = element_rect(), legend.background = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), panel.background = element_blank(), legend.key = element_rect(colour = NA),axis.line = element_line(size = .2, color = "black"))
+        ggplot(data = dat_tn, aes(y = V1, x = Time)) + geom_line(aes(color = .id), size = 2, alpha = .75) + scale_x_continuous(breaks=round(as.numeric(quantile(dat_tn$Time, probs = seq(0, 1, .2))))) + ylab("Total Biomass (Tons)") + scale_color_brewer(name = "Ageclass", type = "div",palette = 5, labels = 1:10) + theme_bw()  + guides(fill = guide_legend(override.aes = list(colour = NULL)))+ theme(panel.background=element_blank(), legend.key = element_rect(), legend.background = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), panel.background = element_blank(), legend.key = element_rect(colour = NA),axis.line = element_line(size = .2, color = "black")) + xlab("Year")
       }) 
       
       
@@ -486,14 +487,14 @@ vadt <- function(obj, anim = NULL){
         totn_ids <- paste(input$sn, 1:10, "_Nums", sep = "")
         dat_totn <- subset(obj$totalnums, .id %in% totn_ids)
         dat_first <- dat_totn[grep("1_", dat_totn$.id),]
-        ggplot(dat_first, aes(y = V1, x = Time))  + geom_line(size = 2, alpha = .75)  + ylab("Age Class 1 Recruits")  + scale_color_discrete() + theme_bw()+  scale_x_continuous(breaks=seq(round(min(dat_totn$Time)), round(max(dat_first$Time)), 5))  + guides(fill = guide_legend(override.aes = list(colour = NULL))) + theme(panel.background=element_blank(), legend.background = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), panel.background = element_blank(), axis.line = element_line(size = .2)) + theme(legend.position="none")
+        ggplot(dat_first, aes(y = V1, x = Time))  + geom_line(size = 2, alpha = .75)  + ylab("Age Class 1 Recruits")  + scale_color_discrete() + theme_bw()+  scale_x_continuous(breaks=round(as.numeric(quantile(dat_totn$Time, probs = seq(0, 1, .2)))))  + guides(fill = guide_legend(override.aes = list(colour = NULL))) + theme(panel.background=element_blank(), legend.background = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), panel.background = element_blank(), axis.line = element_line(size = .2)) + theme(legend.position="none") + xlab("Year")
       })
       
       # Tot number
       output$totalnum <- renderPlot({
         totn_ids <- paste(input$sn, 1:10, "_Nums", sep = "")
         dat_totn <- subset(obj$totalnums, .id %in% totn_ids)
-        ggplot(dat_totn, aes(y = V1, x = Time, group = .id, color = .id)) + geom_line(size = 2, alpha = .75)  + scale_color_brewer(name = "Ageclass",type = "div",palette = 5, labels = 1:10) + ylab("Total numbers")  + theme_bw()+  scale_x_continuous(breaks=seq(round(min(dat_totn$Time)), round(max(dat_totn$Time)), 5))  + guides(fill = guide_legend(override.aes = list(colour = NULL))) + theme(panel.background=element_blank(), legend.background = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), panel.background = element_blank(), axis.line = element_line(size = .2))
+        ggplot(dat_totn, aes(y = V1, x = Time, group = .id, color = .id)) + geom_line(size = 2, alpha = .75)  + scale_color_brewer(name = "Ageclass",type = "div",palette = 5, labels = 1:10) + ylab("Total numbers")  + theme_bw()+  scale_x_continuous(breaks=round(as.numeric(quantile(dat_totn$Time, probs = seq(0, 1, .2)))))  + guides(fill = guide_legend(override.aes = list(colour = NULL))) + theme(panel.background=element_blank(), legend.background = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), panel.background = element_blank(), axis.line = element_line(size = .2)) + xlab("Year")
       })
       
       
@@ -501,7 +502,7 @@ vadt <- function(obj, anim = NULL){
       output$totalprop <- renderPlot({
         totn_ids <- paste(input$sn, 1:10, "_Nums", sep = "")
         dat_totn <- subset(obj$totalnums, .id %in% totn_ids)
-        ggplot(dat_totn, aes(y = V1, x = Time)) + geom_density(stat = "identity", aes(fill = .id), position = "fill", binwidth = 100, alpha = .75, lwd = .2)  + scale_fill_brewer(name = "Ageclass",type = "div",palette = 5, labels = 1:10 ) + ylab("Proportion of total numbers")  + theme_bw()+  scale_x_continuous(breaks=seq(round(min(dat_totn$Time)), round(max(dat_totn$Time)), 5))  + guides(fill = guide_legend(override.aes = list(colour = NULL))) + theme(panel.background=element_blank(), legend.background = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), panel.background = element_blank(), axis.line = element_line(size = .2))
+        ggplot(dat_totn, aes(y = V1, x = Time)) + geom_density(stat = "identity", aes(fill = .id), position = "fill", binwidth = 100, alpha = .75, lwd = .2)  + scale_fill_brewer(name = "Ageclass",type = "div",palette = 5, labels = 1:10 ) + ylab("Proportion of total numbers")  + theme_bw()+  scale_x_continuous(breaks=round(as.numeric(quantile(dat_totn$Time, probs = seq(0, 1, .2)))))  + guides(fill = guide_legend(override.aes = list(colour = NULL))) + theme(panel.background=element_blank(), legend.background = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), panel.background = element_blank(), axis.line = element_line(size = .2)) + xlab("Year")
       })
       
       ## Length-At-Age plot
@@ -509,15 +510,14 @@ vadt <- function(obj, anim = NULL){
         sn_ids <- paste(input$sn, 1:10, "_StructN", sep = "")
         lw_data <- subset(obj$structN, .id %in% sn_ids)
         lw_data$wt_grams <- 3.65*lw_data$V1*5.7*20/1000
-        fg_name <- obj$fun_group[obj$fun_group$Name == input$sn, 1]
+        fg_name <- obj$fun_group[str_trim(obj$fun_group$Name) == input$sn, 1]
         param_a <- obj$ab_params[grep(fg_name, obj$ab_params$a_name), 2]
         param_b <- obj$ab_params[grep(fg_name, obj$ab_params$b_name), 4]
         lw_data$length <- (lw_data$wt_grams/param_a)^(1/param_b)
         
-        ggplot(data = lw_data, aes(y = length, x = Time)) + geom_line(aes(group = .id, color = .id), size = 2, alpha = .75) +  scale_x_continuous(breaks=seq(round(min(lw_data$Time)), round(max(lw_data$Time)), 5)) + ylab("Length-At-Age (cm)") + scale_color_brewer(name = "Ageclass", type = "div",palette = 5, labels = 1:10) + theme_bw()  + guides(fill = guide_legend(override.aes = list(colour = NULL)))+ theme(panel.background=element_blank(), legend.key = element_rect(), legend.background = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), panel.background = element_blank(), legend.key = element_rect(colour = NA),axis.line = element_line(size = .2, color = "black")) 
+        ggplot(data = lw_data, aes(y = length, x = Time)) + geom_line(aes(group = .id, color = .id), size = 2, alpha = .75) +  scale_x_continuous(breaks=round(as.numeric(quantile(lw_data$Time, probs = seq(0, 1, .2))))) + ylab("Length-At-Age (cm)") + scale_color_brewer(name = "Ageclass", type = "div",palette = 5, labels = 1:10) + theme_bw()  + guides(fill = guide_legend(override.aes = list(colour = NULL)))+ theme(panel.background=element_blank(), legend.key = element_rect(), legend.background = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), panel.background = element_blank(), legend.key = element_rect(colour = NA),axis.line = element_line(size = .2, color = "black")) + xlab("Year")
       })
       
-      # -----------------------------------------
       # DIET DATA TAB
       # -----------------------------------------
       
@@ -540,37 +540,39 @@ vadt <- function(obj, anim = NULL){
         # Diet Predator by prey
       output$diet_pprey <- renderPlot({
         data_dpp <- subset(obj$diet_l, Predator == input$diet_dispred & Prey == input$diet_disprey)
-        ggplot(data = data_dpp, aes(x = Time/365, y = eaten, color = as.character(Cohort))) + geom_line(size = 1, alpha = .75) + scale_color_brewer(name = "Ageclass", type = "div",palette = 5, labels = 1:10) + xlab("Years since simulation started") + ylab("Consumed") + ggtitle(paste("Consumption of ", data_dpp[1,5], " by ", data_dpp[1,1], " by Age Class", sep = "")) + theme_bw() + guides(fill = guide_legend(override.aes = list(colour = NULL)))+ theme(panel.background=element_blank(), legend.key = element_rect(), legend.background = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), panel.background = element_blank(), legend.key = element_rect(colour = NA),axis.line = element_line(size = .2))
+        ggplot(data = data_dpp, aes(x = Time, y = eaten, color = as.character(Cohort))) + geom_line(size = 1, alpha = .75) + scale_color_brewer(name = "Ageclass", type = "div",palette = 5, labels = 1:10) + xlab("Year") + ylab("Consumed") +  
+          scale_x_continuous(breaks=round(as.numeric(quantile(data_dpp$Time, probs = seq(0, 1, .2))))) + ggtitle(paste("Consumption of ", data_dpp[1,5], " by ", data_dpp[1,1], " by Age Class", sep = "")) + theme_bw() + guides(fill = guide_legend(override.aes = list(colour = NULL)))+ theme(panel.background=element_blank(), legend.key = element_rect(), legend.background = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), panel.background = element_blank(), legend.key = element_rect(colour = NA),axis.line = element_line(size = .2)) 
         })
         
       # Diet Predator by prey collapsed over age class
       output$diet_pprey_collapsed <- renderPlot({
         data_dpp <- filter(obj$diet_l, Predator == input$diet_dispred & Prey == input$diet_disprey)
-        ggplot(data = data_dpp, aes(x = Time/365, y = eaten)) + stat_summary(aes(group =1), fun.y = sum, geom = "line", size = 1, alpha = .75) + xlab("Years since simulation started") + ylab("Consumed") + ggtitle(paste("Consumption of ", data_dpp[1,5], " by ", data_dpp[1,1], " Collapsed over Age Class", sep = "")) + theme_bw() + guides(fill = guide_legend(override.aes = list(colour = NULL)))+ theme(panel.background=element_blank(), legend.key = element_rect(), legend.background = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), panel.background = element_blank(), legend.key = element_rect(colour = NA),axis.line = element_line(size = .2))
+        ggplot(data = data_dpp, aes(x = Time, y = eaten)) + stat_summary(aes(group =1), fun.y = sum, geom = "line", size = 1, alpha = .75) + xlab("Year") +   scale_x_continuous(breaks=round(as.numeric(quantile(data_dpp$Time, probs = seq(0, 1, .2)))))  + ylab("Consumed") + ggtitle(paste("Consumption of ", data_dpp[1,5], " by ", data_dpp[1,1], " Collapsed over Age Class", sep = "")) + theme_bw() + guides(fill = guide_legend(override.aes = list(colour = NULL)))+ theme(panel.background=element_blank(), legend.key = element_rect(), legend.background = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), panel.background = element_blank(), legend.key = element_rect(colour = NA),axis.line = element_line(size = .2))
       })
       
       # Consumption by Predator
       output$diet_pred_plot <- renderPlot({
         data_dpp <- subset(obj$diet_l, Predator == input$diet_pred_unagg)
-        ggplot(data = data_dpp, aes(x = Time/365, y = eaten, color = as.character(Cohort))) + geom_line(size = 1, alpha = .75) + scale_color_brewer(name = "Ageclass", type = "div",palette = 5, labels = 1:10) + xlab("Years since simulation started") + ylab("Consumed") + ggtitle(paste("Consumption by ", data_dpp[1,1], " by Age Class", sep = "")) + facet_wrap(~ Prey) + theme_bw() + guides(fill = guide_legend(override.aes = list(colour = NULL)))+ theme(panel.background=element_blank(), legend.key = element_rect(), legend.background = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), panel.background = element_blank(), legend.key = element_rect(colour = NA),axis.line = element_line(size = .2))
+        ggplot(data = data_dpp, aes(x = Time, y = eaten, color = as.character(Cohort))) + geom_line(size = 1, alpha = .75) + scale_color_brewer(name = "Ageclass", type = "div",palette = 5, labels = 1:10) + xlab("Year") +  
+          scale_x_continuous(breaks=round(as.numeric(quantile(data_dpp$Time, probs = seq(0, 1, .2))))) + ylab("Consumed") + ggtitle(paste("Consumption by ", data_dpp[1,1], " by Age Class", sep = "")) + facet_wrap(~ Prey) + theme_bw() + guides(fill = guide_legend(override.aes = list(colour = NULL)))+ theme(panel.background=element_blank(), legend.key = element_rect(), legend.background = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), panel.background = element_blank(), legend.key = element_rect(colour = NA),axis.line = element_line(size = .2))
       })
       
       # Consumption by Predator collapsed
       output$diet_predator_collapsed <- renderPlot({
         data_dpp <- subset(obj$diet_l, Predator == input$diet_pred_agg)
-        ggplot(data = data_dpp, aes(x = Time/365, y = eaten))+ stat_summary(aes(group =1), fun.y = sum, geom = "line", size = 1, alpha = .75) + xlab("Years since simulation started") + ylab("Consumed") + ggtitle(paste("Consumption by ", data_dpp[1,1], " Collapsed over Age Class", sep = "")) + facet_wrap(~ Prey) + theme_bw() + guides(fill = guide_legend(override.aes = list(colour = NULL)))+ theme(panel.background=element_blank(), legend.key = element_rect(), legend.background = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), panel.background = element_blank(), legend.key = element_rect(colour = NA),axis.line = element_line(size = .2))
+        ggplot(data = data_dpp, aes(x = Time, y = eaten))+ stat_summary(aes(group =1), fun.y = sum, geom = "line", size = 1, alpha = .75) + xlab("Year") +  scale_x_continuous(breaks=round(as.numeric(quantile(data_dpp$Time, probs = seq(0, 1, .2))))) + ylab("Consumed") + ggtitle(paste("Consumption by ", data_dpp[1,1], " Collapsed over Age Class", sep = "")) + facet_wrap(~ Prey) + theme_bw() + guides(fill = guide_legend(override.aes = list(colour = NULL)))+ theme(panel.background=element_blank(), legend.key = element_rect(), legend.background = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), panel.background = element_blank(), legend.key = element_rect(colour = NA),axis.line = element_line(size = .2))
       })
       
       # Consumption by Prey
       output$diet_prey_plot <- renderPlot({
         data_dpp <- subset(obj$diet_l, Prey == input$diet_prey_unagg)
-        ggplot(data = data_dpp, aes(x = Time/365, y = eaten, color = as.character(Cohort))) + geom_line(size = 1, alpha = .75) + scale_color_brewer(name = "Ageclass", type = "div",palette = 5, labels = 1:10) + xlab("Years since simulation started") + ylab("Consumed") + ggtitle(paste("Consumption of ", data_dpp[1,5], " by Age class", sep = "")) + facet_wrap(~ Predator) + theme_bw() + guides(fill = guide_legend(override.aes = list(colour = NULL)))+ theme(panel.background=element_blank(), legend.key = element_rect(), legend.background = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), panel.background = element_blank(), legend.key = element_rect(colour = NA),axis.line = element_line(size = .2))
+        ggplot(data = data_dpp, aes(x = Time, y = eaten, color = as.character(Cohort)))  + geom_line(size = 1, alpha = .75) + scale_color_brewer(name = "Ageclass", type = "div",palette = 5, labels = 1:10) + xlab("Year") + ylab("Consumed") + ggtitle(paste("Consumption of ", data_dpp[1,5], " by Age class", sep = "")) + facet_wrap(~ Predator) + theme_bw() + guides(fill = guide_legend(override.aes = list(colour = NULL)))+ theme(panel.background=element_blank(), legend.key = element_rect(), legend.background = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), panel.background = element_blank(), legend.key = element_rect(colour = NA),axis.line = element_line(size = .2)) + scale_x_continuous(breaks=round(as.numeric(quantile(data_dpp$Time, probs = seq(0, 1, .2))))) 
       })
       
       # Consumption by Prey collapsed
       output$diet_prey_collapsed <- renderPlot({
         data_dpp <- subset(obj$diet_l,Prey == input$diet_prey_agg)
-        ggplot(data = data_dpp, aes(x = Time/365, y = eaten)) + stat_summary(aes(group =1), fun.y = sum, geom = "line", size = 1, alpha = .75) + xlab("Years since simulation started") + ylab("Consumed") + ggtitle(paste("Consumption of ", data_dpp[1,5], " collapsed over age class", sep = "")) + facet_wrap(~ Predator) + theme_bw() + guides(fill = guide_legend(override.aes = list(colour = NULL)))+ theme(panel.background=element_blank(), legend.key = element_rect(), legend.background = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), panel.background = element_blank(), legend.key = element_rect(colour = NA),axis.line = element_line(size = .2))
+        ggplot(data = data_dpp, aes(x = Time, y = eaten)) + stat_summary(aes(group =1), fun.y = sum, geom = "line", size = 1, alpha = .75) + xlab("Year") + ylab("Consumed") + ggtitle(paste("Consumption of ", data_dpp[1,5], " collapsed over age class", sep = "")) + facet_wrap(~ Predator) + theme_bw() + guides(fill = guide_legend(override.aes = list(colour = NULL)))+ theme(panel.background=element_blank(), legend.key = element_rect(), legend.background = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), panel.background = element_blank(), legend.key = element_rect(colour = NA),axis.line = element_line(size = .2)) + scale_x_continuous(breaks=round(as.numeric(quantile(data_dpp$Time, probs = seq(0, 1, .2))))) 
       })
       
       # -----------------------------------------
@@ -589,29 +591,29 @@ vadt <- function(obj, anim = NULL){
         if(input$tot_invert_scale == "Unadjusted"){
         qplot(x = Time, y = value, data = obj$tot_bio_i, geom = "line") + facet_wrap(~Name, ncol = 4, scales = "free") + xlab("Year") + ylab("Total Biomass") + theme_bw()
         } else {
-            qplot(x = Time, y = log(value), data = obj$tot_bio_i, geom = "line") + facet_wrap(~Name, ncol = 4, scales = "free_x") + xlab("Year") + ylab("Log(Total Biomass)") + theme_bw()
+            qplot(x = Time, y = log(value), data = obj$tot_bio_i, geom = "line") + facet_wrap(~Name, ncol = 4, scales = "free_x") + xlab("Year") + ylab("Log(Total Biomass)") + theme_bw() 
         }
       })
       
       # Relative biomass map
       output$rel_map <- renderPlot({
         qplot(y = obj$rel_bio[[match(input$ssb_var, names(obj$rel_bio))]], x = Time, data = obj$rel_bio, geom = "line") +
-          ylab("") +  theme_bw() + ggtitle("Relative Biomass")}) 
+          ylab("") +  theme_bw() + ggtitle("Relative Biomass") + xlab("Year")}) 
       
       # Total biomass map
       output$tot_map <- renderPlot({
         qplot(y = obj$tot_bio[[match(input$ssb_var, names(obj$tot_bio))]], x = Time, data = obj$tot_bio, geom = "line") +
-          ylab("") +  theme_bw() + ggtitle("Total Biomass")}) 
+          ylab("") +  theme_bw() + ggtitle("Total Biomass") + xlab("Year")}) 
       
       # SSB map
       output$ssb_map <- renderPlot({
         qplot(y = obj$ssb[[match(input$ssb_var, names(obj$ssb))]], x = Time, data = obj$ssb, geom = "line") +
-          ylab("") +  theme_bw() + ggtitle("Spawning Stock Biomass")}) 
+          ylab("") +  theme_bw() + ggtitle("Spawning Stock Biomass") + xlab("Year")}) 
       
       # YOY map
       output$yoy_map <- renderPlot({
         qplot(y = obj$yoy[[match(input$ssb_var, names(obj$yoy))]], x = Time, data = obj$yoy, geom = "line") +
-          ylab("") +  theme_bw() + ggtitle("YOY Biomass")})
+          ylab("") +  theme_bw() + ggtitle("YOY Biomass") + xlab("Year")})
       
       
       
@@ -620,25 +622,25 @@ vadt <- function(obj, anim = NULL){
         invert_rbio <- obj$rel_bio[,c(1,match(input$invert_var, names(obj$rel_bio)))]
         colnames(invert_rbio) <- c("Time", "Biomass")
         qplot(y = Biomass, x = Time, data = invert_rbio, geom = "line") +
-          ylab("") +  theme_bw() + ggtitle("Relative Biomass")})
+          ylab("") +  theme_bw() + ggtitle("Relative Biomass") + xlab("Year")})
       
       output$invert_tbio <- renderPlot({
         invert_tbio <- obj$tot_bio[,c(1,match(input$invert_var, names(obj$rel_bio)))]
         colnames(invert_tbio) <- c("Time", "Biomass")
         qplot(y = Biomass, x = Time, data = invert_tbio, geom = "line") +
-          ylab("") +  theme_bw() + ggtitle("Total Biomass")})
+          ylab("") +  theme_bw() + ggtitle("Total Biomass") + xlab("Year")})
       
       output$invertgraze <- renderPlot({
         graze_dat <- obj$invert_l[grep(input$invert_var, obj$invert_l$id),]
         graze_dat <- graze_dat[grep("Grazing", graze_dat$id),]
         qplot(y = value, x = as.numeric(as.character(variable)), data = graze_dat, geom = "line") + xlab("Time") + 
-          ylab("") +  theme_bw() + ggtitle("Grazing")}) 
+          ylab("") +  theme_bw() + ggtitle("Grazing") + xlab("Year")}) 
       
       output$invertprod <- renderPlot({
         prod_dat <- obj$invert_l[grep(input$invert_var, obj$invert_l$id),]
         prod_dat <- prod_dat[grep("Prodn", prod_dat$id),]
         qplot(y = value, x = as.numeric(as.character(variable)), data = prod_dat, geom = "line") + xlab("Time") + 
-          ylab("") +  theme_bw() + ggtitle("Production")}) 
+          ylab("") +  theme_bw() + ggtitle("Production") + xlab("Year")}) 
     }
   )
 }

@@ -51,6 +51,7 @@ create_vadt <- function(outdir, fgfile, biolprm, ncout, startyear, toutinc, diet
   rel_bio <- biomass[,c(1, grep("Rel",colnames(biomass)))]
   tot_bio <- biomass[,c(1:(grep("Rel",colnames(biomass))[1]-1))]
   fun_group <- read.csv(fgfile, header = T, stringsAsFactors = FALSE)#[, c(1,3, 4,5,6, 9,16, 12)]
+  fun_group <- subset(fun_group, fun_group$IsTurnedOn == 1)
    
   ## Reads in and prepares the diet data if it's available
   if(diet){
@@ -64,6 +65,7 @@ create_vadt <- function(outdir, fgfile, biolprm, ncout, startyear, toutinc, diet
     diet_l <- diet %>%
       gather("Prey", "eaten", 5:ncol(diet))
     colnames(diet_l) <- c("Predator","Time","Cohort", "Stock", "Prey", "eaten")
+    diet_l$Time <- startyear + diet_l$Time/365
     tot_pred <- diet_l %>%
       group_by(Predator,Prey) %>%
       summarize(Eaten = mean(eaten))
@@ -106,9 +108,9 @@ create_vadt <- function(outdir, fgfile, biolprm, ncout, startyear, toutinc, diet
     names(fun_group)[names(fun_group) == "InvertType"] <- "GroupType"
   
   # Subset invertebrates and vertebrates
-  rs_names <- fun_group[fun_group$GroupType %in% c("FISH", "MAMMAL", "SHARK", "BIRD"), "Name"]
-  rs_codes <- fun_group[fun_group$GroupType %in% c("FISH", "MAMMAL", "SHARK", "BIRD"), "Code"]
-  invert_names <-fun_group[!(fun_group$GroupType %in% c("FISH", "MAMMAL", "SHARK", "BIRD")),]
+  rs_names <- str_trim(fun_group[fun_group$GroupType %in% c("FISH", "MAMMAL", "SHARK", "BIRD"), "Name"]) # trim white space
+  rs_codes <- str_trim(fun_group[fun_group$GroupType %in% c("FISH", "MAMMAL", "SHARK", "BIRD"), "Code"])
+  invert_names <- fun_group[!(fun_group$GroupType %in% c("FISH", "MAMMAL", "SHARK", "BIRD")),]
   
   # Rename columns
   colnames(ssb) <- c("Time", rs_names)
