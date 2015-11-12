@@ -403,7 +403,7 @@ vadt <- function(obj, anim = NULL){
         tmp <- obj$erla_plots[[input$erla_plot_select]]
         tmp$Time <- as.numeric(as.character(tmp$Time)) * obj$toutinc / 365 + obj$startyear
         if(is.null(tmp$Layer)){
-        ggplot(data = tmp, aes(y = number, x = Time)) + geom_line(size = 1) + ylab("") + xlab("Time") + facet_wrap(~ Box, ncol = 5) + scale_color_manual(values = cbpalette) + theme_bw() + guides(fill = guide_legend(override.aes = list(colour = NULL))) +  
+        ggplot(data = tmp, aes(y = number, x = Time)) + geom_line(size = 1) + ylab("") + xlab("Time") + facet_wrap(~ Box, ncol = 5) + theme_bw() + guides(fill = guide_legend(override.aes = list(colour = NULL))) +  
           scale_x_continuous(breaks=floor(as.numeric(quantile(tmp$Time, probs = seq(0, 1, .2)))))  + theme(panel.background=element_blank(), legend.key = element_rect(), legend.background = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), panel.background = element_blank(), legend.key = element_rect(colour = NA),axis.line = element_line(size = .2))
       } else {
         if(nlevels(tmp$Layer) == 7){
