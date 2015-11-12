@@ -531,7 +531,7 @@ vadt <- function(obj, anim = NULL){
           diet_tab <- diet_tab[diet_tab$Prey == input$mean_diet_prey,]
         }
         options(scipen = 999)
-          datatable(diet_tab,rownames = FALSE,
+          DT::datatable(diet_tab,rownames = FALSE,
                     caption = tags$caption(
                       style = 'caption-side: bottom; text-align: center;',
                       'Diet Matrix '))
