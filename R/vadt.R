@@ -395,7 +395,7 @@ vadt <- function(obj, anim = NULL){
       })
       
       output$within_box_plot <- renderPlot({
-        tmp <- filter(obj$biomass_by_box, Box == input$biomass_box_sel)
+        tmp <- subset(obj$biomass_by_box, Box == input$biomass_box_sel)
         qplot(y = round(value), x = Time, geom = "line", data = tmp) + facet_wrap(~ Name, scales = "free", ncol = 5) + theme_bw() + xlab("Year") +  
           scale_x_continuous(breaks=round(as.numeric(quantile(tmp$Time, probs = seq(0, 1, .2))))) + ylab("")
       })
@@ -494,7 +494,7 @@ vadt <- function(obj, anim = NULL){
       output$totalnum <- renderPlot({
         totn_ids <- paste(input$sn, 1:10, "_Nums", sep = "")
         dat_totn <- subset(obj$totalnums, .id %in% totn_ids)
-        ggplot(dat_totn, aes(y = V1, x = Time, group = .id, color = .id)) + geom_line(size = 2, alpha = .75)  + scale_color_brewer(name = "Ageclass",type = "div",palette = 5, labels = 1:10) + ylab("Total numbers")  + theme_bw()+  scale_x_continuous(breaks=round(as.numeric(quantile(dat_totn$Time, probs = seq(0, 1, .2)))))  + guides(fill = guide_legend(override.aes = list(colour = NULL))) + theme(panel.background=element_blank(), legend.background = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), panel.background = element_blank(), axis.line = element_line(size = .2)) + xlab("Year")
+        ggplot(dat_totn, aes(y = V1, x = Time, group = .id, color = .id)) + geom_line(size = 2, alpha = .75)  + scale_color_brewer(name = "Ageclass",type = "div",palette = 5, labels = 1:10) + ylab("Total numbers")  + theme_bw() + scale_x_continuous(breaks=round(as.numeric(quantile(dat_totn$Time, probs = seq(0, 1, .2)))))  + guides(fill = guide_legend(override.aes = list(colour = NULL))) + theme(panel.background=element_blank(), legend.background = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), panel.background = element_blank(), axis.line = element_line(size = .2)) + xlab("Year")
       })
       
       
@@ -502,7 +502,7 @@ vadt <- function(obj, anim = NULL){
       output$totalprop <- renderPlot({
         totn_ids <- paste(input$sn, 1:10, "_Nums", sep = "")
         dat_totn <- subset(obj$totalnums, .id %in% totn_ids)
-        ggplot(dat_totn, aes(y = V1, x = Time)) + geom_density(stat = "identity", aes(fill = .id), position = "fill", binwidth = 100, alpha = .75, lwd = .2)  + scale_fill_brewer(name = "Ageclass",type = "div",palette = 5, labels = 1:10 ) + ylab("Proportion of total numbers")  + theme_bw()+  scale_x_continuous(breaks=round(as.numeric(quantile(dat_totn$Time, probs = seq(0, 1, .2)))))  + guides(fill = guide_legend(override.aes = list(colour = NULL))) + theme(panel.background=element_blank(), legend.background = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), panel.background = element_blank(), axis.line = element_line(size = .2)) + xlab("Year")
+        ggplot(dat_totn, aes(y = V1, x = Time)) + geom_density(stat = "identity", aes(fill = .id), position = "fill", binwidth = 100, alpha = .75, lwd = .2)  + scale_fill_brewer(name = "Ageclass",type = "div",palette = 5, labels = 1:10 ) + ylab("Proportion of total numbers")  + theme_bw()+  scale_x_continuous(breaks=round(as.numeric(quantile(dat_totn$Time, probs = seq(0, 1, .2)))))  + guides(fill = guide_legend(override.aes = list(colour = NULL))) + theme(panel.background=element_blank(), legend.background = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), panel.background = element_blank(), axis.line = element_line(size = .2)) + xlab("Year") 
       })
       
       ## Length-At-Age plot
@@ -582,38 +582,42 @@ vadt <- function(obj, anim = NULL){
       # Total biomass trellis
       output$tot_vert_sum <- renderPlot({
         if(input$tot_vert_scale == "Unadjusted"){
-        qplot(x = Time, y = value, data = obj$tot_bio_v, geom = "line") + facet_wrap(~Name, ncol = 4, scales = "free") + xlab("Year") + ylab("Total Biomass") + theme_bw()
+        qplot(x = Time, y = value, data = obj$tot_bio_v, geom = "line") + facet_wrap(~Name, ncol = 4, scales = "free") + xlab("Year") + ylab("Total Biomass") + theme_bw() + scale_x_continuous(breaks=round(as.numeric(quantile(obj$tot_bio_v$Time, probs = seq(0, 1, .2)))))
         } else {
-          qplot(x = Time, y = log(value), data = obj$tot_bio_v, geom = "line") + facet_wrap(~Name, ncol = 4, scales = "free_x") + xlab("Year") + ylab("Log(Total Biomass)") + theme_bw()
+          qplot(x = Time, y = log(value), data = obj$tot_bio_v, geom = "line") + facet_wrap(~Name, ncol = 4, scales = "free_x") + xlab("Year") + ylab("Log(Total Biomass)") + theme_bw() + scale_x_continuous(breaks=round(as.numeric(quantile(obj$tot_bio_v$Time, probs = seq(0, 1, .2)))))
         }
       })
       output$tot_invert_sum <- renderPlot({
         if(input$tot_invert_scale == "Unadjusted"){
-        qplot(x = Time, y = value, data = obj$tot_bio_i, geom = "line") + facet_wrap(~Name, ncol = 4, scales = "free") + xlab("Year") + ylab("Total Biomass") + theme_bw()
+        qplot(x = Time, y = value, data = obj$tot_bio_i, geom = "line") + facet_wrap(~Name, ncol = 4, scales = "free") + xlab("Year") + ylab("Total Biomass") + theme_bw() + scale_x_continuous(breaks=round(as.numeric(quantile(obj$tot_bio_i$Time, probs = seq(0, 1, .2)))))
         } else {
-            qplot(x = Time, y = log(value), data = obj$tot_bio_i, geom = "line") + facet_wrap(~Name, ncol = 4, scales = "free_x") + xlab("Year") + ylab("Log(Total Biomass)") + theme_bw() 
+            qplot(x = Time, y = log(value), data = obj$tot_bio_i, geom = "line") + facet_wrap(~Name, ncol = 4, scales = "free_x") + xlab("Year") + ylab("Log(Total Biomass)") + theme_bw()  + scale_x_continuous(breaks=round(as.numeric(quantile(obj$tot_bio_i$Time, probs = seq(0, 1, .2)))))
         }
       })
       
       # Relative biomass map
       output$rel_map <- renderPlot({
         qplot(y = obj$rel_bio[[match(input$ssb_var, names(obj$rel_bio))]], x = Time, data = obj$rel_bio, geom = "line") +
-          ylab("") +  theme_bw() + ggtitle("Relative Biomass") + xlab("Year")}) 
+          ylab("") +  theme_bw() + ggtitle("Relative Biomass") + xlab("Year")  + scale_x_continuous(breaks=round(as.numeric(quantile(obj$rel_bio$Time, probs = seq(0, 1, .2)))))
+        }) 
       
       # Total biomass map
       output$tot_map <- renderPlot({
         qplot(y = obj$tot_bio[[match(input$ssb_var, names(obj$tot_bio))]], x = Time, data = obj$tot_bio, geom = "line") +
-          ylab("") +  theme_bw() + ggtitle("Total Biomass") + xlab("Year")}) 
+          ylab("") +  theme_bw() + ggtitle("Total Biomass") + xlab("Year") + scale_x_continuous(breaks=round(as.numeric(quantile(obj$tot_bio$Time, probs = seq(0, 1, .2)))))
+        }) 
       
       # SSB map
       output$ssb_map <- renderPlot({
         qplot(y = obj$ssb[[match(input$ssb_var, names(obj$ssb))]], x = Time, data = obj$ssb, geom = "line") +
-          ylab("") +  theme_bw() + ggtitle("Spawning Stock Biomass") + xlab("Year")}) 
+          ylab("") +  theme_bw() + ggtitle("Spawning Stock Biomass") + xlab("Year")  + scale_x_continuous(breaks=round(as.numeric(quantile(obj$ssb$Time, probs = seq(0, 1, .2)))))
+        }) 
       
       # YOY map
       output$yoy_map <- renderPlot({
         qplot(y = obj$yoy[[match(input$ssb_var, names(obj$yoy))]], x = Time, data = obj$yoy, geom = "line") +
-          ylab("") +  theme_bw() + ggtitle("YOY Biomass") + xlab("Year")})
+          ylab("") +  theme_bw() + ggtitle("YOY Biomass") + xlab("Year") + scale_x_continuous(breaks=round(as.numeric(quantile(obj$yoy$Time, probs = seq(0, 1, .2)))))
+        })
       
       
       
@@ -622,25 +626,30 @@ vadt <- function(obj, anim = NULL){
         invert_rbio <- obj$rel_bio[,c(1,match(input$invert_var, names(obj$rel_bio)))]
         colnames(invert_rbio) <- c("Time", "Biomass")
         qplot(y = Biomass, x = Time, data = invert_rbio, geom = "line") +
-          ylab("") +  theme_bw() + ggtitle("Relative Biomass") + xlab("Year")})
+          ylab("") +  theme_bw() + ggtitle("Relative Biomass") + xlab("Year")  + scale_x_continuous(breaks=round(as.numeric(quantile(invert_rbio$Time, probs = seq(0, 1, .2)))))
+        })
       
       output$invert_tbio <- renderPlot({
         invert_tbio <- obj$tot_bio[,c(1,match(input$invert_var, names(obj$rel_bio)))]
         colnames(invert_tbio) <- c("Time", "Biomass")
         qplot(y = Biomass, x = Time, data = invert_tbio, geom = "line") +
-          ylab("") +  theme_bw() + ggtitle("Total Biomass") + xlab("Year")})
+          ylab("") +  theme_bw() + ggtitle("Total Biomass") + xlab("Year")  + scale_x_continuous(breaks=round(as.numeric(quantile(invert_tbio$Time, probs = seq(0, 1, .2)))))
+        
+        })
       
       output$invertgraze <- renderPlot({
         graze_dat <- obj$invert_l[grep(input$invert_var, obj$invert_l$id),]
         graze_dat <- graze_dat[grep("Grazing", graze_dat$id),]
         qplot(y = value, x = as.numeric(as.character(variable)), data = graze_dat, geom = "line") + xlab("Time") + 
-          ylab("") +  theme_bw() + ggtitle("Grazing") + xlab("Year")}) 
+          ylab("") +  theme_bw() + ggtitle("Grazing") + xlab("Year")  + scale_x_continuous(breaks=round(as.numeric(quantile(as.numeric(as.character(graze_dat$variable)), probs = seq(0, 1, .2)))))
+        }) 
       
       output$invertprod <- renderPlot({
         prod_dat <- obj$invert_l[grep(input$invert_var, obj$invert_l$id),]
         prod_dat <- prod_dat[grep("Prodn", prod_dat$id),]
         qplot(y = value, x = as.numeric(as.character(variable)), data = prod_dat, geom = "line") + xlab("Time") + 
-          ylab("") +  theme_bw() + ggtitle("Production") + xlab("Year")}) 
+          ylab("") +  theme_bw() + ggtitle("Production") + xlab("Year") + scale_x_continuous(breaks=round(as.numeric(quantile(as.numeric(as.character(prod_dat$variable)), probs = seq(0, 1, .2)))))
+      }) 
     }
   )
 }
