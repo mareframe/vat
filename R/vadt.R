@@ -546,7 +546,7 @@ vadt <- function(obj, anim = NULL){
         
       # Diet Predator by prey collapsed over age class
       output$diet_pprey_collapsed <- renderPlot({
-        data_dpp <- filter(obj$diet_l, Predator == input$diet_dispred & Prey == input$diet_disprey)
+        data_dpp <- subset(obj$diet_l, Predator == input$diet_dispred & Prey == input$diet_disprey)
         ggplot(data = data_dpp, aes(x = Time, y = eaten)) + stat_summary(aes(group =1), fun.y = sum, geom = "line", size = 1, alpha = .75) + xlab("Year") +   scale_x_continuous(breaks=round(as.numeric(quantile(data_dpp$Time, probs = seq(0, 1, .2)))))  + ylab("Consumed") + ggtitle(paste("Consumption of ", data_dpp[1,5], " by ", data_dpp[1,1], " Collapsed over Age Class", sep = "")) + theme_bw() + guides(fill = guide_legend(override.aes = list(colour = NULL)))+ theme(panel.background=element_blank(), legend.key = element_rect(), legend.background = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), panel.background = element_blank(), legend.key = element_rect(colour = NA),axis.line = element_line(size = .2))
       })
       
