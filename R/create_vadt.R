@@ -10,6 +10,7 @@
 #'@param toutinc Periodicity of writing output (in days)
 #'@param diet Include diagnostic diet plots? default is TRUE
 #'@import dplyr
+#'@import data.table
 #'@importFrom ncdf4 nc_open
 #'@importFrom ncdf4 ncvar_get
 #'@importFrom plyr ldply
@@ -57,18 +58,31 @@ create_vadt <- function(outdir, fgfile, biolprm, ncout, startyear, toutinc, diet
   if(diet){
     cat("### ------------ Setting up diet matrix plot                             ------------ ###\n")    
     diet <- read.table(paste(outdir, ncout, "DietCheck.txt", sep = ""), header = TRUE, stringsAsFactors = TRUE)
+    if(any(names(diet) == "Predator")) {
+      colnames(diet) <- c("Time", "Code", "Habitat", fun_group[,4])
+    } else {
     colnames(diet) <- c("Time", "Code", "Cohort", "Stock", fun_group[,4])
+    }
     diet <- merge(diet, fun_group[,c(1,2,4)])
     diet <- arrange(diet, Index)
     diet$Code <- diet$Name
     diet$Name <- NULL; diet$Index <- NULL
+    
+    if(any(names(diet) == "Habitat")){
     diet_l <- diet %>%
-      gather("Prey", "eaten", 5:ncol(diet))
-    colnames(diet_l) <- c("Predator","Time","Cohort", "Stock", "Prey", "eaten")
+      gather("Prey", "eaten", 4:ncol(diet))
+    colnames(diet_l) <- c("Predator","Time","Habitat", "Prey", "eaten")
+    } else {
+      diet_l <- diet %>%
+        gather("Prey", "eaten", 5:ncol(diet))
+      colnames(diet_l) <- c("Predator","Time","Cohort", "Stock", "Prey", "eaten")
+    }
     diet_l$Time <- startyear + diet_l$Time/365
     tot_pred <- diet_l %>%
       group_by(Predator,Prey) %>%
       summarize(Eaten = mean(eaten))
+    diet_l <- data.table(diet_l)
+    tot_pred <- data.table(tot_pred)
   } else {
     diet_l <- NULL
     tot_pred <- NULL

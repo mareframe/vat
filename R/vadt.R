@@ -6,6 +6,7 @@
 #'@param obj Object of class vat returned by create_vat
 #'@param anim Directory to stored animated plot created by vat_animate function (defaults to NULL)
 #'@import ggplot2
+#'@import data.table
 #'@import shiny
 #'@importFrom scales muted
 #'@importFrom DT datatable
@@ -165,7 +166,7 @@ vadt <- function(obj, anim = NULL){
                     navbarMenu("Diet Data",
                            tabPanel("Consumption by Predator",
                                      navlistPanel(widths = c(2, 10),
-                                                  tabPanel("By Age Class",
+                                                  tabPanel(title = ifelse(any(names(obj$diet_l) == "Habitat"), "By Habitat Type", "By Age Class"),
                                                            fluidRow(column(4),
                                                                     column(4,
                                                                            if(is.null(obj$tot_pred) == FALSE){
@@ -176,7 +177,7 @@ vadt <- function(obj, anim = NULL){
                                                            fluidRow(column(12,
                                                                            if(is.null(obj$tot_pred) == FALSE)
                                                                              plotOutput("diet_pred_plot", height = "800px")))),
-                                                  tabPanel("Over Age Class",
+                                                  tabPanel(title = ifelse(any(names(obj$diet_l) == "Habitat"), "Over Habitat Type", "Over Age Class"),
                                                            fluidRow(column(4),
                                                                     column(4,
                                                                            if(is.null(obj$tot_pred) == FALSE){
@@ -189,7 +190,7 @@ vadt <- function(obj, anim = NULL){
                                                                              plotOutput("diet_predator_collapsed", height = "800px")))))),   
                                tabPanel("Consumption by Prey",
                                         navlistPanel(widths = c(2, 10),
-                                                              tabPanel("By Age Class",
+                                                              tabPanel(title = ifelse(any(names(obj$diet_l) == "Habitat"), "By Habitat Type", "By Age Class"),
                                                                        fluidRow(column(4),
                                                                                 column(4,
                                                                                        if(is.null(obj$tot_pred) == FALSE){
@@ -200,7 +201,7 @@ vadt <- function(obj, anim = NULL){
                                                                        fluidRow(column(12,
                                                                                        if(is.null(obj$tot_pred) == FALSE)
                                                                                          plotOutput("diet_prey_plot", height = "600px")))),
-                                                              tabPanel("Over Age Class",
+                                                              tabPanel(title = ifelse(any(names(obj$diet_l) == "Habitat"),"Over Habitat Type", "Over Age Class"),
                                                                        fluidRow(column(4),
                                                                                 column(4,
                                                                                        if(is.null(obj$tot_pred) == FALSE){
@@ -539,40 +540,68 @@ vadt <- function(obj, anim = NULL){
       
         # Diet Predator by prey
       output$diet_pprey <- renderPlot({
-        data_dpp <- subset(obj$diet_l, Predator == input$diet_dispred & Prey == input$diet_disprey)
+        data_dpp <- obj$diet_l[Predator == input$diet_dispred & Prey == input$diet_disprey, ]
+        if(any(names(data_dpp) == "Habitat")) {
+          ggplot(data = data_dpp, aes(x = Time, y = eaten, color = Habitat)) + geom_line(size = 1, alpha = .75) + scale_color_brewer(name = "Habitat Type", type = "div",palette = 5) + xlab("Year") + ylab("Consumed") +  
+            scale_x_continuous(breaks=round(as.numeric(quantile(data_dpp$Time, probs = seq(0, 1, .2))))) + ggtitle(paste("Consumption of ", data_dpp[[1]][4], " by ", data_dpp[[1]][1], " by Habitat Type", sep = "")) + theme_bw() + guides(fill = guide_legend(override.aes = list(colour = NULL)))+ theme(panel.background=element_blank(), legend.key = element_rect(), legend.background = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), panel.background = element_blank(), legend.key = element_rect(colour = NA),axis.line = element_line(size = .2)) 
+        } else {
         ggplot(data = data_dpp, aes(x = Time, y = eaten, color = as.character(Cohort))) + geom_line(size = 1, alpha = .75) + scale_color_brewer(name = "Ageclass", type = "div",palette = 5, labels = 1:10) + xlab("Year") + ylab("Consumed") +  
-          scale_x_continuous(breaks=round(as.numeric(quantile(data_dpp$Time, probs = seq(0, 1, .2))))) + ggtitle(paste("Consumption of ", data_dpp[1,5], " by ", data_dpp[1,1], " by Age Class", sep = "")) + theme_bw() + guides(fill = guide_legend(override.aes = list(colour = NULL)))+ theme(panel.background=element_blank(), legend.key = element_rect(), legend.background = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), panel.background = element_blank(), legend.key = element_rect(colour = NA),axis.line = element_line(size = .2)) 
+          scale_x_continuous(breaks=round(as.numeric(quantile(data_dpp$Time, probs = seq(0, 1, .2))))) + ggtitle(paste("Consumption of ", data_dpp[[1]][5], " by ", data_dpp[[1]][1], " by Age Class", sep = "")) + theme_bw() + guides(fill = guide_legend(override.aes = list(colour = NULL)))+ theme(panel.background=element_blank(), legend.key = element_rect(), legend.background = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), panel.background = element_blank(), legend.key = element_rect(colour = NA),axis.line = element_line(size = .2)) 
+        }
         })
         
       # Diet Predator by prey collapsed over age class
       output$diet_pprey_collapsed <- renderPlot({
-        data_dpp <- subset(obj$diet_l, Predator == input$diet_dispred & Prey == input$diet_disprey)
-        ggplot(data = data_dpp, aes(x = Time, y = eaten)) + stat_summary(aes(group =1), fun.y = sum, geom = "line", size = 1, alpha = .75) + xlab("Year") +   scale_x_continuous(breaks=round(as.numeric(quantile(data_dpp$Time, probs = seq(0, 1, .2)))))  + ylab("Consumed") + ggtitle(paste("Consumption of ", data_dpp[1,5], " by ", data_dpp[1,1], " Collapsed over Age Class", sep = "")) + theme_bw() + guides(fill = guide_legend(override.aes = list(colour = NULL)))+ theme(panel.background=element_blank(), legend.key = element_rect(), legend.background = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), panel.background = element_blank(), legend.key = element_rect(colour = NA),axis.line = element_line(size = .2))
+        data_dpp <-  obj$diet_l[Predator == input$diet_dispred & Prey == input$diet_disprey, ]
+        if(any(names(data_dpp) == "Habitat")) {
+          ggplot(data = data_dpp, aes(x = Time, y = eaten)) + stat_summary(aes(group =1), fun.y = sum, geom = "line", size = 1, alpha = .75) + xlab("Year") +   scale_x_continuous(breaks=round(as.numeric(quantile(data_dpp$Time, probs = seq(0, 1, .2)))))  + ylab("Consumed") + ggtitle(paste("Consumption of ", data_dpp[[4]][1], " by ", data_dpp[[1]][1], " Collapsed over Habitat Type", sep = "")) + theme_bw() + guides(fill = guide_legend(override.aes = list(colour = NULL)))+ theme(panel.background=element_blank(), legend.key = element_rect(), legend.background = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), panel.background = element_blank(), legend.key = element_rect(colour = NA),axis.line = element_line(size = .2))
+        } else {
+        ggplot(data = data_dpp, aes(x = Time, y = eaten)) + stat_summary(aes(group =1), fun.y = sum, geom = "line", size = 1, alpha = .75) + xlab("Year") +   scale_x_continuous(breaks=round(as.numeric(quantile(data_dpp$Time, probs = seq(0, 1, .2)))))  + ylab("Consumed") + ggtitle(paste("Consumption of ", data_dpp[[5]][1], " by ", data_dpp[[1]][1], " Collapsed over Age Class", sep = "")) + theme_bw() + guides(fill = guide_legend(override.aes = list(colour = NULL)))+ theme(panel.background=element_blank(), legend.key = element_rect(), legend.background = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), panel.background = element_blank(), legend.key = element_rect(colour = NA),axis.line = element_line(size = .2))
+        }
       })
       
       # Consumption by Predator
       output$diet_pred_plot <- renderPlot({
-        data_dpp <- subset(obj$diet_l, Predator == input$diet_pred_unagg)
-        ggplot(data = data_dpp, aes(x = Time, y = eaten, color = as.character(Cohort))) + geom_line(size = 1, alpha = .75) + scale_color_brewer(name = "Ageclass", type = "div",palette = 5, labels = 1:10) + xlab("Year") +  
-          scale_x_continuous(breaks=round(as.numeric(quantile(data_dpp$Time, probs = seq(0, 1, .2))))) + ylab("Consumed") + ggtitle(paste("Consumption by ", data_dpp[1,1], " by Age Class", sep = "")) + facet_wrap(~ Prey) + theme_bw() + guides(fill = guide_legend(override.aes = list(colour = NULL)))+ theme(panel.background=element_blank(), legend.key = element_rect(), legend.background = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), panel.background = element_blank(), legend.key = element_rect(colour = NA),axis.line = element_line(size = .2))
+        predConsume <- obj$diet_l[Predator == input$diet_pred_unagg, ]
+        if(any(names(predConsume) == "Habitat")) {
+          ggplot(data = predConsume, aes(x = Time, y = eaten, color = Habitat)) + geom_line(size = 1, alpha = .75) + scale_color_brewer(name = "Habitat Type", type = "div",palette = 5) + xlab("Year") +  
+            scale_x_continuous(breaks=round(as.numeric(quantile(predConsume$Time, probs = seq(0, 1, .2))))) + ylab("Consumed") + ggtitle(paste("Consumption by ", predConsume[[1]][1], " by Habitat", sep = "")) + facet_wrap(~ Prey) + theme_bw() + guides(fill = guide_legend(override.aes = list(colour = NULL)))+ theme(panel.background=element_blank(), legend.key = element_rect(), legend.background = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), panel.background = element_blank(), legend.key = element_rect(colour = NA),axis.line = element_line(size = .2))
+        } else {
+        ggplot(data = predConsume, aes(x = Time, y = eaten, color = as.character(Cohort))) + geom_line(size = 1, alpha = .75) + scale_color_brewer(name = "Ageclass", type = "div",palette = 5, labels = 1:10) + xlab("Year") +  
+          scale_x_continuous(breaks=round(as.numeric(quantile(predConsume$Time, probs = seq(0, 1, .2))))) + ylab("Consumed") + ggtitle(paste("Consumption by ", predConsume[[1]][1], " by Age Class", sep = "")) + facet_wrap(~ Prey) + theme_bw() + guides(fill = guide_legend(override.aes = list(colour = NULL)))+ theme(panel.background=element_blank(), legend.key = element_rect(), legend.background = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), panel.background = element_blank(), legend.key = element_rect(colour = NA),axis.line = element_line(size = .2))
+        }
       })
       
       # Consumption by Predator collapsed
       output$diet_predator_collapsed <- renderPlot({
-        data_dpp <- subset(obj$diet_l, Predator == input$diet_pred_agg)
-        ggplot(data = data_dpp, aes(x = Time, y = eaten))+ stat_summary(aes(group =1), fun.y = sum, geom = "line", size = 1, alpha = .75) + xlab("Year") +  scale_x_continuous(breaks=round(as.numeric(quantile(data_dpp$Time, probs = seq(0, 1, .2))))) + ylab("Consumed") + ggtitle(paste("Consumption by ", data_dpp[1,1], " Collapsed over Age Class", sep = "")) + facet_wrap(~ Prey) + theme_bw() + guides(fill = guide_legend(override.aes = list(colour = NULL)))+ theme(panel.background=element_blank(), legend.key = element_rect(), legend.background = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), panel.background = element_blank(), legend.key = element_rect(colour = NA),axis.line = element_line(size = .2))
+        predConsumeCollapse <- obj$diet_l[Predator == input$diet_pred_agg, ]
+        predConsumeCollapse <- predConsumeCollapse[, total:=sum(eaten), by=list(Prey, Time)]
+        if(any(names(predConsumeCollapse) == "Habitat")) {
+          ggplot(data = predConsumeCollapse, aes(x = Time, y = total)) + geom_line(size = 1, alpha = .75) + xlab("Year") +  scale_x_continuous(breaks=round(as.numeric(quantile(predConsumeCollapse$Time, probs = seq(0, 1, .2))))) + ylab("Consumed") + ggtitle(paste("Consumption by ", predConsumeCollapse[[1]][1], " Collapsed over Habitat Type", sep = "")) + facet_wrap(~ Prey) + theme_bw() + guides(fill = guide_legend(override.aes = list(colour = NULL)))+ theme(panel.background=element_blank(), legend.key = element_rect(), legend.background = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), panel.background = element_blank(), legend.key = element_rect(colour = NA),axis.line = element_line(size = .2))
+        } else {
+        ggplot(data = predConsumeCollapse, aes(x = Time, y = total))+ geom_line(size = 1, alpha = .75) + xlab("Year") +  scale_x_continuous(breaks=round(as.numeric(quantile(predConsumeCollapse$Time, probs = seq(0, 1, .2))))) + ylab("Consumed") + ggtitle(paste("Consumption by ", predConsumeCollapse[[1]][1], " Collapsed over Age Class", sep = "")) + facet_wrap(~ Prey) + theme_bw() + guides(fill = guide_legend(override.aes = list(colour = NULL)))+ theme(panel.background=element_blank(), legend.key = element_rect(), legend.background = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), panel.background = element_blank(), legend.key = element_rect(colour = NA),axis.line = element_line(size = .2))
+        }
       })
       
       # Consumption by Prey
       output$diet_prey_plot <- renderPlot({
         data_dpp <- subset(obj$diet_l, Prey == input$diet_prey_unagg)
-        ggplot(data = data_dpp, aes(x = Time, y = eaten, color = as.character(Cohort)))  + geom_line(size = 1, alpha = .75) + scale_color_brewer(name = "Ageclass", type = "div",palette = 5, labels = 1:10) + xlab("Year") + ylab("Consumed") + ggtitle(paste("Consumption of ", data_dpp[1,5], " by Age class", sep = "")) + facet_wrap(~ Predator) + theme_bw() + guides(fill = guide_legend(override.aes = list(colour = NULL)))+ theme(panel.background=element_blank(), legend.key = element_rect(), legend.background = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), panel.background = element_blank(), legend.key = element_rect(colour = NA),axis.line = element_line(size = .2)) + scale_x_continuous(breaks=round(as.numeric(quantile(data_dpp$Time, probs = seq(0, 1, .2))))) 
+        if(any(names(data_dpp) == "Habitat")) {
+          ggplot(data = data_dpp, aes(x = Time, y = eaten, color = Habitat))  + geom_line(size = 1, alpha = .75) + scale_color_brewer(name = "Habitat Type", type = "div",palette = 5) + xlab("Year") + ylab("Consumed") + ggtitle(paste("Consumption of ", data_dpp[[1]][4], " by Habitat Type", sep = "")) + facet_wrap(~ Predator) + theme_bw() + guides(fill = guide_legend(override.aes = list(colour = NULL)))+ theme(panel.background=element_blank(), legend.key = element_rect(), legend.background = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), panel.background = element_blank(), legend.key = element_rect(colour = NA),axis.line = element_line(size = .2)) + scale_x_continuous(breaks=round(as.numeric(quantile(data_dpp$Time, probs = seq(0, 1, .2))))) 
+        } else {
+        ggplot(data = data_dpp, aes(x = Time, y = eaten, color = as.character(Cohort)))  + geom_line(size = 1, alpha = .75) + scale_color_brewer(name = "Ageclass", type = "div",palette = 5, labels = 1:10) + xlab("Year") + ylab("Consumed") + ggtitle(paste("Consumption of ", data_dpp[[1]][5], " by Age Class", sep = "")) + facet_wrap(~ Predator) + theme_bw() + guides(fill = guide_legend(override.aes = list(colour = NULL)))+ theme(panel.background=element_blank(), legend.key = element_rect(), legend.background = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), panel.background = element_blank(), legend.key = element_rect(colour = NA),axis.line = element_line(size = .2)) + scale_x_continuous(breaks=round(as.numeric(quantile(data_dpp$Time, probs = seq(0, 1, .2))))) 
+        }
       })
       
       # Consumption by Prey collapsed
       output$diet_prey_collapsed <- renderPlot({
         data_dpp <- subset(obj$diet_l,Prey == input$diet_prey_agg)
-        ggplot(data = data_dpp, aes(x = Time, y = eaten)) + stat_summary(aes(group =1), fun.y = sum, geom = "line", size = 1, alpha = .75) + xlab("Year") + ylab("Consumed") + ggtitle(paste("Consumption of ", data_dpp[1,5], " collapsed over age class", sep = "")) + facet_wrap(~ Predator) + theme_bw() + guides(fill = guide_legend(override.aes = list(colour = NULL)))+ theme(panel.background=element_blank(), legend.key = element_rect(), legend.background = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), panel.background = element_blank(), legend.key = element_rect(colour = NA),axis.line = element_line(size = .2)) + scale_x_continuous(breaks=round(as.numeric(quantile(data_dpp$Time, probs = seq(0, 1, .2))))) 
+        preyConCollapsed <- data_dpp[, total:=sum(eaten), by=list(Predator, Time)]
+        if(any(names(preyConCollapsed) == "Habitat")) {
+          ggplot(data = preyConCollapsed, aes(x = Time, y = total)) + geom_line(size = 1, alpha = .75) + xlab("Year") + ylab("Consumed") + ggtitle(paste("Consumption of ", preyConCollapsed[[1]][4], " Collapsed over Habitat Type", sep = "")) + facet_wrap(~ Predator) + theme_bw() + guides(fill = guide_legend(override.aes = list(colour = NULL)))+ theme(panel.background=element_blank(), legend.key = element_rect(), legend.background = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), panel.background = element_blank(), legend.key = element_rect(colour = NA),axis.line = element_line(size = .2)) + scale_x_continuous(breaks=round(as.numeric(quantile(data_dpp$Time, probs = seq(0, 1, .2))))) 
+        } else {
+        ggplot(data = preyConCollapsed, aes(x = Time, y = eaten)) + geom_line(size = 1, alpha = .75) + xlab("Year") + ylab("Consumed") + ggtitle(paste("Consumption of ", preyConCollapsed[[1]][5], " Collapsed over Age Class", sep = "")) + facet_wrap(~ Predator) + theme_bw() + guides(fill = guide_legend(override.aes = list(colour = NULL)))+ theme(panel.background=element_blank(), legend.key = element_rect(), legend.background = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), panel.background = element_blank(), legend.key = element_rect(colour = NA),axis.line = element_line(size = .2)) + scale_x_continuous(breaks=round(as.numeric(quantile(data_dpp$Time, probs = seq(0, 1, .2))))) 
+        }
       })
       
       # -----------------------------------------
