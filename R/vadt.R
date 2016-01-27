@@ -524,7 +524,7 @@ vadt <- function(obj, anim = NULL){
       
       # Diet Table 
       output$diet_table <- renderDataTable({
-        diet_tab <- obj$tot_pred
+        diet_tab <- as.data.frame(obj$tot_pred)
         if (input$mean_diet_pred != "All"){
           diet_tab <- diet_tab[diet_tab$Predator == input$mean_diet_pred,]
         }
