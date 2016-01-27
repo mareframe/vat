@@ -5,7 +5,7 @@
 #'@param obj Object of class vat returned by create_vat
 #'@param anim Directory to stored animated plot created by vat_animate function (defaults to NULL)
 #'@import ggplot2
-#'@import data.table
+#'@importFrom data.table data.table
 #'@import shiny
 #'@importFrom scales muted
 #'@importFrom DT datatable
