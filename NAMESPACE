@@ -3,7 +3,7 @@
 export(animate_vadt)
 export(create_vadt)
 export(vadt)
-import(data.table, data.table)
+importFrom(data.table, data.table)
 import(dplyr)
 import(ggplot2)
 import(shiny)
