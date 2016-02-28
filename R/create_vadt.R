@@ -48,12 +48,30 @@ create_vadt <- function(outdir, fgfile, biolprm, ncout, startyear, toutinc, diet
   ssb <- read.table(paste(outdir, ncout, "SSB.txt", sep = ""), header = TRUE)
   yoy <- read.table(paste(outdir, ncout, "YOY.txt", sep = ""), header = TRUE)
   bgm <- readLines(paste(outdir, grep(".bgm",dir(outdir), value = T), sep = ""))
+  fish_total <- read.table(paste(outdir, ncout, "Catch.txt", sep = ""), header = T)
+  fish_fishery <- read.table(paste(outdir, ncout, "CatchPerFishery.txt", sep = ""), header = T)
   biomass <- read.table(paste(outdir, ncout, "BiomIndx.txt", sep = ""), header = T)
   rel_bio <- biomass[,c(1, grep("Rel",colnames(biomass)))]
   tot_bio <- biomass[,c(1:(grep("Rel",colnames(biomass))[1]-1))]
   fun_group <- read.csv(fgfile, header = T, stringsAsFactors = FALSE)#[, c(1,3, 4,5,6, 9,16, 12)]
   fun_group <- subset(fun_group, fun_group$IsTurnedOn == 1)
-   
+  
+  # Set up fisheries files
+  ts_act <- grep("TsAct", colnames(fish_total))
+  fish_biomass_year <- fish_total[,1:(ts_act[1] - 1)]
+  fish_tsact_year <- fish_total[, c(1, ts_act)]
+  fish_biomass_year$Time <- startyear + fish_biomass_year$Time/365
+  fish_tsact_year$Time <- startyear + fish_tsact_year$Time/365
+  fishedFish <- colnames(fish_biomass_year)[-1]
+  fishedFish <- fun_group[match(fishedFish, fun_group$Code), "Name"]
+  colnames(fish_biomass_year) <- c("Time", fishedFish)
+  colnames(fish_tsact_year) <- c("Time", fishedFish)
+  colnames(fish_fishery) <- c("Time", "Fishery", fishedFish)
+  fish_fishery_l <- fish_fishery %>%
+   gather("Species", "biomass", 3:ncol(fish_fishery))
+  fish_fishery_l$Time <- startyear + fish_fishery_l$Time/365
+  
+  
   ## Reads in and prepares the diet data if it's available
   if(diet){
     cat("### ------------ Setting up diet matrix plot                             ------------ ###\n")    
@@ -450,7 +468,7 @@ create_vadt <- function(outdir, fgfile, biolprm, ncout, startyear, toutinc, diet
   totalnums$.id <- factor(totalnums$.id, levels = unique(totalnums$.id))
   totalnums$Time <- as.numeric(as.character(totalnums$X1)) * toutinc / 365 + startyear
   
-  output <- list(disagg = vars,invert_vars = invert_vars, invert_mnames = invert_mnames, trace_vars = trace_vars, trace_names = trace_names, var_names = tot_num, max_layers = max_layers, max_time = max_time, bioagg_names = bioagg_names, rs_names = rs_names, tot_pred = tot_pred, ssb_names = ssb_names, yoy_names = yoy_names, islands = islands, rel_bio = rel_bio, tot_bio = tot_bio, ssb = ssb, yoy = yoy, structN = structN, reserveN = reserveN, totalnums = totalnums, map_base = map_base, numboxes = numboxes, fun_group = fun_group, invert_names = invert_names, invert_l = invert_l, vert_l = vert_l, ab_params = ab_params, diet_l = diet_l, erla_plots = erla_plots, toutinc = toutinc, startyear = startyear, tot_bio_v = tot_bio_v, tot_bio_i = tot_bio_i, biomass_by_box = biomass_by_box, fgnames = fun_group[,4])
+  output <- list(disagg = vars,invert_vars = invert_vars, invert_mnames = invert_mnames, trace_vars = trace_vars, trace_names = trace_names, var_names = tot_num, max_layers = max_layers, max_time = max_time, bioagg_names = bioagg_names, rs_names = rs_names, tot_pred = tot_pred, ssb_names = ssb_names, yoy_names = yoy_names, islands = islands, rel_bio = rel_bio, tot_bio = tot_bio, ssb = ssb, yoy = yoy, structN = structN, reserveN = reserveN, totalnums = totalnums, map_base = map_base, numboxes = numboxes, fun_group = fun_group, invert_names = invert_names, invert_l = invert_l, vert_l = vert_l, ab_params = ab_params, diet_l = diet_l, erla_plots = erla_plots, toutinc = toutinc, startyear = startyear, tot_bio_v = tot_bio_v, tot_bio_i = tot_bio_i, biomass_by_box = biomass_by_box, fgnames = fun_group[,4], fish_fishery_l = fish_fishery_l, fish_tsact_year = fish_tsact_year, fish_biomass_year = fish_biomass_year, fishedFish = fishedFish)
   cat("### ------------ vat object created, you can now run the vat application ------------ ###\n") 
   return(output)
   class(output) <- "vadt"

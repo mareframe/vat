@@ -8,7 +8,6 @@
 #'@importFrom data.table data.table
 #'@import shiny
 #'@importFrom scales muted
-#'@importFrom DT datatable
 #'@importFrom stringr str_trim
 #'@export
 #'@seealso \code{\link{create_vadt}}, \code{\link{animate_vadt}}
@@ -232,29 +231,8 @@ vadt <- function(obj, anim = NULL){
                                                       plotOutput("diet_pprey", height = "600px")),
                                              column(5,
                                                     if(is.null(obj$tot_pred) == FALSE)
-                                                      plotOutput("diet_pprey_collapsed", height = "600px")))),
-
-                            tabPanel("Mean Diet Data",
-                                        fluidRow(
-                                          column(2),
-                                          column(4,
-                                                 if(is.null(obj$tot_pred) == FALSE){
-                                                 selectInput("mean_diet_pred", 
-                                                             "Predator:", 
-                                                             c("All", 
-                                                               unique(as.character(obj$fgnames))))}
-                                          ),
-                                          column(4, 
-                                                 if(is.null(obj$tot_pred) == FALSE){
-                                                 selectInput("mean_diet_prey", 
-                                                             "Prey:", 
-                                                             c("All", 
-                                                               unique(as.character(obj$fgnames))))}
-                                                 )),
-                                        if(is.null(obj$tot_pred) == FALSE)
-                                        dataTableOutput('diet_table'))
-                                 ),
-                    navbarMenu("Summaries",
+                                                      plotOutput("diet_pprey_collapsed", height = "600px"))))),
+                    navbarMenu("Biological Summaries",
                                tabPanel("Biomass Facet Plots",
                                         navlistPanel(widths = c(2, 10),
                                                      tabPanel("Vertebrates",
@@ -312,7 +290,28 @@ vadt <- function(obj, anim = NULL){
                                                  column(5,
                                                         plotOutput("invertgraze", height = "300px")),
                                                  column(5,
-                                                        plotOutput("invertprod", height = "300px")))))),
+                                                        plotOutput("invertprod", height = "300px"))))),
+    navbarMenu("Fisheries",
+               tabPanel("Total Catch By Species",
+                        fluidRow(column(4),
+                                 column(4,
+                                        wellPanel(
+                                          selectInput("fish_marginal",
+                                                      label = "Functional Group",
+                                                      choices = obj$fishedFish))),
+                                 column(4)),
+                        fluidRow(column(12,
+                                        plotOutput("fish_marginal_map", height = "550px")))),
+               tabPanel("Total Catch By Fisheries",
+                        fluidRow(column(4),
+                                 column(4,
+                                        wellPanel(
+                                          selectInput("fish_fishery",
+                                                      label = "Fishery",
+                                                      choices = as.character(unique(obj$fish_fishery_l$Fishery))))),
+                                 column(4)),
+                        fluidRow(column(12,
+                                        plotOutput("fish_fishery_map", height = "550px")))))),
     server = function(input, output) {
       
       # -----------------------------------------
@@ -520,23 +519,6 @@ vadt <- function(obj, anim = NULL){
       
       # DIET DATA TAB
       # -----------------------------------------
-      
-      # Diet Table 
-      output$diet_table <- renderDataTable({
-        diet_tab <- obj$tot_pred
-        if (input$mean_diet_pred != "All"){
-          diet_tab <- diet_tab[diet_tab$Predator == input$mean_diet_pred,]
-        }
-        if (input$mean_diet_prey != "All"){
-          diet_tab <- diet_tab[diet_tab$Prey == input$mean_diet_prey,]
-        }
-        options(scipen = 999)
-          DT::datatable(diet_tab,rownames = FALSE,
-                    caption = tags$caption(
-                      style = 'caption-side: bottom; text-align: center;',
-                      'Diet Matrix '))
-        })
-      
         # Diet Predator by prey
       output$diet_pprey <- renderPlot({
         data_dpp <- obj$diet_l[Predator == input$diet_dispred & Prey == input$diet_disprey, ]
@@ -628,6 +610,15 @@ vadt <- function(obj, anim = NULL){
         qplot(y = obj$rel_bio[[match(input$ssb_var, names(obj$rel_bio))]], x = Time, data = obj$rel_bio, geom = "line") +
           ylab("") +  theme_bw() + ggtitle("Relative Biomass") + xlab("Year")  + scale_x_continuous(breaks=round(as.numeric(quantile(obj$rel_bio$Time, probs = seq(0, 1, .2)))))
         }) 
+      
+      output$fish_marginal_map <- renderPlot({
+        qplot(y = obj$fish_biomass_year[[match(input$fish_marginal, names(obj$fish_biomass_year))]], x = Time, data = obj$fish_biomass_year, geom = "line") +  ylab("Catch (tons)") + xlab("Year")
+       })
+      
+      output$fish_fishery_map <- renderPlot({
+        tmp <- subset(obj$fish_fishery_l, Fishery == input$fish_fishery)
+        ggplot(aes(y = biomass, x = Time), data = tmp) + geom_line() + facet_wrap(~Species) + xlab("Time") + ylab("Biomass (tons)")
+      })
       
       # Total biomass map
       output$tot_map <- renderPlot({
