@@ -100,7 +100,7 @@ create_vadt <- function(outdir, fgfile, biolprm, ncout, startyear, toutinc, diet
     tot_pred <- diet_l %>%
       group_by(Predator,Prey) %>%
       summarize(Eaten = mean(eaten))
-    diet_l <- data.table::data.table(diet_l)
+    diet_l <- data.table(diet_l)
     tot_pred <- as.data.frame(tot_pred)
   } else {
     diet_l <- NULL

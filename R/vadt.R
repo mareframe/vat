@@ -5,7 +5,6 @@
 #'@param obj Object of class vat returned by create_vat
 #'@param anim Directory to stored animated plot created by vat_animate function (defaults to NULL)
 #'@import ggplot2
-#'@importFrom data.table data.table
 #'@import shiny
 #'@importFrom scales muted
 #'@importFrom stringr str_trim
@@ -136,28 +135,45 @@ vadt <- function(obj, anim = NULL){
                                                if(is.null(anim) == FALSE){
                                                plotOutput("agg_image", inline = TRUE, "100%", "550px")}))),
                     tabPanel("Age Disaggregated",
-                                        fluidRow(column(4),
-                                                 column(4,wellPanel(selectInput("sn",
-                                                                                label = "Functional Group",
-                                                                                choices = obj$rs_names)))),
-                                        fluidRow(column(1),
-                                                 column(5,
-                                                        plotOutput("structn", height = "450px")),
-                                                 column(5,
-                                                        plotOutput("totalprop", height = "450px"))),
-                                        fluidRow(column(1),
-                                                 column(5,
-                                                        plotOutput("reserven", height = "450px")),
-                                                 column(5,
-                                                        plotOutput("totalnum", height = "450px"))),
-                                        fluidRow(column(1),
-                                                 column(5,
-                                                        plotOutput("lw_plot", height = "450px")),
-                                                 column(5,
-                                                        plotOutput("totalbio", height = "450px"))),
-                                        fluidRow(column(1),
-                                                 column(5,
-                                                        plotOutput("totalfirst", height = "450px")))),
+                             navlistPanel("Unit", widths = c(2, 10),
+                                          tabPanel("Nitrogen (mg)",
+                                                   fluidRow(column(4),
+                                                            column(4,wellPanel(selectInput("sn",
+                                                                                           label = "Functional Group",
+                                                                                           choices = obj$rs_names)))),
+                                                   fluidRow(column(6,
+                                                                   plotOutput("structn", height = "450px")),
+                                                            column(6,
+                                                                   plotOutput("totalprop", height = "450px"))),
+                                                   fluidRow(column(6,
+                                                                   plotOutput("reserven", height = "450px")),
+                                                            column(6,
+                                                                   plotOutput("totalnum", height = "450px"))),
+                                                   fluidRow(column(6,
+                                                                   plotOutput("lw_plot", height = "450px")),
+                                                            column(6,
+                                                                   plotOutput("totalbio", height = "450px"))),
+                                                   fluidRow(column(6,
+                                                                   plotOutput("totalfirst", height = "450px")))),
+                                          tabPanel("Wet Weight (g)",
+                                                   fluidRow(column(4),
+                                                            column(4,wellPanel(selectInput("sn",
+                                                                                           label = "Functional Group",
+                                                                                           choices = obj$rs_names)))),
+                                                   fluidRow(column(6,
+                                                                   plotOutput("structng", height = "450px")),
+                                                            column(6,
+                                                                   plotOutput("totalpropg", height = "450px"))),
+                                                   fluidRow(column(6,
+                                                                   plotOutput("reserveng", height = "450px")),
+                                                            column(6,
+                                                                   plotOutput("totalnumg", height = "450px"))),
+                                                   fluidRow(column(6,
+                                                                   plotOutput("lw_plotg", height = "450px")),
+                                                            column(6,
+                                                                   plotOutput("totalbiog", height = "450px"))),
+                                                   fluidRow(column(6,
+                                                                   plotOutput("totalfirstg", height = "450px")))))),
                     
                     # The diagnostic plots UI
                     
@@ -506,6 +522,66 @@ vadt <- function(obj, anim = NULL){
       
       ## Length-At-Age plot
       output$lw_plot <- renderPlot({
+        sn_ids <- paste(input$sn, 1:10, "_StructN", sep = "")
+        lw_data <- subset(obj$structN, .id %in% sn_ids)
+        lw_data$wt_grams <- 3.65*lw_data$V1*5.7*20/1000
+        fg_name <- obj$fun_group[str_trim(obj$fun_group$Name) == input$sn, 1]
+        param_a <- obj$ab_params[grep(fg_name, obj$ab_params$a_name), 2]
+        param_b <- obj$ab_params[grep(fg_name, obj$ab_params$b_name), 4]
+        lw_data$length <- (lw_data$wt_grams/param_a)^(1/param_b)
+        
+        ggplot(data = lw_data, aes(y = length, x = Time)) + geom_line(aes(group = .id, color = .id), size = 2, alpha = .75) +  scale_x_continuous(breaks=round(as.numeric(quantile(lw_data$Time, probs = seq(0, 1, .2))))) + ylab("Length-At-Age (cm)") + scale_color_brewer(name = "Ageclass", type = "div",palette = 5, labels = 1:10) + theme_bw()  + guides(fill = guide_legend(override.aes = list(colour = NULL)))+ theme(panel.background=element_blank(), legend.key = element_rect(), legend.background = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), panel.background = element_blank(), legend.key = element_rect(colour = NA),axis.line = element_line(size = .2, color = "black")) + xlab("Year")
+      })
+      
+      output$structng <- renderPlot({
+        sn_ids <- paste(input$sn, 1:10, "_StructN", sep = "")
+        dat_sn <- subset(obj$structN, .id %in% sn_ids)
+        ggplot(data = dat_sn, aes(y = (V1 * 5.7 * 20)/100, x = Time)) + geom_line(aes(group = .id, color = .id), size = 2, alpha = .75) +  
+          scale_x_continuous(breaks=round(as.numeric(quantile(dat_sn$Time, probs = seq(0, 1, .2))))) + ylab("Wet Weight (g)")  + scale_color_brewer(name = "Ageclass", type = "div",palette = 5, labels = 1:10)  + theme_bw() + guides(fill = guide_legend(override.aes = list(colour = NULL))) + theme(panel.background=element_blank(), legend.key = element_rect(), legend.background = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), panel.background = element_blank(), legend.key = element_rect(colour = NA),axis.line = element_line(size = .2)) + xlab("Year")})
+      
+      # Reserve nitrogen
+      output$reserveng <- renderPlot({
+        rn_ids <- paste(input$sn, 1:10, "_ResN", sep = "")
+        dat_rn <- subset(obj$reserve, .id %in% rn_ids)
+        ggplot(data = dat_rn, aes(y = (V1  * 5.7 * 20)/100, x = Time)) + geom_line(aes(group = .id, color = .id), size = 2, alpha = .75) +  scale_x_continuous(breaks=round(as.numeric(quantile(dat_rn$Time, probs = seq(0, 1, .2))))) + ylab("Wet Weight (g)")  + scale_color_brewer(name = "Ageclass",type = "div",palette = 5, labels = 1:10) + theme_bw() + guides(fill = guide_legend(override.aes = list(colour = NULL)))+ theme(panel.background=element_blank(), legend.key = element_rect(), legend.background = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), panel.background = element_blank(), legend.key = element_rect(colour = NA),axis.line = element_line(size = .2)) + xlab("Year")})
+      
+      
+      # Total Biomass
+      output$totalbiog <- renderPlot({
+        sn_ids <- paste(input$sn, 1:10, "_StructN", sep = "")
+        sn <- subset(obj$structN, .id %in% sn_ids)
+        totn_ids <- paste(input$sn, 1:10, "_Nums", sep = "")
+        dat_tn <- subset(obj$totalnums, .id %in% totn_ids)
+        dat_tn$V1 <- (3.65*sn$V1*5.7*20)/1e3 * dat_tn$V1 / 1e6
+        ggplot(data = dat_tn, aes(y = V1, x = Time)) + geom_line(aes(color = .id), size = 2, alpha = .75) + scale_x_continuous(breaks=round(as.numeric(quantile(dat_tn$Time, probs = seq(0, 1, .2))))) + ylab("Total Biomass (Tons)") + scale_color_brewer(name = "Ageclass", type = "div",palette = 5, labels = 1:10) + theme_bw()  + guides(fill = guide_legend(override.aes = list(colour = NULL)))+ theme(panel.background=element_blank(), legend.key = element_rect(), legend.background = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), panel.background = element_blank(), legend.key = element_rect(colour = NA),axis.line = element_line(size = .2, color = "black")) + xlab("Year")
+      }) 
+      
+      
+      # First year
+      output$totalfirstg <- renderPlot({
+        totn_ids <- paste(input$sn, 1:10, "_Nums", sep = "")
+        dat_totn <- subset(obj$totalnums, .id %in% totn_ids)
+        dat_first <- dat_totn[grep("1_", dat_totn$.id),]
+        ggplot(dat_first, aes(y = V1, x = Time))  + geom_line(size = 2, alpha = .75)  + ylab("Age Class 1 Recruits")  + scale_color_discrete() + theme_bw()+  scale_x_continuous(breaks=round(as.numeric(quantile(dat_totn$Time, probs = seq(0, 1, .2)))))  + guides(fill = guide_legend(override.aes = list(colour = NULL))) + theme(panel.background=element_blank(), legend.background = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), panel.background = element_blank(), axis.line = element_line(size = .2)) + theme(legend.position="none") + xlab("Year")
+      })
+      
+      # Tot number
+      output$totalnumg <- renderPlot({
+        totn_ids <- paste(input$sn, 1:10, "_Nums", sep = "")
+        dat_totn <- subset(obj$totalnums, .id %in% totn_ids)
+        ggplot(dat_totn, aes(y = V1, x = Time, group = .id, color = .id)) + geom_line(size = 2, alpha = .75)  + scale_color_brewer(name = "Ageclass",type = "div",palette = 5, labels = 1:10) + ylab("Total numbers")  + theme_bw() + scale_x_continuous(breaks=round(as.numeric(quantile(dat_totn$Time, probs = seq(0, 1, .2)))))  + guides(fill = guide_legend(override.aes = list(colour = NULL))) + theme(panel.background=element_blank(), legend.background = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), panel.background = element_blank(), axis.line = element_line(size = .2)) + xlab("Year")
+      })
+      
+      
+      # Total Prop
+      output$totalpropg <- renderPlot({
+        totn_ids <- paste(input$sn, 1:10, "_Nums", sep = "")
+        dat_totn <- subset(obj$totalnums, .id %in% totn_ids)
+        ggplot(dat_totn, aes(y = V1, x = Time)) + geom_density(stat = "identity", aes(fill = .id), position = "fill", alpha = .75, lwd = .2)  + scale_fill_brewer(name = "Ageclass",type = "div",palette = 5, labels = 1:10 ) + ylab("Proportion of total numbers")  + theme_bw()+  scale_x_continuous(breaks=round(as.numeric(quantile(dat_totn$Time, probs = seq(0, 1, .2)))))  + guides(fill = guide_legend(override.aes = list(colour = NULL))) + theme(panel.background=element_blank(), legend.background = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), panel.background = element_blank(), axis.line = element_line(size = .2)) + xlab("Year") 
+      })
+      
+      ## Length-At-Age plot
+      output$lw_plotg <- renderPlot({
         sn_ids <- paste(input$sn, 1:10, "_StructN", sep = "")
         lw_data <- subset(obj$structN, .id %in% sn_ids)
         lw_data$wt_grams <- 3.65*lw_data$V1*5.7*20/1000
