@@ -38,6 +38,7 @@ create_vadt <- function(outdir, fgfile, biolprm, ncout, startyear, toutinc, diet
   nsecs <- 86400
   ndays <- 365
   g_per_ton <- 1e6
+  xCN <- 5.7
   species <- c("BIRD", "FISH", "MAMMAL", "SHARK")
   tons <- function(mgN) return(mgN * 5.7 * 20 / 1e9)
   
@@ -132,7 +133,29 @@ create_vadt <- function(outdir, fgfile, biolprm, ncout, startyear, toutinc, diet
   ab_params <- data.frame(a_name = a_group, a = as.numeric(as.character(a_param)),
                           b_name = b_group, b = as.numeric(as.character(b_param)))
   
-  
+  # todo: yoy as number of individuals
+  # colnames(yoy)[2:length(names(yoy))] <- str_split_fixed(names(yoy)[2:length(names(yoy))], pattern = '.0', n = 2)[,1]
+  # kwrr <- grep("KWRR", biolprm, value = T)
+  # kwrr_split <- unlist(str_split_fixed(kwrr, pattern = ' ', n = 2))
+  # kwrr_split <- apply(kwrr_split,2, str_trim, side = "both")
+  # kwrr_group <- str_split_fixed(kwrr_split[,1], pattern = '_', n = 2)[,2]
+  # kwrr_param <- str_split_fixed(kwrr_split[,2], pattern = ' ', n = 2)[,1]
+  # 
+  # kwsr <- grep("KWSR", biolprm, value = T)
+  # kwsr_split <- unlist(str_split_fixed(kwsr, pattern = ' ', n = 2))
+  # kwsr_split <- apply(kwsr_split,2, str_trim, side = "both")
+  # kwsr_group <- str_split_fixed(kwsr_split[,1], pattern = '_', n = 2)[,2]
+  # kwsr_param <- str_split_fixed(kwsr_split[,2], pattern = ' ', n = 2)[,1]
+  # kwrr <- data.frame(group = kwrr_group, kwrr_param)
+  # kwsr <- data.frame(group = kwsr_group, kwsr_param)
+  # kwrr_kwsr_params <- merge(kwrr, kwsr)
+  # kwrr_kwsr_params$total <- as.double(as.character(kwrr_kwsr_params$kwrr_param)) + as.double(as.character(kwrr_kwsr_params$kwsr_param))
+  # kwrr_kwsr_params$total <- kwrr_kwsr_params$total * 50000000.0 / xCN
+  # for(i in 2:ncol(yoy)){
+  #   findColumn <- kwrr_kwsr_params$group == names(yoy)[i]
+  #   yoy[, i] <- yoy[,i] / kwrr_kwsr_params$total[findColumn]
+  # }
+  # 
   ## Drop those functional groups that are not turned on
   fun_group <- fun_group[fun_group$IsTurnedOn == 1,]# c(1,3:8)]
 
@@ -171,6 +194,7 @@ create_vadt <- function(outdir, fgfile, biolprm, ncout, startyear, toutinc, diet
   tot_bio$Time <- startyear + tot_bio$Time/365
   ssb$Time <- startyear + ssb$Time/365
   yoy$Time <- startyear + yoy$Time/365
+  
   
   cat("### ------------ Creating dynamic labels for vat                         ------------ ###\n")
   bioagg_names <- colnames(bio_agg)[c(-1,-2)]
