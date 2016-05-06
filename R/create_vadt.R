@@ -269,6 +269,7 @@ create_vadt <- function(outdir, fgfile, biolprm, ncout, startyear, toutinc, diet
   
   vert_names <- fun_group[fun_group$GroupType %in% c("FISH", "MAMMAL", "SHARK", "BIRD"), "Code"]
   mat_age <- grep("_age_mat", biolprm, value = T)
+  mat_names <- str_split_fixed(mat_age, "_", n = 2)[,1]
   species_ids <- str_split_fixed(mat_age, "_age_mat", n = 2)[,1]
   #juvenile_age <- as.numeric(gsub("[^\\d]+", "", mat_age, perl=TRUE))[which(species_ids %in% vert_names)]
   get_first_number<-function(x){
@@ -279,15 +280,17 @@ create_vadt <- function(outdir, fgfile, biolprm, ncout, startyear, toutinc, diet
   }
   temp <- lapply(mat_age,FUN=get_first_number)
   juvenile_age <- as.numeric(unlist(temp))
+  juvenile_age <- data.frame(mat_names, juvenile_age)
   species_ids <- species_ids[which(species_ids %in% vert_names)]
   
   erla_plots <- list()
   for(i in 1:length(species_ids)){
     spp <- fun_group[fun_group$Code == species_ids[i],c("Name", "NumCohorts")]
     spp <- str_trim(spp)
-    if(juvenile_age[i] != 1){
-      juv <- paste(spp[[1]], 1:(juvenile_age[i] - 1), "_Nums", sep = "")
-      ad <- paste(spp[[1]], juvenile_age[i]:spp[[2]], "_Nums", sep = "")
+    juv_age <- juvenile_age[which(juvenile_age$mat_names %in% species_ids[i]), 2]
+    if(juv_age != 1){
+      juv <- paste(spp[[1]], 1:(juv_age - 1), "_Nums", sep = "")
+      ad <- paste(spp[[1]], juv_age:spp[[2]], "_Nums", sep = "")
       # Create the juveniles data
       juv_tmp <- NULL
       for(j in juv){
@@ -324,7 +327,7 @@ create_vadt <- function(outdir, fgfile, biolprm, ncout, startyear, toutinc, diet
       erla_plots[[paste(spp[[1]], "Adult")]] <- ad_tmp
     } 
     else {
-      ad <- paste(spp[[1]], juvenile_age[i]:spp[[2]], "_Nums", sep = "")
+      ad <- paste(spp[[1]], juv_age:spp[[2]], "_Nums", sep = "")
       ad_tmp <- NULL
       for(j in ad){
         x <- adply(vars[[j]], c(1, 3))
