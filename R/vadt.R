@@ -152,9 +152,7 @@ vadt <- function(obj, anim = NULL){
                                                    fluidRow(column(6,
                                                                    plotOutput("lw_plot", height = "450px")),
                                                             column(6,
-                                                                   plotOutput("totalbio", height = "450px"))),
-                                                   fluidRow(column(6,
-                                                                   plotOutput("totalfirst", height = "450px")))),
+                                                                   plotOutput("totalbio", height = "450px")))),
                                           tabPanel("Wet Weight (g)",
                                                    fluidRow(column(4),
                                                             column(4,wellPanel(selectInput("sn",
@@ -171,9 +169,7 @@ vadt <- function(obj, anim = NULL){
                                                    fluidRow(column(6,
                                                                    plotOutput("lw_plotg", height = "450px")),
                                                             column(6,
-                                                                   plotOutput("totalbiog", height = "450px"))),
-                                                   fluidRow(column(6,
-                                                                   plotOutput("totalfirstg", height = "450px")))))),
+                                                                   plotOutput("totalbiog", height = "450px")))))),
                     
                     # The diagnostic plots UI
                     
@@ -496,15 +492,7 @@ vadt <- function(obj, anim = NULL){
         ggplot(data = dat_tn, aes(y = V1, x = Time)) + geom_line(aes(color = .id), size = 2, alpha = .75) + scale_x_continuous(breaks=round(as.numeric(quantile(dat_tn$Time, probs = seq(0, 1, .2))))) + ylab("Total Biomass (Tons)") + scale_color_brewer(name = "Ageclass", type = "div",palette = 5, labels = 1:10) + theme_bw()  + guides(fill = guide_legend(override.aes = list(colour = NULL)))+ theme(panel.background=element_blank(), legend.key = element_rect(), legend.background = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), panel.background = element_blank(), legend.key = element_rect(colour = NA),axis.line = element_line(size = .2, color = "black")) + xlab("Year")
       }) 
       
-      
-      # First year
-      output$totalfirst <- renderPlot({
-        totn_ids <- paste(input$sn, 1:10, "_Nums", sep = "")
-        dat_totn <- subset(obj$totalnums, .id %in% totn_ids)
-        dat_first <- dat_totn[grep("1_", dat_totn$.id),]
-        ggplot(dat_first, aes(y = V1, x = Time))  + geom_line(size = 2, alpha = .75)  + ylab("Age Class 1 Recruits")  + scale_color_discrete() + theme_bw()+  scale_x_continuous(breaks=round(as.numeric(quantile(dat_totn$Time, probs = seq(0, 1, .2)))))  + guides(fill = guide_legend(override.aes = list(colour = NULL))) + theme(panel.background=element_blank(), legend.background = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), panel.background = element_blank(), axis.line = element_line(size = .2)) + theme(legend.position="none") + xlab("Year")
-      })
-      
+  
       # Tot number
       output$totalnum <- renderPlot({
         totn_ids <- paste(input$sn, 1:10, "_Nums", sep = "")
@@ -556,14 +544,6 @@ vadt <- function(obj, anim = NULL){
         ggplot(data = dat_tn, aes(y = V1, x = Time)) + geom_line(aes(color = .id), size = 2, alpha = .75) + scale_x_continuous(breaks=round(as.numeric(quantile(dat_tn$Time, probs = seq(0, 1, .2))))) + ylab("Total Biomass (Tons)") + scale_color_brewer(name = "Ageclass", type = "div",palette = 5, labels = 1:10) + theme_bw()  + guides(fill = guide_legend(override.aes = list(colour = NULL)))+ theme(panel.background=element_blank(), legend.key = element_rect(), legend.background = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), panel.background = element_blank(), legend.key = element_rect(colour = NA),axis.line = element_line(size = .2, color = "black")) + xlab("Year")
       }) 
       
-      
-      # First year
-      output$totalfirstg <- renderPlot({
-        totn_ids <- paste(input$sn, 1:10, "_Nums", sep = "")
-        dat_totn <- subset(obj$totalnums, .id %in% totn_ids)
-        dat_first <- dat_totn[grep("1_", dat_totn$.id),]
-        ggplot(dat_first, aes(y = V1, x = Time))  + geom_line(size = 2, alpha = .75)  + ylab("Age Class 1 Recruits")  + scale_color_discrete() + theme_bw()+  scale_x_continuous(breaks=round(as.numeric(quantile(dat_totn$Time, probs = seq(0, 1, .2)))))  + guides(fill = guide_legend(override.aes = list(colour = NULL))) + theme(panel.background=element_blank(), legend.background = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), panel.background = element_blank(), axis.line = element_line(size = .2)) + theme(legend.position="none") + xlab("Year")
-      })
       
       # Tot number
       output$totalnumg <- renderPlot({
