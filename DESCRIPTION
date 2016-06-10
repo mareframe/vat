@@ -16,10 +16,10 @@ Depends:
     scales,
     plyr,
     tidyr,
+    data.table,
     dplyr,
     animation,
     gridExtra,
     stringr,
-    DT,
     R (>= 3.0.0)
 RoxygenNote: 5.0.1
