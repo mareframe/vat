@@ -53,7 +53,7 @@ vadt <- function(obj, anim = NULL){
                                         fluidRow(column(4),
                                                  column(4,wellPanel(selectInput("erla_plot_select",
                                                                                 label = "Functional Group",
-                                                                                choices = names(obj$erla_plots))))),
+                                                                                choices = names(obj$erla_plots))))), 
                                         fluidRow(column(12,
                                                         plotOutput("vert_erla_plot", height = "1200px")))),
                                tabPanel("Within a Box Distribution",
@@ -404,6 +404,8 @@ vadt <- function(obj, anim = NULL){
       output$vert_erla_plot <- renderPlot({
         tmp <- obj$erla_plots[[input$erla_plot_select]]
         tmp$Time <- as.numeric(as.character(tmp$Time)) * obj$toutinc / 365 + obj$startyear
+        nrbox <- length(unique(tmp$Box))
+        tmp <- within(tmp, Box <- factor(Box, levels = paste("Box", 0:(nrbox-1))))   ## Order the graphs by box number
         if(is.null(tmp$Layer)){
         ggplot(data = tmp, aes(y = number, x = Time)) + geom_line(size = 1) + ylab("") + xlab("Year") + facet_wrap(~ Box, ncol = 5) + theme_bw() + guides(fill = guide_legend(override.aes = list(colour = NULL))) +  
           scale_x_continuous(breaks=round(as.numeric(quantile(tmp$Time, probs = seq(0, 1, .2)))))  + theme(panel.background=element_blank(), legend.key = element_rect(), legend.background = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), panel.background = element_blank(), legend.key = element_rect(colour = NA),axis.line = element_line(size = .2))

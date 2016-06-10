@@ -244,8 +244,8 @@ create_vadt <- function(outdir, fgfile, biolprm, ncout, startyear, toutinc, diet
     spp <- fun_group[fun_group$Code == species_ids[i],c("Name", "NumCohorts")]
     spp <- str_trim(spp)
     if(juvenile_age[i] != 1){
-      juv <- paste(spp[[1]], 1:(juvenile_age[i] - 1), "_Nums", sep = "")
-      ad <- paste(spp[[1]], juvenile_age[i]:spp[[2]], "_Nums", sep = "")
+      juv <- paste(spp[[1]], 1:(juvenile_age[i]+1), "_Nums", sep = "")   
+      ad <- paste(spp[[1]], (juvenile_age[i]+2):spp[[2]], "_Nums", sep = "") 
       # Create the juveniles data
       juv_tmp <- NULL
       for(j in juv){
