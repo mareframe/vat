@@ -210,7 +210,7 @@ create_vadt <- function(outdir, fgfile, biolprm, ncout, startyear, toutinc, diet
   cat("### ------------ Creating map from BGM file                              ------------ ###\n")
   
   # Find number of boxes
-  numboxes <- length(grep("# Box number", bgm))
+  numboxes <- length(grep("Box Number", bgm))
   
   # Find area of boxes
   areaboxes <- grep("area", bgm, value = TRUE)
@@ -327,14 +327,16 @@ create_vadt <- function(outdir, fgfile, biolprm, ncout, startyear, toutinc, diet
   juvenile_age <- as.numeric(unlist(temp))
   juvenile_age <- data.frame(mat_names, juvenile_age)
   species_ids <- species_ids[which(species_ids %in% vert_names)]
+  species_juv <- juvenile_age[juvenile_age$mat_names %in% species_ids, ]
+  
   
   erla_plots <- list()
   for(i in 1:length(species_ids)){
     spp <- fun_group[fun_group$Code == species_ids[i],c("Name", "NumCohorts")]
     spp <- str_trim(spp)
-    if(juvenile_age[i] != 1){
-      juv <- paste(spp[[1]], 1:(juvenile_age[i]+1), "_Nums", sep = "")   
-      ad <- paste(spp[[1]], (juvenile_age[i]+2):spp[[2]], "_Nums", sep = "") 
+    if(species_juv$juvenile_age[i] != 1){
+      juv <- paste(spp[[1]], 1:(species_juv$juvenile_age[i]+1), "_Nums", sep = "")   
+      ad <- paste(spp[[1]], (species_juv$juvenile_age[i]+2):spp[[2]], "_Nums", sep = "") 
       # Create the juveniles data
       juv_tmp <- NULL
       for(j in juv){
